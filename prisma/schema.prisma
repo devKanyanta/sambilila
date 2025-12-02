@@ -1,10 +1,16 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,6 +27,7 @@ model User {
   flashcardSets FlashcardSet[]
   quizResults   QuizResult[]
   studySessions StudySession[]
+  quizzes       Quiz[]
 
   @@map("users")
 }
@@ -41,8 +48,9 @@ model FlashcardSet {
 
   // Relations
   userId String
-  user   User       @relation(fields: [userId], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   cards  Flashcard[]
+  studySessions StudySession[]
 
   @@map("flashcard_sets")
 }
@@ -56,7 +64,7 @@ model Flashcard {
 
   // Relations
   flashcardSetId String
-  flashcardSet   FlashcardSet @relation(fields: [flashcardSetId], onDelete: Cascade)
+  flashcardSet   FlashcardSet @relation(fields: [flashcardSetId], references: [id], onDelete: Cascade)
 
   @@map("flashcards")
 }
@@ -70,7 +78,7 @@ model Quiz {
 
   // Relations
   userId String
-  user   User       @relation(fields: [userId], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions QuizQuestion[]
   results   QuizResult[]
 
@@ -88,7 +96,7 @@ model QuizQuestion {
 
   // Relations
   quizId String
-  quiz   Quiz @relation(fields: [quizId], onDelete: Cascade)
+  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_questions")
 }
@@ -108,9 +116,9 @@ model QuizResult {
 
   // Relations
   userId String
-  user   User @relation(fields: [userId], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   quizId String
-  quiz   Quiz @relation(fields: [quizId], onDelete: Cascade)
+  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_results")
 }
@@ -126,9 +134,9 @@ model StudySession {
 
   // Relations
   userId String
-  user   User @relation(fields: [userId], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   flashcardSetId String?
-  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], onDelete: SetNull)
+  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id], onDelete: SetNull)
 
   @@map("study_sessions")
 }

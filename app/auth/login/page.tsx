@@ -2,8 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function Login() {
+
+  const router = useRouter()
+  const [serverError, setServerError] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -48,21 +53,38 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    setServerError(null)
     if (!validateForm()) return
 
     setIsLoading(true)
     
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      console.log('Login attempt with:', formData)
-      // Here you would typically:
-      // 1. Call your authentication API
-      // 2. Handle the response
-      // 3. Redirect on success
-      // 4. Show error on failure
+      const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password
+      })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setServerError(data.message || 'Login failed')
+      return
+    }
+
+    // Save token
+    localStorage.setItem('token', data.token)
+
+    // Redirect user
+    router.push('/dashboard')
     } catch (error) {
       console.error('Login failed:', error)
+      setServerError('Server error. Try again later.')
     } finally {
       setIsLoading(false)
     }

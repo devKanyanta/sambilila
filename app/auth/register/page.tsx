@@ -2,23 +2,30 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface FormData {
-  fullName: string
+  name: string
   email: string
   password: string
   confirmPassword: string
-  userType: 'student' | 'teacher'
+  userType: 'STUDENT' | 'TEACHER'
   agreeToTerms: boolean
 }
 
 export default function Register() {
+
+const router = useRouter()
+const [serverError, setServerError] = useState<string | null>(null)
+
+
+
   const [formData, setFormData] = useState<FormData>({
-    fullName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    userType: 'student',
+    userType: 'STUDENT',
     agreeToTerms: false,
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -42,8 +49,8 @@ export default function Register() {
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {}
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required'
+    if (!formData.name.trim()) {
+      newErrors.name = 'Full name is required'
     }
 
     if (!formData.email) {
@@ -73,27 +80,48 @@ export default function Register() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
+  e.preventDefault()
 
-    setIsLoading(true)
-    
-    // Simulate API call
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log('Registration attempt with:', formData)
-      // Here you would typically:
-      // 1. Call your registration API
-      // 2. Handle the response
-      // 3. Redirect on success
-      // 4. Show error on failure
-    } catch (error) {
-      console.error('Registration failed:', error)
-    } finally {
-      setIsLoading(false)
+  setServerError(null)
+
+  if (!validateForm()) return
+  setIsLoading(true)
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        userType: formData.userType
+      })
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setServerError(data.message || 'Registration failed')
+      return
     }
+
+    // Save token
+    localStorage.setItem('token', data.token)
+
+    // Redirect user
+    router.push('/dashboard')
+
+  } catch (error) {
+    console.error(error)
+    setServerError('Server error. Try again later.')
+  } finally {
+    setIsLoading(false)
   }
+}
+
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -108,7 +136,7 @@ export default function Register() {
           </h1>
         </div>
         <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
-        <p className="text-gray-600 mt-2">Join thousands of students and teachers</p>
+        <p className="text-gray-600 mt-2">Join thousands of students and TEACHERs</p>
       </div>
 
       {/* Registration Form */}
@@ -120,15 +148,15 @@ export default function Register() {
           </label>
           <div className="grid grid-cols-2 gap-4">
             <label className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
-              formData.userType === 'student' 
+              formData.userType === 'STUDENT' 
                 ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500' 
                 : 'border-gray-300 bg-white'
             }`}>
               <input
                 type="radio"
                 name="userType"
-                value="student"
-                checked={formData.userType === 'student'}
+                value="STUDENT"
+                checked={formData.userType === 'STUDENT'}
                 onChange={handleChange}
                 className="sr-only"
               />
@@ -136,11 +164,11 @@ export default function Register() {
                 <div className="flex items-center">
                   <div className="text-2xl mr-3">🎓</div>
                   <div className="text-sm">
-                    <p className="font-medium text-gray-900">Student</p>
+                    <p className="font-medium text-gray-900">STUDENT</p>
                     <p className="text-gray-500">Learn and study</p>
                   </div>
                 </div>
-                {formData.userType === 'student' && (
+                {formData.userType === 'STUDENT' && (
                   <div className="flex-shrink-0 text-blue-600">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -151,15 +179,15 @@ export default function Register() {
             </label>
 
             <label className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
-              formData.userType === 'teacher' 
+              formData.userType === 'TEACHER' 
                 ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-500' 
                 : 'border-gray-300 bg-white'
             }`}>
               <input
                 type="radio"
                 name="userType"
-                value="teacher"
-                checked={formData.userType === 'teacher'}
+                value="TEACHER"
+                checked={formData.userType === 'TEACHER'}
                 onChange={handleChange}
                 className="sr-only"
               />
@@ -167,11 +195,11 @@ export default function Register() {
                 <div className="flex items-center">
                   <div className="text-2xl mr-3">👨‍🏫</div>
                   <div className="text-sm">
-                    <p className="font-medium text-gray-900">Teacher</p>
+                    <p className="font-medium text-gray-900">TEACHER</p>
                     <p className="text-gray-500">Teach and create</p>
                   </div>
                 </div>
-                {formData.userType === 'teacher' && (
+                {formData.userType === 'TEACHER' && (
                   <div className="flex-shrink-0 text-purple-600">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -185,22 +213,22 @@ export default function Register() {
 
         {/* Full Name */}
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
             Full name
           </label>
           <input
-            id="fullName"
-            name="fullName"
+            id="name"
+            name="name"
             type="text"
-            value={formData.fullName}
+            value={formData.name}
             onChange={handleChange}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-              errors.fullName ? 'border-red-300 bg-red-50' : 'border-gray-300'
+              errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
             }`}
             placeholder="Enter your full name"
           />
-          {errors.fullName && (
-            <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
           )}
         </div>
 
