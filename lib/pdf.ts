@@ -21,8 +21,13 @@ export async function extractTextFromPDF(buffer: Uint8Array): Promise<string> {
                 if (textItem.R) {
                   for (const run of textItem.R) {
                     if (run.T) {
-                      // Decode URI encoded text
-                      text += decodeURIComponent(run.T) + ' ';
+                      try {
+                        // Try to decode URI encoded text
+                        text += decodeURIComponent(run.T) + ' ';
+                      } catch (e) {
+                        // If decoding fails, use the raw text
+                        text += run.T + ' ';
+                      }
                     }
                   }
                 }
@@ -32,7 +37,12 @@ export async function extractTextFromPDF(buffer: Uint8Array): Promise<string> {
           }
         }
         
-        resolve(text.trim());
+        const cleanText = text.trim();
+        if (!cleanText) {
+          reject(new Error('No text could be extracted from PDF'));
+        } else {
+          resolve(cleanText);
+        }
       } catch (error) {
         console.error('Text extraction error:', error);
         reject(error);
