@@ -205,9 +205,6 @@ export default function Flashcards() {
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Flashcard Studio</h1>
             <p className="text-purple-600 text-sm">AI-powered learning made simple</p>
