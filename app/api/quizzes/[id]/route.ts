@@ -1,179 +1,147 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+// app/api/quizzes/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { getUserIdFromToken } from "@/lib/auth";
 
-function getUserIdFromToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) return null
-
-  const token = authHeader.substring(7)
-  try {
-    const decoded = verifyToken(token)
-    return decoded.userId
-  } catch {
-    return null
-  }
-}
-
-// GET /api/quizzes/[id] - Get specific quiz
+/* -------------------- GET -------------------- */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = getUserIdFromToken(request)
+    const userId = await getUserIdFromToken(request);
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const quiz = await prisma.quiz.findFirst({
-      where: { 
-        id: params.id,
-        userId 
-      },
+    // ✅ unwrap params
+    const { id } = await params;
+
+    const quiz = await prisma.quiz.findUnique({
+      where: { id },
       include: {
         questions: {
-          orderBy: { order: 'asc' }
+          orderBy: { order: "asc" },
         },
-        results: {
-          orderBy: { completedAt: 'desc' },
-          take: 10,
+        user: {
           select: {
             id: true,
-            score: true,
-            totalQuestions: true,
-            completedAt: true
-          }
+            name: true,
+            email: true,
+          },
         },
         _count: {
           select: {
-            questions: true,
-            results: true
-          }
-        }
-      }
-    })
+            results: true,
+          },
+        },
+      },
+    });
 
     if (!quiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    return NextResponse.json(quiz)
+    if (quiz.userId !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    return NextResponse.json({ quiz });
   } catch (error) {
-    console.error('Get quiz error:', error)
+    console.error("Error fetching quiz:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Failed to fetch quiz" },
       { status: 500 }
-    )
+    );
   }
 }
 
-// PUT /api/quizzes/[id] - Update quiz
-export async function PUT(
+/* -------------------- DELETE -------------------- */
+export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = getUserIdFromToken(request)
+    const userId = await getUserIdFromToken(request);
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, subject, description, questions } = await request.json()
+    const { id } = await params;
 
-    // Check if quiz exists and belongs to user
-    const existingQuiz = await prisma.quiz.findFirst({
-      where: { 
-        id: params.id,
-        userId 
-      }
-    })
+    const quiz = await prisma.quiz.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
 
-    if (!existingQuiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      )
+    if (!quiz) {
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    // Update quiz (in a real app, you might want more sophisticated update logic)
-    const quiz = await prisma.quiz.update({
-      where: { id: params.id },
+    if (quiz.userId !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    await prisma.quiz.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting quiz:", error);
+    return NextResponse.json(
+      { error: "Failed to delete quiz" },
+      { status: 500 }
+    );
+  }
+}
+
+/* -------------------- PATCH -------------------- */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await getUserIdFromToken(request);
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { title, subject, description } = body;
+
+    const quiz = await prisma.quiz.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!quiz) {
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+    }
+
+    if (quiz.userId !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const updatedQuiz = await prisma.quiz.update({
+      where: { id },
       data: {
         ...(title && { title }),
         ...(subject && { subject }),
-        ...(description && { description }),
-        ...(questions && {
-          // Delete existing questions and create new ones
-          questions: {
-            deleteMany: {},
-            create: questions.map((question: any, index: number) => ({
-              type: question.type,
-              question: question.question,
-              options: question.options || [],
-              correctAnswer: JSON.stringify(question.correctAnswer),
-              order: index
-            }))
-          }
-        })
+        ...(description !== undefined && { description }),
       },
-      include: {
-        questions: {
-          orderBy: { order: 'asc' }
-        }
-      }
-    })
+    });
 
-    return NextResponse.json(quiz)
+    return NextResponse.json({ quiz: updatedQuiz });
   } catch (error) {
-    console.error('Update quiz error:', error)
+    console.error("Error updating quiz:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Failed to update quiz" },
       { status: 500 }
-    )
-  }
-}
-
-// DELETE /api/quizzes/[id] - Delete quiz
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const userId = getUserIdFromToken(request)
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if quiz exists and belongs to user
-    const existingQuiz = await prisma.quiz.findFirst({
-      where: { 
-        id: params.id,
-        userId 
-      }
-    })
-
-    if (!existingQuiz) {
-      return NextResponse.json(
-        { error: 'Quiz not found' },
-        { status: 404 }
-      )
-    }
-
-    // Delete quiz (cascade will delete questions and results)
-    await prisma.quiz.delete({
-      where: { id: params.id }
-    })
-
-    return NextResponse.json({ message: 'Quiz deleted successfully' })
-  } catch (error) {
-    console.error('Delete quiz error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    );
   }
 }

@@ -1,127 +1,175 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+// app/api/quizzes/generate/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { prisma } from '@/lib/db';
+import { extractTextFromPDF } from '@/lib/pdf';
+import { getUserIdFromToken } from '@/lib/auth';
 
-function getUserIdFromToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) return null
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-  const token = authHeader.substring(7)
-  try {
-    const decoded = verifyToken(token)
-    return decoded.userId
-  } catch {
-    return null
-  }
+interface GeneratedQuestion {
+  type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
+  question: string;
+  options?: string[];
+  correctAnswer: string;
 }
 
-// POST /api/quizzes/generate - Generate quiz using AI
+interface QuizGenerationResponse {
+  title: string;
+  subject: string;
+  description: string;
+  questions: GeneratedQuestion[];
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const userId = getUserIdFromToken(request)
+    // Check authentication
+    const userId = await getUserIdFromToken(request);
+    
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { topic, questionCount = 5, difficulty = 'beginner' } = await request.json()
+    const formData = await request.formData();
+    const text = formData.get('text') as string | null;
+    const pdf = formData.get('pdf') as File | null;
+    const numberOfQuestions = parseInt(formData.get('numberOfQuestions') as string) || 10;
+    const difficulty = formData.get('difficulty') as string || 'medium';
+    const questionTypes = formData.get('questionTypes') as string || 'MULTIPLE_CHOICE,TRUE_FALSE';
 
-    if (!topic) {
+    // Extract content from either text or PDF
+    let content = '';
+    if (pdf) {
+      // Convert File to Uint8Array
+      const arrayBuffer = await pdf.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      content = await extractTextFromPDF(uint8Array);
+    } else if (text) {
+      content = text;
+    } else {
       return NextResponse.json(
-        { error: 'Topic is required' },
+        { error: 'Please provide either text or a PDF file' },
         { status: 400 }
-      )
+      );
     }
 
-    // In a real implementation, you would call an AI service here
-    // For now, we'll generate dummy questions based on the topic
-    const generatedQuestions = generateDummyQuestions(topic, questionCount, difficulty)
+    if (content.length < 100) {
+      return NextResponse.json(
+        { error: 'Content is too short to generate a meaningful quiz' },
+        { status: 400 }
+      );
+    }
+
+    // Generate quiz using Gemini AI
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `
+You are an expert quiz creator. Based on the following content, create a comprehensive quiz.
+
+Content:
+${content}
+
+Requirements:
+- Generate exactly ${numberOfQuestions} questions
+- Difficulty level: ${difficulty}
+- Question types to include: ${questionTypes}
+- Distribute question types evenly
+- Ensure questions test understanding, not just memorization
+- Make questions clear and unambiguous
+- For multiple choice, provide 4 options with only one correct answer
+- For true/false, ensure the statement is clearly true or false
+- For short answer, make the expected answer concise (1-3 words or a short phrase)
+
+Return your response as a valid JSON object with this exact structure (no markdown, no code blocks, just raw JSON):
+{
+  "title": "A descriptive title for the quiz",
+  "subject": "The main subject/topic",
+  "description": "A brief description of what this quiz covers",
+  "questions": [
+    {
+      "type": "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER",
+      "question": "The question text",
+      "options": ["option1", "option2", "option3", "option4"], // only for MULTIPLE_CHOICE
+      "correctAnswer": "The correct answer"
+    }
+  ]
+}
+
+Important formatting rules:
+- For MULTIPLE_CHOICE: options must be an array of exactly 4 strings, correctAnswer must be one of those options
+- For TRUE_FALSE: omit options array, correctAnswer must be exactly "true" or "false"
+- For SHORT_ANSWER: omit options array, correctAnswer should be the expected answer (case-insensitive matching will be used)
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let generatedText = response.text();
+
+    // Clean up the response - remove markdown code blocks if present
+    generatedText = generatedText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    // Parse the JSON response
+    let quizData: QuizGenerationResponse;
+    try {
+      quizData = JSON.parse(generatedText);
+    } catch (parseError) {
+      console.error('Failed to parse Gemini response:', generatedText);
+      return NextResponse.json(
+        { error: 'Failed to generate quiz. Please try again.' },
+        { status: 500 }
+      );
+    }
+
+    // Validate the generated quiz structure
+    if (!quizData.title || !quizData.questions || !Array.isArray(quizData.questions)) {
+      return NextResponse.json(
+        { error: 'Invalid quiz structure generated' },
+        { status: 500 }
+      );
+    }
 
     // Create the quiz in the database
     const quiz = await prisma.quiz.create({
       data: {
-        title: `${topic} Quiz`,
-        subject: getSubjectFromTopic(topic),
-        description: `AI-generated quiz about ${topic}`,
-        userId,
+        title: quizData.title,
+        subject: quizData.subject || 'General',
+        description: quizData.description,
+        userId: userId,
         questions: {
-          create: generatedQuestions.map((question, index) => ({
-            type: question.type,
-            question: question.question,
-            options: question.options || [],
-            correctAnswer: JSON.stringify(question.correctAnswer),
-            order: index
-          }))
-        }
+          create: quizData.questions.map((q, index) => ({
+            type: q.type,
+            question: q.question,
+            options: q.options || [],
+            correctAnswer: q.correctAnswer,
+            order: index + 1,
+          })),
+        },
       },
       include: {
         questions: {
-          orderBy: { order: 'asc' }
-        }
-      }
-    })
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
 
-    return NextResponse.json(quiz)
+    return NextResponse.json({
+      success: true,
+      quiz: {
+        id: quiz.id,
+        title: quiz.title,
+        subject: quiz.subject,
+        description: quiz.description,
+        questionCount: quiz.questions.length,
+      },
+    });
+
   } catch (error) {
-    console.error('Generate quiz error:', error)
+    console.error('Quiz generation error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to generate quiz' },
       { status: 500 }
-    )
-  }
-}
-
-// Helper function to generate dummy questions (replace with actual AI integration)
-function generateDummyQuestions(topic: string, count: number, difficulty: string) {
-  const questions = []
-
-  for (let i = 0; i < count; i++) {
-    const questionTypes = ['multiple_choice', 'true_false', 'short_answer']
-    const type = questionTypes[i % questionTypes.length]
-
-    if (type === 'multiple_choice') {
-      questions.push({
-        type: 'MULTIPLE_CHOICE',
-        question: `What is a key aspect of ${topic}?`,
-        options: [
-          'Option A related to ' + topic,
-          'Option B related to ' + topic,
-          'Option C related to ' + topic,
-          'Correct answer about ' + topic
-        ],
-        correctAnswer: 3
-      })
-    } else if (type === 'true_false') {
-      questions.push({
-        type: 'TRUE_FALSE',
-        question: `${topic} is an important subject in its field.`,
-        correctAnswer: true
-      })
-    } else {
-      questions.push({
-        type: 'SHORT_ANSWER',
-        question: `Name one important concept in ${topic}.`,
-        correctAnswer: 'key concept'
-      })
-    }
-  }
-
-  return questions
-}
-
-function getSubjectFromTopic(topic: string): string {
-  const lowerTopic = topic.toLowerCase()
-  
-  if (lowerTopic.includes('photo') || lowerTopic.includes('bio') || lowerTopic.includes('cell')) {
-    return 'Biology'
-  } else if (lowerTopic.includes('history') || lowerTopic.includes('war') || lowerTopic.includes('revolution')) {
-    return 'History'
-  } else if (lowerTopic.includes('python') || lowerTopic.includes('javascript') || lowerTopic.includes('program')) {
-    return 'Programming'
-  } else if (lowerTopic.includes('math') || lowerTopic.includes('algebra') || lowerTopic.includes('calculus')) {
-    return 'Mathematics'
-  } else if (lowerTopic.includes('chem') || lowerTopic.includes('element') || lowerTopic.includes('reaction')) {
-    return 'Chemistry'
-  } else {
-    return 'General'
+    );
   }
 }

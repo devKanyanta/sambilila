@@ -1,598 +1,867 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-// Define TypeScript interfaces
+// TypeScript interfaces matching API responses
 interface QuizQuestion {
-  id: number;
-  type: 'multiple_choice' | 'true_false' | 'short_answer';
+  id: string;
+  type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
   question: string;
-  options?: string[];
-  correctAnswer: number | boolean | string;
+  options: string[];
+  correctAnswer: string;
+  order: number;
 }
 
 interface Quiz {
+  id: string;
   title: string;
   subject: string;
+  description: string | null;
   questions: QuizQuestion[];
+  createdAt: string;
 }
 
-interface QuizTemplate {
-  id: number;
+interface QuizListItem {
+  id: string;
   title: string;
   subject: string;
-  questionCount: number;
-  duration: string;
-  difficulty: string;
-  emoji: string;
+  description: string | null;
+  createdAt: string;
+  _count: {
+    questions: number;
+    results: number;
+  };
 }
 
 interface QuizResult {
-  id: number;
-  title: string;
+  id: string;
   score: number;
-  date: string;
+  correctCount: number;
   totalQuestions: number;
+  percentage: string;
+  passed: boolean;
 }
 
-interface QuickTopic {
-  name: string;
-  emoji: string;
-  questions: number;
+interface DetailedResult {
+  questionId: string;
+  userAnswer: string;
+  correct: boolean;
+  correctAnswer: string;
+  question: string;
+  type: string;
 }
-
-// Dummy quiz templates
-const dummyQuizTemplates: QuizTemplate[] = [
-  {
-    id: 1,
-    title: 'Biology Fundamentals',
-    subject: 'Science',
-    questionCount: 5,
-    duration: '10 min',
-    difficulty: 'Beginner',
-    emoji: '🧬'
-  },
-  {
-    id: 2,
-    title: 'World History',
-    subject: 'History',
-    questionCount: 8,
-    duration: '15 min',
-    difficulty: 'Intermediate',
-    emoji: '🌍'
-  },
-  {
-    id: 3,
-    title: 'JavaScript Basics',
-    subject: 'Programming',
-    questionCount: 6,
-    duration: '12 min',
-    difficulty: 'Beginner',
-    emoji: '💻'
-  },
-  {
-    id: 4,
-    title: 'Chemistry Elements',
-    subject: 'Science',
-    questionCount: 7,
-    duration: '15 min',
-    difficulty: 'Intermediate',
-    emoji: '⚗️'
-  }
-]
-
-// Pre-defined quiz topics
-const quickQuizTopics: QuickTopic[] = [
-  { name: 'Photosynthesis', emoji: '🌿', questions: 5 },
-  { name: 'French Revolution', emoji: '🇫🇷', questions: 6 },
-  { name: 'Python Programming', emoji: '🐍', questions: 7 },
-  { name: 'Human Anatomy', emoji: '🦴', questions: 8 }
-]
 
 export default function QuizGenerator() {
   const [inputText, setInputText] = useState<string>('')
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [quiz, setQuiz] = useState<Quiz | null>(null)
-  const [userAnswers, setUserAnswers] = useState<Record<number, number | boolean | string>>({})
+  const [quizList, setQuizList] = useState<QuizListItem[]>([])
+  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({})
   const [showResults, setShowResults] = useState<boolean>(false)
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null)
+  const [detailedResults, setDetailedResults] = useState<DetailedResult[]>([])
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
-  const [quizHistory, setQuizHistory] = useState<QuizResult[]>([])
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [isLoadingQuizzes, setIsLoadingQuizzes] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'create' | 'take'>('create')
+  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(10)
+  const [difficulty, setDifficulty] = useState<string>('medium')
+  const [questionTypes, setQuestionTypes] = useState<string>('MULTIPLE_CHOICE,TRUE_FALSE')
+  const [error, setError] = useState<string>('')
 
-  // Dummy quiz data generator
-  const generateQuizData = (topic: string): Quiz => {
-    const topicLower = topic.toLowerCase()
-    
-    if (topicLower.includes('photo') || topicLower.includes('bio') || topicLower.includes('science')) {
-      return {
-        title: 'Biology Fundamentals Quiz',
-        subject: 'Science',
-        questions: [
-          {
-            id: 1,
-            type: 'multiple_choice',
-            question: 'What is the primary purpose of photosynthesis?',
-            options: [
-              'To produce oxygen for animals',
-              'To convert light energy into chemical energy',
-              'To absorb carbon dioxide from the atmosphere',
-              'To create chlorophyll in plants'
-            ],
-            correctAnswer: 1
-          },
-          {
-            id: 2,
-            type: 'true_false',
-            question: 'Photosynthesis occurs only during the day.',
-            correctAnswer: true
-          },
-          {
-            id: 3,
-            type: 'short_answer',
-            question: 'Name two products of photosynthesis.',
-            correctAnswer: 'glucose and oxygen'
-          },
-          {
-            id: 4,
-            type: 'multiple_choice',
-            question: 'Which organelle is responsible for photosynthesis?',
-            options: [
-              'Mitochondria',
-              'Nucleus',
-              'Chloroplast',
-              'Ribosome'
-            ],
-            correctAnswer: 2
-          }
-        ]
+  // Fetch quiz list on component mount
+  useEffect(() => {
+    fetchQuizList()
+  }, [])
+
+  const fetchQuizList = async () => {
+    setIsLoadingQuizzes(true)
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch('/api/quizzes?limit=10', {
+        method: 'GET',
+        headers: {
+          "Authorization": `Bearer ${token}` 
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setQuizList(data.quizzes)
       }
-    } else if (topicLower.includes('history') || topicLower.includes('war') || topicLower.includes('revolution')) {
-      return {
-        title: 'World History Quiz',
-        subject: 'History',
-        questions: [
-          {
-            id: 1,
-            type: 'multiple_choice',
-            question: 'When did World War II begin?',
-            options: [
-              '1937',
-              '1939',
-              '1941',
-              '1943'
-            ],
-            correctAnswer: 1
-          },
-          {
-            id: 2,
-            type: 'true_false',
-            question: 'The French Revolution began in 1789.',
-            correctAnswer: true
-          },
-          {
-            id: 3,
-            type: 'short_answer',
-            question: 'Who was the first president of the United States?',
-            correctAnswer: 'george washington'
-          }
-        ]
-      }
-    } else if (topicLower.includes('python') || topicLower.includes('program') || topicLower.includes('code')) {
-      return {
-        title: 'Python Programming Quiz',
-        subject: 'Programming',
-        questions: [
-          {
-            id: 1,
-            type: 'multiple_choice',
-            question: 'How do you create a list in Python?',
-            options: [
-              'list = ()',
-              'list = []',
-              'list = {}',
-              'list = <>'
-            ],
-            correctAnswer: 1
-          },
-          {
-            id: 2,
-            type: 'true_false',
-            question: 'Python is a compiled language.',
-            correctAnswer: false
-          },
-          {
-            id: 3,
-            type: 'short_answer',
-            question: 'What function is used to get the length of a list?',
-            correctAnswer: 'len'
-          }
-        ]
-      }
-    } else {
-      // Generic quiz for any topic
-      return {
-        title: `${topic} Quiz`,
-        subject: 'General',
-        questions: [
-          {
-            id: 1,
-            type: 'multiple_choice',
-            question: `What is the main concept of ${topic}?`,
-            options: [
-              'Option A',
-              'Option B',
-              'Option C',
-              'Option D'
-            ],
-            correctAnswer: 1
-          },
-          {
-            id: 2,
-            type: 'true_false',
-            question: `Is ${topic} considered a fundamental subject?`,
-            correctAnswer: true
-          },
-          {
-            id: 3,
-            type: 'short_answer',
-            question: `Name one key principle in ${topic}.`,
-            correctAnswer: 'fundamental principle'
-          }
-        ]
-      }
+    } catch (err) {
+      console.error('Error fetching quizzes:', err)
+    } finally {
+      setIsLoadingQuizzes(false)
     }
   }
 
-  const generateQuiz = async (): Promise<void> => {
-    if (!inputText.trim()) return
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file)
+      setError('')
+    } else {
+      setError('Please select a valid PDF file')
+    }
+  }
+
+  const generateQuiz = async () => {
+    if (!inputText.trim() && !pdfFile) {
+      setError('Please provide text or upload a PDF file')
+      return
+    }
     
     setIsGenerating(true)
-    // Simulate AI generation
-    setTimeout(() => {
-      const generatedQuiz = generateQuizData(inputText)
-      setQuiz(generatedQuiz)
+    setError('')
+    
+    try {
+      const formData = new FormData()
+      const token = localStorage.getItem("token")
+      
+      if (pdfFile) {
+        formData.append('pdf', pdfFile)
+      } else {
+        formData.append('text', inputText)
+      }
+      
+      formData.append('numberOfQuestions', numberOfQuestions.toString())
+      formData.append('difficulty', difficulty)
+      formData.append('questionTypes', questionTypes)
+
+      const response = await fetch('/api/quizzes/generate', {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${token}` 
+        },
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate quiz')
+      }
+
+      const data = await response.json()
+      await loadQuiz(data.quiz.id)
+      setActiveTab('take')
+      fetchQuizList()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate quiz')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const loadQuiz = async (quizId: string) => {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`/api/quizzes/${quizId}`, {
+        method: 'GET',
+        headers: {
+          "Authorization": `Bearer ${token}` 
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to load quiz')
+      }
+
+      const data = await response.json()
+      setQuiz(data.quiz)
       setUserAnswers({})
       setShowResults(false)
-      setIsGenerating(false)
-      setActiveTab('take')
-    }, 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load quiz')
+    }
   }
 
-  const quickGenerate = (topic: string): void => {
-    setInputText(topic)
-  }
-
-  const handleAnswer = (questionId: number, answer: number | boolean | string): void => {
+  const handleAnswer = (questionId: string, answer: string) => {
     setUserAnswers(prev => ({
       ...prev,
       [questionId]: answer
     }))
   }
 
-  const calculateScore = (): number => {
-    if (!quiz) return 0
-    let correct = 0
-    quiz.questions.forEach(question => {
-      const userAnswer = userAnswers[question.id]
-      const correctAnswer = question.correctAnswer
-      
-      if (question.type === 'short_answer') {
-        if (userAnswer && typeof userAnswer === 'string' && userAnswer.toLowerCase().trim() === (correctAnswer as string).toLowerCase()) {
-          correct++
-        }
-      } else if (userAnswer === correctAnswer) {
-        correct++
-      }
-    })
-    return Math.round((correct / quiz.questions.length) * 100)
-  }
-
-  const submitQuiz = (): void => {
+  const submitQuiz = async () => {
     if (!quiz) return
-    const score = calculateScore()
-    const newQuizResult: QuizResult = {
-      id: quizHistory.length + 1,
-      title: quiz.title,
-      score: score,
-      date: new Date().toLocaleDateString(),
-      totalQuestions: quiz.questions.length
+    
+    setIsSubmitting(true)
+    setError('')
+    
+    try {
+      const answers = Object.entries(userAnswers).map(([questionId, answer]) => ({
+        questionId,
+        answer
+      }))
+
+      const token = localStorage.getItem("token")
+      const response = await fetch(`/api/quizzes/${quiz.id}/submit`, {
+        method: 'POST',
+        headers: {
+          "Authorization": `Bearer ${token}` 
+        },
+        body: JSON.stringify({ answers }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to submit quiz')
+      }
+
+      const data = await response.json()
+      setQuizResult(data.result)
+      setDetailedResults(data.detailedResults)
+      setShowResults(true)
+      fetchQuizList()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit quiz')
+    } finally {
+      setIsSubmitting(false)
     }
-    setQuizHistory(prev => [newQuizResult, ...prev])
-    setShowResults(true)
   }
 
-  const startNewQuiz = (): void => {
+  const startNewQuiz = () => {
     setQuiz(null)
     setUserAnswers({})
     setShowResults(false)
+    setQuizResult(null)
+    setDetailedResults([])
     setInputText('')
+    setPdfFile(null)
     setActiveTab('create')
   }
 
+  const selectQuizFromList = async (quizId: string) => {
+    await loadQuiz(quizId)
+    setActiveTab('take')
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Mobile Tabs */}
-      <div className="lg:hidden bg-white rounded-xl shadow-sm border p-1">
-        <div className="grid grid-cols-2 gap-1">
-          <button
-            onClick={() => setActiveTab('create')}
-            className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'create'
-                ? 'bg-green-600 text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Create Quiz
-          </button>
-          <button
-            onClick={() => setActiveTab('take')}
-            className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'take'
-                ? 'bg-green-600 text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Take Quiz
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">QuizMaster AI</h1>
+            <p className="text-gray-600 mt-1">Generate and take quizzes from your study materials</p>
+          </div>
+          <div className="hidden lg:flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+              AI
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Input Section - Hidden on mobile when taking quiz */}
-        <div className={`space-y-4 sm:space-y-6 ${activeTab === 'take' ? 'hidden lg:block' : 'block'}`}>
-          <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Generate New Quiz</h2>
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Paste your study material or enter a topic..."
-              className="w-full h-28 sm:h-32 p-3 sm:p-4 text-gray-600 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
-            />
-            
-            {/* Quick Topics */}
-            <div className="mt-3 sm:mt-4">
-              <p className="text-sm text-gray-600 mb-2 sm:mb-3">Quick topics:</p>
-              <div className="grid grid-cols-2 gap-2">
-                {quickQuizTopics.map((topic) => (
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Tabs */}
+        <div className="lg:hidden mb-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-1">
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              onClick={() => setActiveTab('create')}
+              className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === 'create'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <span>🎨</span>
+                <span>Create Quiz</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('take')}
+              className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                activeTab === 'take'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <span>📝</span>
+                <span>Take Quiz</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Input Section */}
+          <div className={`space-y-6 ${activeTab === 'take' ? 'hidden lg:block' : 'block'}`}>
+            {/* Create Quiz Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">Create New Quiz</h2>
+                    <p className="text-gray-600 text-sm mt-1">Generate quizzes from text or PDF files</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">
+                    <span className="text-blue-600">✨</span>
+                  </div>
+                </div>
+
+                {/* Input Method Selection */}
+                <div className="flex gap-3 mb-6">
                   <button
-                    key={topic.name}
-                    onClick={() => quickGenerate(topic.name)}
-                    className="flex items-center justify-between p-2 sm:p-3 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+                    onClick={() => setPdfFile(null)}
+                    className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                      !pdfFile 
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 text-blue-700' 
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
+                    }`}
                   >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm">{topic.emoji}</span>
-                      <span className="text-xs sm:text-sm text-gray-600 font-medium truncate">{topic.name}</span>
-                    </div>
-                    <span className="text-xs text-gray-500 hidden sm:block">{topic.questions} Qs</span>
+                    <span>📝</span>
+                    <span>Text Input</span>
                   </button>
-                ))}
+                  <button
+                    onClick={() => document.getElementById('pdf-upload')?.click()}
+                    className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                      pdfFile 
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 text-blue-700' 
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
+                    }`}
+                  >
+                    <span>📄</span>
+                    <span>PDF Upload</span>
+                  </button>
+                </div>
+
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {/* Content Input Area */}
+                {!pdfFile ? (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Enter your study material
+                    </label>
+                    <textarea
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder="Paste your study material, textbook content, or enter a topic..."
+                      className="w-full h-40 p-4 text-gray-700 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm bg-gray-50"
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-6 border-2 border-dashed border-blue-300 rounded-xl p-5 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                          <span className="text-2xl text-blue-600">📄</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 truncate max-w-xs">{pdfFile.name}</p>
+                          <p className="text-sm text-gray-600">{(pdfFile.size / 1024).toFixed(2)} KB • PDF Document</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setPdfFile(null)}
+                        className="p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                      >
+                        <span className="text-red-600 text-sm font-medium">Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Quiz Settings */}
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      <div className="flex items-center justify-between">
+                        <span>Number of Questions: <span className="text-blue-600 font-bold">{numberOfQuestions}</span></span>
+                        <span className="text-xs text-gray-500">5-20 questions</span>
+                      </div>
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="20"
+                      value={numberOfQuestions}
+                      onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Difficulty Level</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {['easy', 'medium', 'hard'].map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => setDifficulty(level)}
+                          className={`py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            difficulty === level
+                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {level.charAt(0).toUpperCase() + level.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Question Types</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {[
+                        { value: 'MULTIPLE_CHOICE', label: 'Multiple Choice', icon: '🔠' },
+                        { value: 'TRUE_FALSE', label: 'True/False', icon: '✓✗' },
+                        { value: 'SHORT_ANSWER', label: 'Short Answer', icon: '📝' }
+                      ].map((type) => (
+                        <label key={type.value} className="relative">
+                          <input
+                            type="checkbox"
+                            checked={questionTypes.includes(type.value)}
+                            onChange={(e) => {
+                              const types = questionTypes.split(',').filter(t => t)
+                              if (e.target.checked) {
+                                setQuestionTypes([...types, type.value].join(','))
+                              } else {
+                                setQuestionTypes(types.filter(t => t !== type.value).join(','))
+                              }
+                            }}
+                            className="sr-only"
+                          />
+                          <div className={`p-4 rounded-xl text-center cursor-pointer transition-all duration-200 border-2 ${
+                            questionTypes.includes(type.value)
+                              ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}>
+                            <div className="text-2xl mb-2">{type.icon}</div>
+                            <span className="text-sm font-medium text-gray-700">{type.label}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setInputText('')
+                      setPdfFile(null)
+                    }}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 text-sm font-medium"
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    onClick={generateQuiz}
+                    disabled={(!inputText.trim() && !pdfFile) || isGenerating}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center space-x-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>✨</span>
+                        <span>Generate Quiz</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-3 sm:mt-4">
-              <button
-                onClick={() => setInputText('')}
-                className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
-              >
-                Clear
-              </button>
-              <button
-                onClick={generateQuiz}
-                disabled={!inputText.trim() || isGenerating}
-                className="px-4 sm:px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Quiz'}
-              </button>
+            {/* Your Quizzes Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">Your Quizzes</h2>
+                    <p className="text-gray-600 text-sm mt-1">Recently created quizzes</p>
+                  </div>
+                  <button
+                    onClick={fetchQuizList}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  >
+                    <span className="text-gray-600">↻</span>
+                  </button>
+                </div>
+
+                {isLoadingQuizzes ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-gray-500 text-sm">Loading quizzes...</p>
+                  </div>
+                ) : quizList.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-4">
+                      <span className="text-2xl">📚</span>
+                    </div>
+                    <p className="text-gray-500">No quizzes yet. Create your first quiz!</p>
+                    <button
+                      onClick={() => setActiveTab('create')}
+                      className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      Create Quiz →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    {quizList.map((quizItem) => (
+                      <div
+                        key={quizItem.id}
+                        onClick={() => selectQuizFromList(quizItem.id)}
+                        className="group p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm truncate group-hover:text-blue-700">
+                              {quizItem.title}
+                            </h3>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {quizItem._count.questions} questions • {quizItem._count.results} attempts
+                            </p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800">
+                                {quizItem.subject}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(quizItem.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4 flex-shrink-0">
+                            <span className="text-gray-400 group-hover:text-blue-500 transition-colors duration-200">→</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Quiz Templates */}
-          <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quiz Templates</h2>
-            <div className="grid grid-cols-1 gap-2 sm:gap-3">
-              {dummyQuizTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  onClick={() => {
-                    setInputText(template.title)
-                  }}
-                  className="p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <span className="text-xl sm:text-2xl">{template.emoji}</span>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{template.title}</h3>
-                        <p className="text-xs sm:text-sm text-gray-600 truncate">
-                          {template.questionCount} Qs • {template.duration}
+          {/* Quiz Section */}
+          <div className={`${activeTab === 'create' ? 'hidden lg:block' : 'block'}`}>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden h-full">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">
+                      <span className="text-blue-600">🧠</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">
+                        {quiz ? quiz.title : 'Quiz Preview'}
+                      </h2>
+                      {quiz && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {quiz.subject} • {quiz.questions.length} questions
                         </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className="lg:hidden px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium"
+                  >
+                    ← Back
+                  </button>
+                </div>
+                
+                {!quiz ? (
+                  <div className="h-[calc(100vh-300px)] flex flex-col items-center justify-center p-8 text-center">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
+                      <span className="text-4xl">🎯</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Quiz Selected</h3>
+                    <p className="text-gray-500 text-sm max-w-sm">
+                      Generate a new quiz from your study materials or select an existing quiz from your list to begin.
+                    </p>
+                  </div>
+                ) : showResults ? (
+                  <div className="space-y-8">
+                    {/* Results Header */}
+                    <div className="text-center">
+                      <div className={`text-6xl font-bold mb-4 bg-gradient-to-r ${
+                        quizResult && quizResult.passed 
+                          ? 'from-green-500 to-emerald-500' 
+                          : 'from-red-500 to-pink-500'
+                      } bg-clip-text text-transparent`}>
+                        {quizResult?.percentage}
+                      </div>
+                      <p className="text-gray-600 text-lg mb-4">
+                        You answered <span className="font-bold">{quizResult?.correctCount}</span> out of{' '}
+                        <span className="font-bold">{quizResult?.totalQuestions}</span> questions correctly
+                      </p>
+                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-6 ${
+                        quizResult && quizResult.passed 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200' 
+                          : 'bg-gradient-to-r from-red-50 to-pink-50 text-red-700 border border-red-200'
+                      }`}>
+                        {quizResult && quizResult.passed ? (
+                          <>
+                            <span className="mr-2">✓</span>
+                            <span>Congratulations! You passed!</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2">✗</span>
+                            <span>Keep practicing! You'll do better next time!</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Detailed Results */}
+                    <div>
+                      <h3 className="font-semibold text-gray-800 text-lg mb-4 flex items-center">
+                        <span className="mr-2">📊</span>
+                        Review Your Answers
+                      </h3>
+                      <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        {detailedResults.map((result, index) => (
+                          <div 
+                            key={result.questionId} 
+                            className={`p-5 rounded-xl border-2 transition-all duration-200 ${
+                              result.correct 
+                                ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' 
+                                : 'border-red-200 bg-gradient-to-r from-red-50 to-pink-50'
+                            }`}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                result.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800 mb-3">
+                                  {result.question}
+                                </p>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex items-start">
+                                    <span className="text-gray-600 w-24 flex-shrink-0">Your answer:</span>
+                                    <span className={`font-medium ${result.correct ? 'text-green-700' : 'text-red-700'}`}>
+                                      {result.userAnswer || '(No answer provided)'}
+                                    </span>
+                                  </div>
+                                  {!result.correct && (
+                                    <div className="flex items-start">
+                                      <span className="text-gray-600 w-24 flex-shrink-0">Correct answer:</span>
+                                      <span className="font-medium text-green-700">{result.correctAnswer}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                result.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {result.correct ? '✓' : '✗'}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                      <button
+                        onClick={startNewQuiz}
+                        className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                      >
+                        Start New Quiz
+                      </button>
+                      <button
+                        onClick={() => setShowResults(false)}
+                        className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-medium"
+                      >
+                        Review Quiz Again
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Progress Section */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-700">Progress</span>
+                        <span className="text-sm font-bold text-blue-700">
+                          {Object.keys(userAnswers).length}/{quiz.questions.length}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500"
+                          style={{ width: `${(Object.keys(userAnswers).length / quiz.questions.length) * 100}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-2">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    {/* Questions */}
+                    <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                      {quiz.questions.sort((a, b) => a.order - b.order).map((q, index) => (
+                        <div key={q.id} className="border border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-all duration-200">
+                          <div className="flex items-start space-x-3 mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0">
+                              <span className="text-blue-700 font-medium text-sm">{index + 1}</span>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-800 text-sm leading-relaxed">
+                                {q.question}
+                              </h3>
+                              <div className="mt-3">
+                                {q.type === 'MULTIPLE_CHOICE' && (
+                                  <div className="space-y-2">
+                                    {q.options.map((option, optIndex) => (
+                                      <label 
+                                        key={`${q.id}-${optIndex}`} 
+                                        className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                                          userAnswers[q.id] === option
+                                            ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300'
+                                            : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                      >
+                                        <input
+                                          type="radio"
+                                          name={`question-${q.id}`}
+                                          value={option}
+                                          checked={userAnswers[q.id] === option}
+                                          onChange={() => handleAnswer(q.id, option)}
+                                          className="text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span className="text-sm text-gray-700">{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {q.type === 'TRUE_FALSE' && (
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                      { value: 'true', label: 'True', color: 'from-green-50 to-emerald-50' },
+                                      { value: 'false', label: 'False', color: 'from-red-50 to-pink-50' }
+                                    ].map((item) => (
+                                      <label 
+                                        key={`${q.id}-${item.value}`} 
+                                        className={`flex items-center justify-center space-x-2 p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                                          userAnswers[q.id] === item.value
+                                            ? `bg-gradient-to-r ${item.color} border-2 ${item.value === 'true' ? 'border-green-300' : 'border-red-300'}`
+                                            : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                      >
+                                        <input
+                                          type="radio"
+                                          name={`question-${q.id}`}
+                                          value={item.value}
+                                          checked={userAnswers[q.id] === item.value}
+                                          onChange={() => handleAnswer(q.id, item.value)}
+                                          className="text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span className={`text-sm font-medium ${
+                                          userAnswers[q.id] === item.value
+                                            ? item.value === 'true' ? 'text-green-700' : 'text-red-700'
+                                            : 'text-gray-700'
+                                        }`}>
+                                          {item.label}
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {q.type === 'SHORT_ANSWER' && (
+                                  <div className="relative">
+                                    <input
+                                      type="text"
+                                      value={userAnswers[q.id] || ''}
+                                      onChange={(e) => handleAnswer(q.id, e.target.value)}
+                                      className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all duration-200"
+                                      placeholder="Type your answer here..."
+                                    />
+                                    {userAnswers[q.id] && (
+                                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Submit Button */}
+                    <button
+                      onClick={submitQuiz}
+                      disabled={Object.keys(userAnswers).length !== quiz.questions.length || isSubmitting}
+                      className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center justify-center space-x-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>📤</span>
+                          <span>Submit Quiz ({Object.keys(userAnswers).length}/{quiz.questions.length})</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Mobile Stats */}
+                    <div className="lg:hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="p-3 bg-white rounded-lg">
+                          <div className="text-lg font-bold text-blue-600">{Object.keys(userAnswers).length}</div>
+                          <div className="text-xs text-gray-600">Answered</div>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg">
+                          <div className="text-lg font-bold text-gray-600">{quiz.questions.length - Object.keys(userAnswers).length}</div>
+                          <div className="text-xs text-gray-600">Remaining</div>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg">
+                          <div className="text-lg font-bold text-indigo-600">{quiz.questions.length}</div>
+                          <div className="text-xs text-gray-600">Total</div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quiz History */}
-          {quizHistory.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Recent Results</h2>
-              <div className="space-y-2 sm:space-y-3">
-                {quizHistory.slice(0, 3).map((result) => (
-                  <div key={result.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{result.title}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">{result.date}</p>
-                    </div>
-                    <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium flex-shrink-0 ml-2 ${
-                      result.score >= 80 ? 'bg-green-100 text-green-800' :
-                      result.score >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {result.score}%
-                    </div>
-                  </div>
-                ))}
+                )}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Quiz Section - Full width on mobile when taking quiz */}
-        <div className={`${activeTab === 'create' ? 'hidden lg:block' : 'block'}`}>
-          <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {quiz ? quiz.title : 'Quiz Preview'}
-              </h2>
-              <button
-                onClick={() => setActiveTab('create')}
-                className="lg:hidden px-3 py-1 text-sm text-green-600 hover:text-green-700 transition-colors"
-              >
-                Back
-              </button>
-            </div>
-            
-            {!quiz ? (
-              <div className="h-64 sm:h-96 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4">
-                <div className="text-4xl mb-4">🧩</div>
-                <p className="text-gray-500 text-center text-sm sm:text-base">
-                  Enter a topic or select a template to generate your quiz
-                </p>
-              </div>
-            ) : showResults ? (
-              <div className="text-center py-6 sm:py-8">
-                <div className={`text-4xl sm:text-6xl font-bold mb-3 sm:mb-4 ${
-                  calculateScore() >= 80 ? 'text-green-600' :
-                  calculateScore() >= 60 ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {calculateScore()}%
-                </div>
-                <p className="text-gray-600 mb-4 text-sm sm:text-base">
-                  You answered {Object.keys(userAnswers).filter(qId => {
-                    const questionId = parseInt(qId)
-                    const question = quiz.questions.find(q => q.id === questionId)
-                    if (!question) return false
-                    if (question.type === 'short_answer') {
-                      return userAnswers[questionId] && 
-                             typeof userAnswers[questionId] === 'string' && 
-                             (userAnswers[questionId] as string).toLowerCase().trim() === (question.correctAnswer as string).toLowerCase()
-                    }
-                    return userAnswers[questionId] === question.correctAnswer
-                  }).length} out of {quiz.questions.length} questions correctly
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center mt-4 sm:mt-6">
-                  <button
-                    onClick={startNewQuiz}
-                    className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
-                  >
-                    New Quiz
-                  </button>
-                  <button
-                    onClick={() => setShowResults(false)}
-                    className="px-4 sm:px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base"
-                  >
-                    Review Answers
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 sm:space-y-6">
-                {/* Progress Bar */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center text-sm mb-2">
-                    <span>Progress</span>
-                    <span>{Object.keys(userAnswers).length}/{quiz.questions.length}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(Object.keys(userAnswers).length / quiz.questions.length) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Questions */}
-                <div className="space-y-4 sm:space-y-6 max-h-96 sm:max-h-none overflow-y-auto">
-                  {quiz.questions.map((q, index) => (
-                    <div key={q.id} className="border-b pb-4 sm:pb-6 last:border-b-0">
-                      <h3 className="font-medium text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
-                        {index + 1}. {q.question}
-                      </h3>
-                      
-                      {q.type === 'multiple_choice' && (
-                        <div className="space-y-1 sm:space-y-2">
-                          {q.options?.map((option, optIndex) => (
-                            <label key={`${q.id}-${optIndex}`} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                              <input
-                                type="radio"
-                                name={`question-${q.id}`}
-                                value={optIndex}
-                                checked={userAnswers[q.id] === optIndex}
-                                onChange={() => handleAnswer(q.id, optIndex)}
-                                className="text-green-600 focus:ring-green-500"
-                              />
-                              <span className="text-sm sm:text-base">{option}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {q.type === 'true_false' && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {[true, false].map((value) => (
-                            <label key={`${q.id}-${value}`} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 hover:bg-gray-50 rounded-lg cursor-pointer border border-gray-200">
-                              <input
-                                type="radio"
-                                name={`question-${q.id}`}
-                                value={value.toString()}
-                                checked={userAnswers[q.id] === value}
-                                onChange={() => handleAnswer(q.id, value)}
-                                className="text-green-600 focus:ring-green-500"
-                              />
-                              <span className="text-sm sm:text-base">{value ? 'True' : 'False'}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {q.type === 'short_answer' && (
-                        <input
-                          type="text"
-                          value={(userAnswers[q.id] as string) || ''}
-                          onChange={(e) => handleAnswer(q.id, e.target.value)}
-                          className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
-                          placeholder="Type your answer here..."
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                
-                <button
-                  onClick={submitQuiz}
-                  disabled={Object.keys(userAnswers).length !== quiz.questions.length}
-                  className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
-                >
-                  Submit Quiz
-                </button>
-
-                {/* Mobile Quick Stats */}
-                <div className="lg:hidden bg-gray-50 rounded-lg p-3">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-bold text-green-600">{Object.keys(userAnswers).length}</div>
-                      <div className="text-xs text-gray-600">Answered</div>
-                    </div>
-                    <div>
-                      <div className="text-lg font-bold text-gray-600">{quiz.questions.length - Object.keys(userAnswers).length}</div>
-                      <div className="text-xs text-gray-600">Remaining</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
