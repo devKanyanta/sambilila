@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { colors, gradients, theme } from '@/lib/theme'
 
 // TypeScript interfaces matching API responses
 interface QuizQuestion {
@@ -68,6 +69,42 @@ export default function QuizGenerator() {
   const [difficulty, setDifficulty] = useState<string>('medium')
   const [questionTypes, setQuestionTypes] = useState<string>('MULTIPLE_CHOICE,TRUE_FALSE')
   const [error, setError] = useState<string>('')
+
+  // Theme-based styles
+  const styles = {
+    background: {
+      main: theme.backgrounds.main,
+      card: theme.backgrounds.card,
+      sidebar: theme.backgrounds.sidebar,
+      navbar: theme.backgrounds.navbar,
+    },
+    text: {
+      primary: theme.text.primary,
+      secondary: theme.text.secondary,
+      light: theme.text.light,
+      inverted: theme.text.inverted,
+      accent: theme.text.accent,
+      dark: theme.text.light,
+    },
+    border: {
+      light: theme.borders.light,
+      medium: theme.borders.medium,
+      dark: theme.borders.dark,
+      accent: theme.borders.accent,
+    },
+    state: {
+      hover: {
+        light: theme.states.hover.light,
+        primary: theme.states.hover.primary,
+      },
+      active: {
+        light: theme.states.active.light,
+        primary: theme.states.active.primary,
+      },
+      disabled: theme.states.disabled,
+    },
+    shadow: theme.shadows,
+  }
 
   // Fetch quiz list on component mount
   useEffect(() => {
@@ -236,16 +273,23 @@ export default function QuizGenerator() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6">
+    <div style={{ backgroundColor: styles.background.main, minHeight: '100vh' }} className="p-4 sm:p-6">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">QuizMaster AI</h1>
-            <p className="text-gray-600 mt-1">Generate and take quizzes from your study materials</p>
+            <h1 className="text-3xl font-bold" style={{ color: styles.text.primary }}>
+              QuizMaster AI
+            </h1>
+            <p className="mt-1" style={{ color: styles.text.secondary }}>
+              Generate and take quizzes from your study materials
+            </p>
           </div>
           <div className="hidden lg:flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+              style={{ background: gradients.primary }}
+            >
               AI
             </div>
           </div>
@@ -256,30 +300,59 @@ export default function QuizGenerator() {
       <div className="max-w-7xl mx-auto">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+          <div className="mb-6 border-l-4 p-4 rounded-r-lg shadow-sm"
+            style={{ 
+              backgroundColor: colors.secondary[50],
+              borderColor: colors.secondary[500]
+            }}
+          >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                  style={{ color: colors.secondary[500] }}
+                >
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm" style={{ color: colors.secondary[700] }}>{error}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Mobile Tabs */}
-        <div className="lg:hidden mb-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-1">
+        <div className="lg:hidden mb-6 border p-1 rounded-2xl shadow-sm"
+          style={{ 
+            backgroundColor: styles.background.card,
+            borderColor: styles.border.light
+          }}
+        >
           <div className="grid grid-cols-2 gap-1">
             <button
               onClick={() => setActiveTab('create')}
               className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === 'create'
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-white shadow-md'
+                  : 'hover:text-gray-900'
               }`}
+              style={activeTab === 'create' ? 
+                { background: gradients.primary, color: styles.text.inverted } :
+                { 
+                  color: styles.text.secondary,
+                  backgroundColor: 'transparent'
+                }
+              }
+              onMouseEnter={(e) => {
+                if (activeTab !== 'create') {
+                  e.currentTarget.style.backgroundColor = styles.state.hover.light
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'create') {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
             >
               <div className="flex items-center justify-center space-x-2">
                 <span>🎨</span>
@@ -290,9 +363,26 @@ export default function QuizGenerator() {
               onClick={() => setActiveTab('take')}
               className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                 activeTab === 'take'
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-white shadow-md'
+                  : 'hover:text-gray-900'
               }`}
+              style={activeTab === 'take' ? 
+                { background: gradients.primary, color: styles.text.inverted } :
+                { 
+                  color: styles.text.secondary,
+                  backgroundColor: 'transparent'
+                }
+              }
+              onMouseEnter={(e) => {
+                if (activeTab !== 'take') {
+                  e.currentTarget.style.backgroundColor = styles.state.hover.light
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'take') {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
             >
               <div className="flex items-center justify-center space-x-2">
                 <span>📝</span>
@@ -306,15 +396,28 @@ export default function QuizGenerator() {
           {/* Input Section */}
           <div className={`space-y-6 ${activeTab === 'take' ? 'hidden lg:block' : 'block'}`}>
             {/* Create Quiz Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="border rounded-2xl shadow-sm overflow-hidden"
+              style={{ 
+                backgroundColor: styles.background.card,
+                borderColor: styles.border.light,
+                boxShadow: styles.shadow.sm
+              }}
+            >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">Create New Quiz</h2>
-                    <p className="text-gray-600 text-sm mt-1">Generate quizzes from text or PDF files</p>
+                    <h2 className="text-xl font-bold" style={{ color: styles.text.primary }}>
+                      Create New Quiz
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
+                      Generate quizzes from text or PDF files
+                    </p>
                   </div>
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">
-                    <span className="text-blue-600">✨</span>
+                  <div 
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: colors.primary[50] }}
+                  >
+                    <span style={{ color: colors.primary[400] }}>✨</span>
                   </div>
                 </div>
 
@@ -324,9 +427,31 @@ export default function QuizGenerator() {
                     onClick={() => setPdfFile(null)}
                     className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
                       !pdfFile 
-                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 text-blue-700' 
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
+                        ? 'border-2 text-blue-700' 
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
+                    style={!pdfFile ? 
+                      { 
+                        backgroundColor: colors.primary[50],
+                        borderColor: colors.primary[400],
+                        color: colors.primary[600]
+                      } :
+                      { 
+                        backgroundColor: colors.neutral[100],
+                        color: styles.text.secondary,
+                        border: '2px solid transparent'
+                      }
+                    }
+                    onMouseEnter={(e) => {
+                      if (pdfFile) {
+                        e.currentTarget.style.backgroundColor = colors.neutral[200]
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (pdfFile) {
+                        e.currentTarget.style.backgroundColor = colors.neutral[100]
+                      }
+                    }}
                   >
                     <span>📝</span>
                     <span>Text Input</span>
@@ -335,9 +460,31 @@ export default function QuizGenerator() {
                     onClick={() => document.getElementById('pdf-upload')?.click()}
                     className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
                       pdfFile 
-                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-500 text-blue-700' 
-                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
+                        ? 'border-2 text-blue-700' 
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
+                    style={pdfFile ? 
+                      { 
+                        backgroundColor: colors.primary[50],
+                        borderColor: colors.primary[400],
+                        color: colors.primary[600]
+                      } :
+                      { 
+                        backgroundColor: colors.neutral[100],
+                        color: styles.text.secondary,
+                        border: '2px solid transparent'
+                      }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!pdfFile) {
+                        e.currentTarget.style.backgroundColor = colors.neutral[200]
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!pdfFile) {
+                        e.currentTarget.style.backgroundColor = colors.neutral[100]
+                      }
+                    }}
                   >
                     <span>📄</span>
                     <span>PDF Upload</span>
@@ -355,33 +502,55 @@ export default function QuizGenerator() {
                 {/* Content Input Area */}
                 {!pdfFile ? (
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: styles.text.primary }}>
                       Enter your study material
                     </label>
                     <textarea
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
                       placeholder="Paste your study material, textbook content, or enter a topic..."
-                      className="w-full h-40 p-4 text-gray-700 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm bg-gray-50"
+                      className="w-full h-40 p-4 border rounded-xl resize-none focus:ring-2 transition-all duration-200 text-sm"
+                      style={{ 
+                        backgroundColor: colors.neutral[50],
+                        borderColor: styles.border.medium,
+                        color: styles.text.primary,
+                        boxShadow: styles.shadow.sm
+                      }}
                     />
                   </div>
                 ) : (
-                  <div className="mb-6 border-2 border-dashed border-blue-300 rounded-xl p-5 bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div 
+                    className="mb-6 border-2 border-dashed rounded-xl p-5"
+                    style={{ 
+                      borderColor: colors.primary[300],
+                      backgroundColor: colors.primary[50]
+                    }}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                          <span className="text-2xl text-blue-600">📄</span>
+                        <div 
+                          className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm"
+                          style={{ backgroundColor: styles.background.card }}
+                        >
+                          <span className="text-2xl" style={{ color: colors.primary[400] }}>📄</span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 truncate max-w-xs">{pdfFile.name}</p>
-                          <p className="text-sm text-gray-600">{(pdfFile.size / 1024).toFixed(2)} KB • PDF Document</p>
+                          <p className="font-medium truncate max-w-xs" style={{ color: styles.text.primary }}>
+                            {pdfFile.name}
+                          </p>
+                          <p className="text-sm" style={{ color: styles.text.secondary }}>
+                            {(pdfFile.size / 1024).toFixed(2)} KB • PDF Document
+                          </p>
                         </div>
                       </div>
                       <button
                         onClick={() => setPdfFile(null)}
                         className="p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        style={{ backgroundColor: 'transparent' }}
                       >
-                        <span className="text-red-600 text-sm font-medium">Remove</span>
+                        <span className="text-sm font-medium" style={{ color: colors.secondary[600] }}>
+                          Remove
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -389,11 +558,15 @@ export default function QuizGenerator() {
 
                 {/* Quiz Settings */}
                 <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <div className="rounded-xl p-4" style={{ backgroundColor: colors.neutral[50] }}>
+                    <label className="block text-sm font-medium mb-3" style={{ color: styles.text.primary }}>
                       <div className="flex items-center justify-between">
-                        <span>Number of Questions: <span className="text-blue-600 font-bold">{numberOfQuestions}</span></span>
-                        <span className="text-xs text-gray-500">5-20 questions</span>
+                        <span>
+                          Number of Questions: <span className="font-bold" style={{ color: colors.primary[400] }}>
+                            {numberOfQuestions}
+                          </span>
+                        </span>
+                        <span className="text-xs" style={{ color: styles.text.secondary }}>5-20 questions</span>
                       </div>
                     </label>
                     <input
@@ -402,12 +575,18 @@ export default function QuizGenerator() {
                       max="20"
                       value={numberOfQuestions}
                       onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-indigo-500"
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full"
+                      style={{ 
+                        backgroundColor: colors.neutral[300],
+                        '--thumb-bg': gradients.primary
+                      } as React.CSSProperties}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Difficulty Level</label>
+                    <label className="block text-sm font-medium mb-3" style={{ color: styles.text.primary }}>
+                      Difficulty Level
+                    </label>
                     <div className="grid grid-cols-3 gap-3">
                       {['easy', 'medium', 'hard'].map((level) => (
                         <button
@@ -415,9 +594,29 @@ export default function QuizGenerator() {
                           onClick={() => setDifficulty(level)}
                           className={`py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                             difficulty === level
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'text-white shadow-md'
+                              : 'hover:bg-gray-200'
                           }`}
+                          style={difficulty === level ? 
+                            { 
+                              background: gradients.primary,
+                              color: styles.text.inverted
+                            } :
+                            { 
+                              backgroundColor: colors.neutral[100],
+                              color: styles.text.secondary
+                            }
+                          }
+                          onMouseEnter={(e) => {
+                            if (difficulty !== level) {
+                              e.currentTarget.style.backgroundColor = colors.neutral[200]
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (difficulty !== level) {
+                              e.currentTarget.style.backgroundColor = colors.neutral[100]
+                            }
+                          }}
                         >
                           {level.charAt(0).toUpperCase() + level.slice(1)}
                         </button>
@@ -426,7 +625,9 @@ export default function QuizGenerator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Question Types</label>
+                    <label className="block text-sm font-medium mb-3" style={{ color: styles.text.primary }}>
+                      Question Types
+                    </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {[
                         { value: 'MULTIPLE_CHOICE', label: 'Multiple Choice', icon: '🔠' },
@@ -449,11 +650,23 @@ export default function QuizGenerator() {
                           />
                           <div className={`p-4 rounded-xl text-center cursor-pointer transition-all duration-200 border-2 ${
                             questionTypes.includes(type.value)
-                              ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
-                          }`}>
+                              ? 'border-blue-500'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          style={questionTypes.includes(type.value) ? 
+                            { 
+                              borderColor: colors.primary[400],
+                              backgroundColor: colors.primary[50]
+                            } :
+                            { 
+                              borderColor: styles.border.medium,
+                              backgroundColor: styles.background.card
+                            }
+                          }>
                             <div className="text-2xl mb-2">{type.icon}</div>
-                            <span className="text-sm font-medium text-gray-700">{type.label}</span>
+                            <span className="text-sm font-medium" style={{ color: styles.text.primary }}>
+                              {type.label}
+                            </span>
                           </div>
                         </label>
                       ))}
@@ -462,24 +675,60 @@ export default function QuizGenerator() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mt-8 pt-6 border-t"
+                  style={{ borderColor: styles.border.light }}
+                >
                   <button
                     onClick={() => {
                       setInputText('')
                       setPdfFile(null)
                     }}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 text-sm font-medium"
+                    className="px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium"
+                    style={{ 
+                      color: styles.text.secondary,
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = styles.state.hover.light
+                      e.currentTarget.style.color = styles.text.primary
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = styles.text.secondary
+                    }}
                   >
                     Clear All
                   </button>
                   <button
                     onClick={generateQuiz}
                     disabled={(!inputText.trim() && !pdfFile) || isGenerating}
-                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center space-x-2"
+                    className="px-6 py-3 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center space-x-2"
+                    style={{ 
+                      background: gradients.primary,
+                      boxShadow: styles.shadow.sm
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!e.currentTarget.disabled) {
+                        e.currentTarget.style.opacity = '0.9'
+                        e.currentTarget.style.boxShadow = styles.shadow.md
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!e.currentTarget.disabled) {
+                        e.currentTarget.style.opacity = '1'
+                        e.currentTarget.style.boxShadow = styles.shadow.sm
+                      }
+                    }}
                   >
                     {isGenerating ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div 
+                          className="w-4 h-4 border-2 rounded-full animate-spin"
+                          style={{ 
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            borderTopColor: styles.text.inverted
+                          }}
+                        ></div>
                         <span>Generating...</span>
                       </>
                     ) : (
@@ -494,35 +743,62 @@ export default function QuizGenerator() {
             </div>
 
             {/* Your Quizzes Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="border rounded-2xl shadow-sm overflow-hidden"
+              style={{ 
+                backgroundColor: styles.background.card,
+                borderColor: styles.border.light,
+                boxShadow: styles.shadow.sm
+              }}
+            >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">Your Quizzes</h2>
-                    <p className="text-gray-600 text-sm mt-1">Recently created quizzes</p>
+                    <h2 className="text-xl font-bold" style={{ color: styles.text.primary }}>
+                      Your Quizzes
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
+                      Recently created quizzes
+                    </p>
                   </div>
                   <button
                     onClick={fetchQuizList}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                    style={{ backgroundColor: 'transparent' }}
                   >
-                    <span className="text-gray-600">↻</span>
+                    <span style={{ color: styles.text.secondary }}>↻</span>
                   </button>
                 </div>
 
                 {isLoadingQuizzes ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-500 text-sm">Loading quizzes...</p>
+                    <div 
+                      className="w-8 h-8 border-3 rounded-full animate-spin mb-4"
+                      style={{ 
+                        borderColor: colors.primary[400],
+                        borderTopColor: 'transparent'
+                      }}
+                    ></div>
+                    <p className="text-sm" style={{ color: styles.text.secondary }}>Loading quizzes...</p>
                   </div>
                 ) : quizList.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-4">
+                    <div 
+                      className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
+                      style={{ backgroundColor: colors.primary[50] }}
+                    >
                       <span className="text-2xl">📚</span>
                     </div>
-                    <p className="text-gray-500">No quizzes yet. Create your first quiz!</p>
+                    <p style={{ color: styles.text.secondary }}>No quizzes yet. Create your first quiz!</p>
                     <button
                       onClick={() => setActiveTab('create')}
-                      className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="mt-4 px-4 py-2 text-sm font-medium"
+                      style={{ color: colors.primary[400] }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = colors.primary[500]
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = colors.primary[400]
+                      }}
                     >
                       Create Quiz →
                     </button>
@@ -533,27 +809,49 @@ export default function QuizGenerator() {
                       <div
                         key={quizItem.id}
                         onClick={() => selectQuizFromList(quizItem.id)}
-                        className="group p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
+                        className="group p-4 border rounded-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-0.5"
+                        style={{ 
+                          borderColor: styles.border.light,
+                          backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.primary[50]
+                          e.currentTarget.style.borderColor = colors.primary[300]
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                          e.currentTarget.style.borderColor = styles.border.light
+                        }}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 text-sm truncate group-hover:text-blue-700">
+                            <h3 className="font-semibold text-sm truncate transition-colors"
+                              style={{ color: styles.text.primary }}
+                            >
                               {quizItem.title}
                             </h3>
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-xs mt-1" style={{ color: styles.text.secondary }}>
                               {quizItem._count.questions} questions • {quizItem._count.results} attempts
                             </p>
                             <div className="flex items-center space-x-2 mt-2">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800">
+                              <span 
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                style={{ 
+                                  backgroundColor: colors.primary[100],
+                                  color: colors.primary[700]
+                                }}
+                              >
                                 {quizItem.subject}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs" style={{ color: styles.text.light }}>
                                 {new Date(quizItem.createdAt).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4 flex-shrink-0">
-                            <span className="text-gray-400 group-hover:text-blue-500 transition-colors duration-200">→</span>
+                            <span className="transition-colors duration-200"
+                              style={{ color: colors.neutral[500] }}
+                            >→</span>
                           </div>
                         </div>
                       </div>
@@ -566,19 +864,28 @@ export default function QuizGenerator() {
 
           {/* Quiz Section */}
           <div className={`${activeTab === 'create' ? 'hidden lg:block' : 'block'}`}>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden h-full">
+            <div className="border rounded-2xl shadow-sm overflow-hidden h-full"
+              style={{ 
+                backgroundColor: styles.background.card,
+                borderColor: styles.border.light,
+                boxShadow: styles.shadow.sm
+              }}
+            >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">
-                      <span className="text-blue-600">🧠</span>
+                    <div 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: colors.primary[50] }}
+                    >
+                      <span style={{ color: colors.primary[400] }}>🧠</span>
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-800">
+                      <h2 className="text-xl font-bold" style={{ color: styles.text.primary }}>
                         {quiz ? quiz.title : 'Quiz Preview'}
                       </h2>
                       {quiz && (
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
                           {quiz.subject} • {quiz.questions.length} questions
                         </p>
                       )}
@@ -586,7 +893,17 @@ export default function QuizGenerator() {
                   </div>
                   <button
                     onClick={() => setActiveTab('create')}
-                    className="lg:hidden px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium"
+                    className="lg:hidden px-4 py-2 text-sm rounded-lg transition-colors duration-200 font-medium"
+                    style={{ 
+                      color: colors.primary[400],
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.primary[50]
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
                   >
                     ← Back
                   </button>
@@ -594,11 +911,16 @@ export default function QuizGenerator() {
                 
                 {!quiz ? (
                   <div className="h-[calc(100vh-300px)] flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-24 h-24 mx-auto bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
+                    <div 
+                      className="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6"
+                      style={{ backgroundColor: colors.primary[50] }}
+                    >
                       <span className="text-4xl">🎯</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Quiz Selected</h3>
-                    <p className="text-gray-500 text-sm max-w-sm">
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: styles.text.primary }}>
+                      No Quiz Selected
+                    </h3>
+                    <p className="text-sm max-w-sm" style={{ color: styles.text.secondary }}>
                       Generate a new quiz from your study materials or select an existing quiz from your list to begin.
                     </p>
                   </div>
@@ -606,22 +928,43 @@ export default function QuizGenerator() {
                   <div className="space-y-8">
                     {/* Results Header */}
                     <div className="text-center">
-                      <div className={`text-6xl font-bold mb-4 bg-gradient-to-r ${
-                        quizResult && quizResult.passed 
-                          ? 'from-green-500 to-emerald-500' 
-                          : 'from-red-500 to-pink-500'
-                      } bg-clip-text text-transparent`}>
+                      <div 
+                        className="text-6xl font-bold mb-4 bg-clip-text text-transparent"
+                        style={{ 
+                          background: quizResult && quizResult.passed ? 
+                            'linear-gradient(135deg, #58a4b0 0%, #7ab7c0 100%)' :
+                            'linear-gradient(135deg, #a9bcd0 0%, #737e97 100%)'
+                        }}
+                      >
                         {quizResult?.percentage}
                       </div>
-                      <p className="text-gray-600 text-lg mb-4">
-                        You answered <span className="font-bold">{quizResult?.correctCount}</span> out of{' '}
-                        <span className="font-bold">{quizResult?.totalQuestions}</span> questions correctly
+                      <p className="text-lg mb-4" style={{ color: styles.text.secondary }}>
+                        You answered <span className="font-bold" style={{ color: styles.text.primary }}>
+                          {quizResult?.correctCount}
+                        </span> out of{' '}
+                        <span className="font-bold" style={{ color: styles.text.primary }}>
+                          {quizResult?.totalQuestions}
+                        </span> questions correctly
                       </p>
-                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-6 ${
-                        quizResult && quizResult.passed 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200' 
-                          : 'bg-gradient-to-r from-red-50 to-pink-50 text-red-700 border border-red-200'
-                      }`}>
+                      <div 
+                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-6 border ${
+                          quizResult && quizResult.passed 
+                            ? '' 
+                            : ''
+                        }`}
+                        style={quizResult && quizResult.passed ? 
+                          { 
+                            backgroundColor: colors.primary[50],
+                            color: colors.primary[700],
+                            borderColor: colors.primary[200]
+                          } :
+                          { 
+                            backgroundColor: colors.secondary[50],
+                            color: colors.secondary[700],
+                            borderColor: colors.secondary[200]
+                          }
+                        }
+                      >
                         {quizResult && quizResult.passed ? (
                           <>
                             <span className="mr-2">✓</span>
@@ -638,7 +981,7 @@ export default function QuizGenerator() {
 
                     {/* Detailed Results */}
                     <div>
-                      <h3 className="font-semibold text-gray-800 text-lg mb-4 flex items-center">
+                      <h3 className="font-semibold text-lg mb-4 flex items-center" style={{ color: styles.text.primary }}>
                         <span className="mr-2">📊</span>
                         Review Your Answers
                       </h3>
@@ -648,38 +991,77 @@ export default function QuizGenerator() {
                             key={result.questionId} 
                             className={`p-5 rounded-xl border-2 transition-all duration-200 ${
                               result.correct 
-                                ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' 
-                                : 'border-red-200 bg-gradient-to-r from-red-50 to-pink-50'
+                                ? '' 
+                                : ''
                             }`}
+                            style={result.correct ? 
+                              { 
+                                borderColor: colors.primary[200],
+                                backgroundColor: colors.primary[50]
+                              } :
+                              { 
+                                borderColor: colors.secondary[200],
+                                backgroundColor: colors.secondary[50]
+                              }
+                            }
                           >
                             <div className="flex items-start space-x-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                result.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                              }`}>
+                              <div 
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                  result.correct ? '' : ''
+                                }`}
+                                style={result.correct ? 
+                                  { 
+                                    backgroundColor: colors.primary[100],
+                                    color: colors.primary[700]
+                                  } :
+                                  { 
+                                    backgroundColor: colors.secondary[100],
+                                    color: colors.secondary[700]
+                                  }
+                                }
+                              >
                                 {index + 1}
                               </div>
                               <div className="flex-1">
-                                <p className="font-medium text-gray-800 mb-3">
+                                <p className="font-medium mb-3" style={{ color: styles.text.primary }}>
                                   {result.question}
                                 </p>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex items-start">
-                                    <span className="text-gray-600 w-24 flex-shrink-0">Your answer:</span>
-                                    <span className={`font-medium ${result.correct ? 'text-green-700' : 'text-red-700'}`}>
+                                    <span className="w-24 flex-shrink-0" style={{ color: styles.text.secondary }}>Your answer:</span>
+                                    <span className={`font-medium ${result.correct ? '' : ''}`}
+                                      style={result.correct ? 
+                                        { color: colors.primary[700] } :
+                                        { color: colors.secondary[700] }
+                                      }
+                                    >
                                       {result.userAnswer || '(No answer provided)'}
                                     </span>
                                   </div>
                                   {!result.correct && (
                                     <div className="flex items-start">
-                                      <span className="text-gray-600 w-24 flex-shrink-0">Correct answer:</span>
-                                      <span className="font-medium text-green-700">{result.correctAnswer}</span>
+                                      <span className="w-24 flex-shrink-0" style={{ color: styles.text.secondary }}>Correct answer:</span>
+                                      <span className="font-medium" style={{ color: colors.primary[700] }}>{result.correctAnswer}</span>
                                     </div>
                                   )}
                                 </div>
                               </div>
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                result.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                              }`}>
+                              <div 
+                                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                  result.correct ? '' : ''
+                                }`}
+                                style={result.correct ? 
+                                  { 
+                                    backgroundColor: colors.primary[100],
+                                    color: colors.primary[700]
+                                  } :
+                                  { 
+                                    backgroundColor: colors.secondary[100],
+                                    color: colors.secondary[700]
+                                  }
+                                }
+                              >
                                 {result.correct ? '✓' : '✗'}
                               </div>
                             </div>
@@ -689,16 +1071,40 @@ export default function QuizGenerator() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t"
+                      style={{ borderColor: styles.border.light }}
+                    >
                       <button
                         onClick={startNewQuiz}
-                        className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                        className="flex-1 py-3 text-white rounded-xl transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                        style={{ 
+                          background: gradients.primary,
+                          boxShadow: styles.shadow.sm
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '0.9'
+                          e.currentTarget.style.boxShadow = styles.shadow.md
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '1'
+                          e.currentTarget.style.boxShadow = styles.shadow.sm
+                        }}
                       >
                         Start New Quiz
                       </button>
                       <button
                         onClick={() => setShowResults(false)}
-                        className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-medium"
+                        className="flex-1 py-3 rounded-xl transition-colors duration-200 font-medium"
+                        style={{ 
+                          backgroundColor: colors.neutral[100],
+                          color: styles.text.secondary
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.neutral[200]
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.neutral[100]
+                        }}
                       >
                         Review Quiz Again
                       </button>
@@ -707,20 +1113,23 @@ export default function QuizGenerator() {
                 ) : (
                   <div className="space-y-6">
                     {/* Progress Section */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5">
+                    <div className="rounded-xl p-5" style={{ backgroundColor: colors.primary[50] }}>
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-medium text-gray-700">Progress</span>
-                        <span className="text-sm font-bold text-blue-700">
+                        <span className="text-sm font-medium" style={{ color: styles.text.primary }}>Progress</span>
+                        <span className="text-sm font-bold" style={{ color: colors.primary[600] }}>
                           {Object.keys(userAnswers).length}/{quiz.questions.length}
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                      <div className="w-full rounded-full h-2.5 overflow-hidden" style={{ backgroundColor: colors.neutral[300] }}>
                         <div 
-                          className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500"
-                          style={{ width: `${(Object.keys(userAnswers).length / quiz.questions.length) * 100}%` }}
+                          className="h-2.5 rounded-full transition-all duration-500"
+                          style={{ 
+                            background: gradients.primary,
+                            width: `${(Object.keys(userAnswers).length / quiz.questions.length) * 100}%`
+                          }}
                         ></div>
                       </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
+                      <div className="flex justify-between text-xs mt-2" style={{ color: styles.text.secondary }}>
                         <span>0%</span>
                         <span>50%</span>
                         <span>100%</span>
@@ -730,13 +1139,31 @@ export default function QuizGenerator() {
                     {/* Questions */}
                     <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
                       {quiz.questions.sort((a, b) => a.order - b.order).map((q, index) => (
-                        <div key={q.id} className="border border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-all duration-200">
+                        <div 
+                          key={q.id} 
+                          className="border rounded-xl p-5 transition-all duration-200"
+                          style={{ 
+                            borderColor: styles.border.light,
+                            backgroundColor: 'transparent'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = colors.primary[300]
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = styles.border.light
+                          }}
+                        >
                           <div className="flex items-start space-x-3 mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0">
-                              <span className="text-blue-700 font-medium text-sm">{index + 1}</span>
+                            <div 
+                              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: colors.primary[50] }}
+                            >
+                              <span className="font-medium text-sm" style={{ color: colors.primary[700] }}>
+                                {index + 1}
+                              </span>
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-medium text-gray-800 text-sm leading-relaxed">
+                              <h3 className="font-medium text-sm leading-relaxed" style={{ color: styles.text.primary }}>
                                 {q.question}
                               </h3>
                               <div className="mt-3">
@@ -747,9 +1174,19 @@ export default function QuizGenerator() {
                                         key={`${q.id}-${optIndex}`} 
                                         className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                                           userAnswers[q.id] === option
-                                            ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300'
-                                            : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                                            ? 'border-2'
+                                            : 'border hover:bg-gray-100'
                                         }`}
+                                        style={userAnswers[q.id] === option ? 
+                                          { 
+                                            backgroundColor: colors.primary[50],
+                                            borderColor: colors.primary[300]
+                                          } :
+                                          { 
+                                            backgroundColor: colors.neutral[50],
+                                            borderColor: styles.border.medium
+                                          }
+                                        }
                                       >
                                         <input
                                           type="radio"
@@ -759,7 +1196,7 @@ export default function QuizGenerator() {
                                           onChange={() => handleAnswer(q.id, option)}
                                           className="text-blue-600 focus:ring-blue-500"
                                         />
-                                        <span className="text-sm text-gray-700">{option}</span>
+                                        <span className="text-sm" style={{ color: styles.text.primary }}>{option}</span>
                                       </label>
                                     ))}
                                   </div>
@@ -768,16 +1205,26 @@ export default function QuizGenerator() {
                                 {q.type === 'TRUE_FALSE' && (
                                   <div className="grid grid-cols-2 gap-3">
                                     {[
-                                      { value: 'true', label: 'True', color: 'from-green-50 to-emerald-50' },
-                                      { value: 'false', label: 'False', color: 'from-red-50 to-pink-50' }
+                                      { value: 'true', label: 'True' },
+                                      { value: 'false', label: 'False' }
                                     ].map((item) => (
                                       <label 
                                         key={`${q.id}-${item.value}`} 
-                                        className={`flex items-center justify-center space-x-2 p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                                        className={`flex items-center justify-center space-x-2 p-4 rounded-lg cursor-pointer transition-all duration-200 border ${
                                           userAnswers[q.id] === item.value
-                                            ? `bg-gradient-to-r ${item.color} border-2 ${item.value === 'true' ? 'border-green-300' : 'border-red-300'}`
-                                            : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                                            ? 'border-2'
+                                            : 'hover:border-gray-300'
                                         }`}
+                                        style={userAnswers[q.id] === item.value ? 
+                                          { 
+                                            backgroundColor: item.value === 'true' ? colors.primary[50] : colors.secondary[50],
+                                            borderColor: item.value === 'true' ? colors.primary[300] : colors.secondary[300]
+                                          } :
+                                          { 
+                                            backgroundColor: colors.neutral[50],
+                                            borderColor: styles.border.medium
+                                          }
+                                        }
                                       >
                                         <input
                                           type="radio"
@@ -791,7 +1238,15 @@ export default function QuizGenerator() {
                                           userAnswers[q.id] === item.value
                                             ? item.value === 'true' ? 'text-green-700' : 'text-red-700'
                                             : 'text-gray-700'
-                                        }`}>
+                                        }`}
+                                        style={userAnswers[q.id] === item.value ? 
+                                          { 
+                                            color: item.value === 'true' ? colors.primary[700] : colors.secondary[700]
+                                          } :
+                                          { 
+                                            color: styles.text.primary
+                                          }
+                                        }>
                                           {item.label}
                                         </span>
                                       </label>
@@ -805,12 +1260,20 @@ export default function QuizGenerator() {
                                       type="text"
                                       value={userAnswers[q.id] || ''}
                                       onChange={(e) => handleAnswer(q.id, e.target.value)}
-                                      className="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all duration-200"
+                                      className="w-full p-4 border rounded-lg focus:ring-2 focus:border-transparent text-sm transition-all duration-200"
                                       placeholder="Type your answer here..."
+                                      style={{ 
+                                        backgroundColor: colors.neutral[50],
+                                        borderColor: styles.border.medium,
+                                        color: styles.text.primary
+                                      }}
                                     />
                                     {userAnswers[q.id] && (
                                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                        <div 
+                                          className="w-2 h-2 rounded-full animate-pulse"
+                                          style={{ backgroundColor: colors.primary[400] }}
+                                        ></div>
                                       </div>
                                     )}
                                   </div>
@@ -826,11 +1289,29 @@ export default function QuizGenerator() {
                     <button
                       onClick={submitQuiz}
                       disabled={Object.keys(userAnswers).length !== quiz.questions.length || isSubmitting}
-                      className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center justify-center space-x-2"
+                      className="w-full py-4 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center justify-center space-x-2"
+                      style={{ 
+                        background: gradients.primary,
+                        boxShadow: styles.shadow.sm
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!e.currentTarget.disabled) {
+                          e.currentTarget.style.opacity = '0.9'
+                          e.currentTarget.style.boxShadow = styles.shadow.md
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!e.currentTarget.disabled) {
+                          e.currentTarget.style.opacity = '1'
+                          e.currentTarget.style.boxShadow = styles.shadow.sm
+                        }
+                      }}
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div 
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                          ></div>
                           <span>Submitting...</span>
                         </>
                       ) : (
@@ -842,19 +1323,25 @@ export default function QuizGenerator() {
                     </button>
 
                     {/* Mobile Stats */}
-                    <div className="lg:hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
+                    <div className="lg:hidden rounded-xl p-4" style={{ backgroundColor: colors.primary[50] }}>
                       <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="text-lg font-bold text-blue-600">{Object.keys(userAnswers).length}</div>
-                          <div className="text-xs text-gray-600">Answered</div>
+                        <div className="p-3 rounded-lg" style={{ backgroundColor: styles.background.card }}>
+                          <div className="text-lg font-bold" style={{ color: colors.primary[400] }}>
+                            {Object.keys(userAnswers).length}
+                          </div>
+                          <div className="text-xs" style={{ color: styles.text.secondary }}>Answered</div>
                         </div>
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="text-lg font-bold text-gray-600">{quiz.questions.length - Object.keys(userAnswers).length}</div>
-                          <div className="text-xs text-gray-600">Remaining</div>
+                        <div className="p-3 rounded-lg" style={{ backgroundColor: styles.background.card }}>
+                          <div className="text-lg font-bold" style={{ color: styles.text.secondary }}>
+                            {quiz.questions.length - Object.keys(userAnswers).length}
+                          </div>
+                          <div className="text-xs" style={{ color: styles.text.secondary }}>Remaining</div>
                         </div>
-                        <div className="p-3 bg-white rounded-lg">
-                          <div className="text-lg font-bold text-indigo-600">{quiz.questions.length}</div>
-                          <div className="text-xs text-gray-600">Total</div>
+                        <div className="p-3 rounded-lg" style={{ backgroundColor: styles.background.card }}>
+                          <div className="text-lg font-bold" style={{ color: colors.primary[600] }}>
+                            {quiz.questions.length}
+                          </div>
+                          <div className="text-xs" style={{ color: styles.text.secondary }}>Total</div>
                         </div>
                       </div>
                     </div>

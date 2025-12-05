@@ -1,8 +1,92 @@
 @import "tailwindcss";
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors */
+  --color-primary-50: #deedef;
+  --color-primary-100: #bcdbe0;
+  --color-primary-200: #9bc9d0;
+  --color-primary-300: #7ab7c0;
+  --color-primary-400: #58a4b0;
+  --color-primary-500: #448690;
+  --color-primary-600: #33656c;
+  --color-primary-700: #224348;
+  --color-primary-800: #112224;
+  --color-primary-900: #0b1618;
+  
+  /* Secondary Colors */
+  --color-secondary-50: #eef2f6;
+  --color-secondary-100: #dde4ec;
+  --color-secondary-200: #ccd7e3;
+  --color-secondary-300: #bbc9d9;
+  --color-secondary-400: #a9bcd0;
+  --color-secondary-500: #7996b5;
+  --color-secondary-600: #507092;
+  --color-secondary-700: #364b61;
+  --color-secondary-800: #1b2531;
+  --color-secondary-900: #0e141b;
+  
+  /* Neutral Colors */
+  --color-neutral-50: #f7f8f9;
+  --color-neutral-100: #f0f1f4;
+  --color-neutral-200: #e8eaee;
+  --color-neutral-300: #e1e3e8;
+  --color-neutral-400: #d8dbe2;
+  --color-neutral-500: #a6adbd;
+  --color-neutral-600: #737e97;
+  --color-neutral-700: #4b5366;
+  --color-neutral-800: #262a33;
+  --color-neutral-900: #1b1d24;
+  
+  /* Dark Colors */
+  --color-dark-50: #cfcfd4;
+  --color-dark-100: #a0a0a9;
+  --color-dark-200: #71717d;
+  --color-dark-300: #46464d;
+  --color-dark-400: #1b1b1e;
+  --color-dark-500: #151518;
+  --color-dark-600: #101012;
+  --color-dark-700: #0b0b0c;
+  --color-dark-800: #050506;
+  --color-dark-900: #030304;
+  
+  /* Accent Colors */
+  --color-accent-50: #d3d7e1;
+  --color-accent-100: #a6afc3;
+  --color-accent-200: #7a87a5;
+  --color-accent-300: #56627e;
+  --color-accent-400: #373f51;
+  --color-accent-500: #2d3342;
+  --color-accent-600: #212631;
+  --color-accent-700: #161921;
+  --color-accent-800: #0b0d10;
+  --color-accent-900: #07090b;
+  
+  /* Theme Colors */
+  --background-main: var(--color-neutral-50);
+  --background-card: #ffffff;
+  --background-sidebar: #ffffff;
+  --background-navbar: #ffffff;
+  
+  --border-light: var(--color-neutral-200);
+  --border-medium: var(--color-neutral-300);
+  --border-dark: var(--color-neutral-500);
+  --border-accent: var(--color-primary-400);
+  
+  --text-primary: var(--color-neutral-800);
+  --text-secondary: var(--color-neutral-600);
+  --text-light: var(--color-neutral-500);
+  --text-inverted: #ffffff;
+  --text-accent: var(--color-primary-400);
+  --text-dark: var(--color-dark-400);
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-secondary-400) 100%);
+  --gradient-primary-soft: linear-gradient(135deg, rgba(88, 164, 176, 0.1) 0%, rgba(169, 188, 208, 0.1) 100%);
+  --gradient-dark: linear-gradient(135deg, var(--color-accent-400) 0%, var(--color-dark-400) 100%);
 }
 
 @theme inline {
