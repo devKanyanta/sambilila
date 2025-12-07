@@ -5,6 +5,9 @@ import { prisma } from '@/lib/db';
 import { extractTextFromPDF } from '@/lib/pdf';
 import { getUserIdFromToken } from '@/lib/auth';
 
+export const maxDuration = 300;        // ⬅ Extend execution timeout
+export const dynamic = "force-dynamic"; // ⬅ Disable static optimization
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 interface GeneratedQuestion {
