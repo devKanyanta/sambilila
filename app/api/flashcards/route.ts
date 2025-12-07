@@ -5,7 +5,7 @@ import { extractTextFromPDF } from '@/lib/pdf'
 import { generateFlashcardsFromText } from '@/lib/flashcardGenerator'
 import { saveFlashcardSet } from './services/saveFlashcards'
 
-export const maxDuration = 300;        // ⬅ Extend execution timeout
+export const maxDuration = 600;        // ⬅ Extend execution timeout
 export const dynamic = "force-dynamic"; // ⬅ Disable static optimization
 
 /* ================= POST: Generate & Save Flashcards ================= */
