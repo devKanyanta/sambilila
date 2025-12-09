@@ -1,11 +1,9 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Use serverless for better Netlify compatibility
-  target: 'serverless',
-  
-  // Or for Next.js 13+
-  output: 'standalone',
+  // 1. Removed: 'target: "serverless"'
+  // 2. Added: The 'output' property is now the correct way to specify the build type in modern Next.js
+  output: 'standalone', 
   
   // Enable CORS for API routes
   async headers() {
@@ -14,7 +12,7 @@ const nextConfig = {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Origin', value: '*' }, // Consider specifying your actual domain instead of '*'
           { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
         ],
@@ -22,14 +20,8 @@ const nextConfig = {
     ];
   },
   
-  // Set timeouts for API routes (Netlify default is 10s)
-  api: {
-    responseLimit: false,
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-    externalResolver: true,
-  },
+  // 3. Removed: The entire 'api: { ... }' object.
+  //    Configure bodyParser inside specific API routes instead (see explanation above).
 };
 
 module.exports = nextConfig;
