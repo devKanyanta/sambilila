@@ -28,6 +28,7 @@ model User {
   quizResults   QuizResult[]
   studySessions StudySession[]
   quizzes       Quiz[]
+  flashcardJobs FlashcardJob[]
 
   @@map("users")
 }
@@ -38,19 +39,20 @@ enum UserType {
 }
 
 model FlashcardSet {
-  id        String   @id @default(cuid())
-  title     String
-  subject   String
+  id          String   @id @default(cuid())
+  title       String
+  subject     String
   description String?
-  isPublic  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  userId String
-  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cards  Flashcard[]
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards         Flashcard[]
   studySessions StudySession[]
+  flashcardJobs FlashcardJob[] // ✅ Add this reciprocal relation
 
   @@map("flashcard_sets")
 }
@@ -69,16 +71,48 @@ model Flashcard {
   @@map("flashcards")
 }
 
+model FlashcardJob {
+  id             String   @id @default(cuid())
+  userId         String
+
+  fileUrl        String?
+  text           String?
+
+  title          String
+  subject        String
+  description    String?
+
+  status         JobStatus @default(PENDING)
+  error          String?
+
+  flashcardSetId String?
+  
+  // Relations
+  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+
+  createdAt      DateTime  @default(now())
+
+  @@map("flashcard_jobs")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
 model Quiz {
-  id        String   @id @default(cuid())
-  title     String
-  subject   String
+  id          String   @id @default(cuid())
+  title       String
+  subject     String
   description String?
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   // Relations
-  userId String
-  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions QuizQuestion[]
   results   QuizResult[]
 
@@ -86,17 +120,17 @@ model Quiz {
 }
 
 model QuizQuestion {
-  id        String   @id @default(cuid())
-  type      QuestionType
-  question  String
-  options   String[] // JSON array for multiple choice
+  id            String       @id @default(cuid())
+  type          QuestionType
+  question      String
+  options       String[] // JSON array for multiple choice
   correctAnswer String // JSON string to handle different types
-  order     Int
-  createdAt DateTime @default(now())
+  order         Int
+  createdAt     DateTime     @default(now())
 
   // Relations
   quizId String
-  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_questions")
 }
@@ -108,33 +142,33 @@ enum QuestionType {
 }
 
 model QuizResult {
-  id        String   @id @default(cuid())
-  score     Float
+  id             String   @id @default(cuid())
+  score          Float
   totalQuestions Int
-  answers   Json // Store user answers
-  completedAt DateTime @default(now())
+  answers        Json // Store user answers
+  completedAt    DateTime @default(now())
 
   // Relations
   userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   quizId String
-  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_results")
 }
 
 model StudySession {
-  id        String   @id @default(cuid())
-  duration  Int      // in minutes
-  cardsStudied Int
+  id             String      @id @default(cuid())
+  duration       Int // in minutes
+  cardsStudied   Int
   correctAnswers Int
-  sessionType SessionType
-  startedAt DateTime @default(now())
-  endedAt   DateTime?
+  sessionType    SessionType
+  startedAt      DateTime    @default(now())
+  endedAt        DateTime?
 
   // Relations
-  userId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   flashcardSetId String?
   flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id], onDelete: SetNull)
 

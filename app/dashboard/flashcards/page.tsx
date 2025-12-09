@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, X, RotateCw, BookOpen, Plus, Sparkles, Upload, FileText, Trash2 } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { ChevronLeft, ChevronRight, X, RotateCw, BookOpen, Plus, Sparkles, Upload, FileText, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import { colors, gradients, theme } from '@/lib/theme'
 
 type Flashcard = {
@@ -17,14 +17,28 @@ type FlashcardSet = {
   subject: string
   description?: string
   cards?: Flashcard[]
+  createdAt: string
+}
+
+type FlashcardJob = {
+  id: string
+  title: string
+  subject: string
+  description: string
+  status: 'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED'
+  error?: string
+  createdAt: string
+  flashcardSet?: FlashcardSet
 }
 
 export default function Flashcards() {
   /* =================== STATE =================== */
   const [mounted, setMounted] = useState(false)
   const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([])
+  const [activeJobs, setActiveJobs] = useState<FlashcardJob[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
 
   const [inputText, setInputText] = useState('')
   const [title, setTitle] = useState('')
@@ -76,6 +90,9 @@ export default function Flashcards() {
   /* =================== MOUNT FIX =================== */
   useEffect(() => {
     setMounted(true)
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval)
+    }
   }, [])
 
   /* ================= LOAD USER SETS ================= */
@@ -86,11 +103,7 @@ export default function Flashcards() {
 
   async function loadFlashcardSets() {
     try {
-      setLoading(true)
-      setError(null)
-
       const token = localStorage.getItem("token")
-
       const res = await fetch('/api/flashcards', { 
         method: 'GET',
         headers: {
@@ -107,91 +120,266 @@ export default function Flashcards() {
       console.error(err)
       setError('Failed to load flashcard sets')
       setFlashcardSets([])
-    } finally {
-      setLoading(false)
     }
   }
+
+  /* ================= POLL JOB STATUS ================= */
+  const pollJobStatus = useCallback(async (jobId: string) => {
+    try {
+      const token = localStorage.getItem("token")
+      // Poll the upload endpoint for job status
+      const res = await fetch(`/api/flashcards/upload?jobId=${jobId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      
+      if (!res.ok) {
+        // If job not found in upload endpoint, try main endpoint
+        if (res.status === 404) {
+          const mainRes = await fetch(`/api/flashcards?jobId=${jobId}`, {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          })
+          
+          if (!mainRes.ok) throw new Error(`Failed to poll job (${mainRes.status})`)
+          return await mainRes.json()
+        }
+        throw new Error(`Failed to poll job (${res.status})`)
+      }
+      
+      return await res.json()
+    } catch (err) {
+      console.error('Error polling job:', err)
+      return null
+    }
+  }, [])
+
+  const startPollingJobs = useCallback((jobIds: string[]) => {
+    if (pollingInterval) clearInterval(pollingInterval)
+    
+    const interval = setInterval(async () => {
+      const updatedJobs = await Promise.all(
+        activeJobs.map(async (job) => {
+          if (job.status === 'PENDING' || job.status === 'PROCESSING') {
+            const data = await pollJobStatus(job.id)
+            if (data?.job) {
+              return {
+                ...job,
+                status: data.job.status,
+                error: data.job.error,
+                flashcardSet: data.flashcardSet
+              }
+            }
+          }
+          return job
+        })
+      )
+      
+      setActiveJobs(updatedJobs)
+      
+      // Remove completed jobs from active list after 10 seconds
+      const completedJobs = updatedJobs.filter(job => 
+        job.status === 'DONE' || job.status === 'FAILED'
+      )
+      
+      if (completedJobs.length > 0) {
+        setTimeout(() => {
+          setActiveJobs(prev => prev.filter(job => 
+            !completedJobs.some(completed => completed.id === job.id)
+          ))
+          // Refresh flashcard sets when jobs complete
+          loadFlashcardSets()
+        }, 10000)
+      }
+      
+      // If all jobs are done, clear interval
+      if (updatedJobs.every(job => job.status === 'DONE' || job.status === 'FAILED')) {
+        clearInterval(interval)
+      }
+    }, 3000) // Poll every 3 seconds
+    
+    setPollingInterval(interval)
+  }, [activeJobs, pollJobStatus])
 
   /* ================= CREATE FLASHCARDS ================= */
-  async function handleGenerate() {
-    if (!inputText.trim() && !selectedFile) {
-      setError('Please provide either text or upload a PDF file')
-      return
-    }
+  // ... (Your imports and state declarations remain the same) ...
 
-    try {
-      setLoading(true)
-      setError(null)
-
-      const token = localStorage.getItem("token")
-
-      let response
-
-      // If PDF is selected, send as FormData
-      if (selectedFile) {
-        const formData = new FormData()
-        formData.append('file', selectedFile)
-        formData.append('title', title || 'AI Generated Flashcards')
-        formData.append('subject', subject || 'General')
-        if (description) formData.append('description', description)
-
-        response = await fetch('/api/flashcards', {
-          method: 'POST',
-          headers: {
-            "Authorization": `Bearer ${token}`
-          },
-          body: formData
-        })
-      } else {
-        // If text is provided, send as JSON
-        response = await fetch('/api/flashcards', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            text: inputText,
-            title: title || 'AI Generated Flashcards',
-            subject: subject || 'General',
-            description: description || 'Generated from uploaded content'
-          })
-        })
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `Generation failed (${response.status})`)
-      }
-
-      const json = await response.json()
-      const newSet = json.data ?? json
-
-      setFlashcardSets(prev => [...prev, newSet])
-
-      // Reset form
-      setInputText('')
-      setTitle('')
-      setSubject('')
-      setDescription('')
-      setSelectedFile(null)
-    } catch (err: any) {
-      console.error('GENERATION ERROR:', err)
-      setError(err.message || 'Flashcard generation failed')
-    } finally {
-      setLoading(false)
-    }
+  /* ================= CREATE FLASHCARDS ================= */
+async function handleGenerate() {
+  if (!inputText.trim() && !selectedFile) {
+    setError("Please provide either text or upload a PDF file");
+    return;
   }
 
+  try {
+    setLoading(true);
+    setError(null);
+
+    const token = localStorage.getItem("token");
+
+    /* ==================================================
+       STEP 1 — CREATE JOB + REQUEST SIGNED UPLOAD DATA
+    ================================================== */
+
+    const metadataForm = new FormData();
+
+    if (inputText.trim()) {
+      metadataForm.append("text", inputText.trim());
+    }
+
+    if (selectedFile) {
+      metadataForm.append("fileName", selectedFile.name);
+      metadataForm.append("contentType", selectedFile.type);
+    }
+
+    metadataForm.append("title", title || "AI Generated Flashcards");
+    metadataForm.append("subject", subject || "General");
+
+    if (description) {
+      metadataForm.append("description", description);
+    }
+
+    const jobRes = await fetch("/api/flashcards/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: metadataForm,
+    });
+
+    const jobData = await jobRes.json();
+
+    if (!jobRes.ok) {
+      throw new Error(jobData?.error || "Failed to create flashcard job");
+    }
+
+    /* ==================================================
+       STEP 2 — UPLOAD FILE TO R2 (PDF ONLY)
+    ================================================== */
+
+    /* ==================================================
+   STEP 2 — UPLOAD FILE TO R2 USING PUT METHOD
+================================================== */
+
+if (selectedFile && jobData.signedUrl) {
+  console.log("📤 Uploading file to R2 using PUT…");
+
+  try {
+    // For PUT method, we just need to send the file directly
+    const r2Res = await fetch(jobData.signedUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": selectedFile.type || "application/pdf",
+        // You might need to add other headers based on your R2 setup
+        // "x-amz-meta-filename": selectedFile.name,
+      },
+      body: selectedFile,
+    });
+
+    if (!r2Res.ok) {
+      console.error("R2 PUT Upload failed:", {
+        status: r2Res.status,
+        statusText: r2Res.statusText,
+      });
+      
+      // Try to get error details
+      let errorDetails = "";
+      try {
+        errorDetails = await r2Res.text();
+        console.error("Error details:", errorDetails);
+      } catch (e) {
+        // Ignore if we can't read response
+      }
+      
+      if (r2Res.status === 403) {
+        throw new Error("Upload denied. The signed URL may have expired.");
+      }
+      
+      throw new Error(`Upload failed: ${r2Res.status} ${r2Res.statusText}`);
+    }
+
+    console.log("✅ R2 PUT upload complete:", jobData.fileKey);
+  } catch (err: any) {
+    console.error("Upload error:", err);
+    
+    // Optionally: Cancel the job if upload fails
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (cancelErr) {
+      console.error("Failed to cancel job after upload error:", cancelErr);
+    }
+    
+    throw err; // Re-throw to be caught by the outer try-catch
+  }
+}
+    /* ==================================================
+       STEP 3 — REGISTER JOB LOCALLY & START POLLING
+    ================================================== */
+
+    const newJob: FlashcardJob = {
+      id: jobData.jobId,
+      title: jobData.job.title,
+      subject: jobData.job.subject,
+      description: jobData.job.description,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
+
+    setActiveJobs((prev) => [...prev, newJob]);
+
+    startPollingJobs([
+      ...activeJobs.map((j) => j.id),
+      jobData.jobId,
+    ]);
+
+    /* ==================================================
+       STEP 4 — RESET FORM
+    ================================================== */
+
+    setInputText("");
+    setTitle("");
+    setSubject("");
+    setDescription("");
+    setSelectedFile(null);
+  } catch (err: any) {
+    console.error("GENERATION ERROR:", err);
+    setError(err.message || "Flashcard generation failed");
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ... (The rest of your component functions remain the same) ...
+
+  // NOTE: You must also ensure your cancelJob function is robust, 
+  // as it may be called if the R2 upload fails.
   /* ================= FILE HANDLING ================= */
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file && file.type === 'application/pdf') {
+    if (file) {
+      // Validate file type
+      if (file.type !== 'application/pdf') {
+        setError('Please select a PDF file')
+        e.target.value = ''
+        return
+      }
+
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (file.size > maxSize) {
+        setError('File size must be less than 10MB')
+        e.target.value = ''
+        return
+      }
+
       setSelectedFile(file)
       setError(null)
-    } else if (file) {
-      setError('Please select a PDF file')
-      e.target.value = ''
     }
   }
 
@@ -231,6 +419,76 @@ export default function Flashcards() {
     setIsFlipped(prev => !prev)
   }
 
+  /* ================= HELPER FUNCTIONS ================= */
+  function getJobStatusIcon(status: string) {
+    switch (status) {
+      case 'PENDING':
+        return <Clock className="w-4 h-4" style={{ color: colors.primary[500] }} />
+      case 'PROCESSING':
+        return <RotateCw className="w-4 h-4 animate-spin" style={{ color: colors.primary[500] }} />
+      case 'DONE':
+        return <CheckCircle className="w-4 h-4" style={{ color: colors.success[500] }} />
+      case 'FAILED':
+        return <AlertCircle className="w-4 h-4" style={{ color: colors.secondary[600] }} />
+      default:
+        return <Clock className="w-4 h-4" style={{ color: colors.neutral[500] }} />
+    }
+  }
+
+  function getJobStatusText(status: string) {
+    switch (status) {
+      case 'PENDING':
+        return 'Queued'
+      case 'PROCESSING':
+        return 'Generating...'
+      case 'DONE':
+        return 'Completed'
+      case 'FAILED':
+        return 'Failed'
+      default:
+        return status
+    }
+  }
+
+  function formatTimeAgo(dateString: string) {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours}h ago`
+    
+    const diffDays = Math.floor(diffHours / 24)
+    return `${diffDays}d ago`
+  }
+
+  /* ================= HANDLE JOB CANCELLATION ================= */
+  async function cancelJob(jobId: string) {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`/api/flashcards/upload?jobId=${jobId}`, {
+        method: 'DELETE',
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to cancel job')
+      }
+      
+      // Remove job from active list
+      setActiveJobs(prev => prev.filter(job => job.id !== jobId))
+    } catch (err) {
+      console.error('Error cancelling job:', err)
+      setError('Failed to cancel job')
+    }
+  }
+
   if (!mounted) return null
 
   const currentCard = selectedSet?.cards?.[currentCardIndex]
@@ -251,6 +509,132 @@ export default function Flashcards() {
             </p>
           </div>
         </div>
+
+        {/* Active Jobs Section */}
+        {activeJobs.length > 0 && (
+          <div 
+            className="border rounded-2xl p-6 shadow-lg"
+            style={{ 
+              backgroundColor: styles.background.card,
+              borderColor: styles.border.light,
+              boxShadow: styles.shadow.lg
+            }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5" style={{ color: colors.primary[400] }} />
+              <h2 className="text-xl font-semibold" style={{ color: styles.text.primary }}>
+                Active Processes
+              </h2>
+              <span 
+                className="ml-2 px-2 py-1 text-xs rounded-full"
+                style={{ 
+                  backgroundColor: colors.primary[100],
+                  color: colors.primary[700]
+                }}
+              >
+                {activeJobs.length}
+              </span>
+            </div>
+            
+            <div className="space-y-3">
+              {activeJobs.map(job => (
+                <div 
+                  key={job.id}
+                  className="border rounded-xl p-4"
+                  style={{ 
+                    backgroundColor: colors.neutral[50],
+                    borderColor: styles.border.medium
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      {getJobStatusIcon(job.status)}
+                      <div>
+                        <p className="font-medium" style={{ color: styles.text.primary }}>
+                          {job.title}
+                        </p>
+                        <p className="text-sm" style={{ color: styles.text.secondary }}>
+                          {job.subject} • {formatTimeAgo(job.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium" style={{ 
+                        color: job.status === 'DONE' ? colors.success[600] : 
+                               job.status === 'FAILED' ? colors.secondary[600] : 
+                               colors.primary[600]
+                      }}>
+                        {getJobStatusText(job.status)}
+                      </span>
+                      
+                      {job.status === 'PENDING' && (
+                        <button
+                          onClick={() => cancelJob(job.id)}
+                          className="px-3 py-1 text-sm rounded-lg transition-colors"
+                          style={{ 
+                            backgroundColor: colors.secondary[100],
+                            color: colors.secondary[700]
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.secondary[200]
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.secondary[100]
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      
+                      {job.status === 'DONE' && job.flashcardSet && (
+                        <button
+                          onClick={() => openSet(job.flashcardSet!)}
+                          className="px-3 py-1 text-sm rounded-lg transition-colors"
+                          style={{ 
+                            backgroundColor: colors.primary[100],
+                            color: colors.primary[700]
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.primary[200]
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = colors.primary[100]
+                          }}
+                        >
+                          View
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {job.status === 'FAILED' && job.error && (
+                    <div className="mt-2 p-2 rounded text-sm" style={{ 
+                      backgroundColor: colors.secondary[50],
+                      color: colors.secondary[700]
+                    }}>
+                      {job.error}
+                    </div>
+                  )}
+                  
+                  {job.status === 'PROCESSING' && (
+                    <div className="mt-2">
+                      <div className="h-1 w-full rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
+                        <div 
+                          className="h-full rounded-full animate-pulse"
+                          style={{ 
+                            backgroundColor: colors.primary[500],
+                            width: '50%'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Create Form */}
         <div 
@@ -408,7 +792,7 @@ export default function Flashcards() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <RotateCw className="w-4 h-4 animate-spin" />
-                  Generating Magic...
+                  Creating Job...
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
@@ -417,6 +801,11 @@ export default function Flashcards() {
                 </span>
               )}
             </button>
+            
+            {/* Info note */}
+            <p className="text-xs text-center" style={{ color: styles.text.light }}>
+              Note: Processing may take a few moments. You can continue using the app while your flashcards are being generated.
+            </p>
           </div>
         </div>
 
@@ -447,70 +836,82 @@ export default function Flashcards() {
             <h2 className="text-xl font-semibold" style={{ color: styles.text.primary }}>
               Your Flashcard Sets
             </h2>
+            <button
+              onClick={loadFlashcardSets}
+              className="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              style={{ backgroundColor: 'transparent' }}
+              title="Refresh sets"
+            >
+              <RotateCw className="w-4 h-4" style={{ color: styles.text.secondary }} />
+            </button>
           </div>
 
-          {loading && (
-            <div className="flex items-center justify-center py-12">
-              <RotateCw className="w-8 h-8 animate-spin" style={{ color: colors.primary[400] }} />
-            </div>
-          )}
-
-          {!loading && flashcardSets.length === 0 && (
+          {flashcardSets.length === 0 ? (
             <div className="text-center py-12">
               <div className="inline-block p-4 rounded-full mb-3" style={{ backgroundColor: colors.neutral[50] }}>
                 <BookOpen className="w-12 h-12" style={{ color: colors.neutral[400] }} />
               </div>
               <p style={{ color: styles.text.secondary }}>No flashcard sets yet. Create your first one above!</p>
+              {activeJobs.length > 0 && (
+                <p className="text-sm mt-2" style={{ color: styles.text.light }}>
+                  You have {activeJobs.length} active job{activeJobs.length !== 1 ? 's' : ''} being processed.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {flashcardSets.map(set => (
+                <button
+                  key={set.id}
+                  onClick={() => openSet(set)}
+                  className="border rounded-xl p-5 text-left transition-all transform hover:scale-[1.02] active:scale-[0.98] group"
+                  style={{ 
+                    background: gradients.neutral,
+                    borderColor: colors.primary[200],
+                    backgroundColor: colors.primary[50]
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.primary[100]
+                    e.currentTarget.style.borderColor = colors.primary[300]
+                    e.currentTarget.style.boxShadow = styles.shadow.md
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.primary[50]
+                    e.currentTarget.style.borderColor = colors.primary[200]
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 
+                      className="font-bold text-lg transition-colors"
+                      style={{ color: styles.text.primary }}
+                    >
+                      {set.title}
+                    </h3>
+                    <ChevronRight className="w-5 h-5 transition-colors" style={{ color: colors.neutral[500] }} />
+                  </div>
+                  <p className="text-sm mb-3" style={{ color: colors.primary[400] }}>{set.subject}</p>
+                  {set.description && (
+                    <p className="text-xs mb-3 line-clamp-2" style={{ color: styles.text.secondary }}>
+                      {set.description}
+                    </p>
+                  )}
+                  {!!set.cards?.length && (
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary[200] }}>
+                        <span className="text-xs font-medium" style={{ color: colors.primary[700] }}>
+                          {set.cards.length} cards
+                        </span>
+                      </div>
+                      <span className="text-xs" style={{ color: styles.text.light }}>
+                        {formatTimeAgo(set.createdAt)}
+                      </span>
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {flashcardSets.map(set => (
-              <button
-                key={set.id}
-                onClick={() => openSet(set)}
-                className="border rounded-xl p-5 text-left transition-all transform hover:scale-[1.02] active:scale-[0.98] group"
-                style={{ 
-                  background: gradients.neutral,
-                  borderColor: colors.primary[200],
-                  backgroundColor: colors.primary[50]
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary[100]
-                  e.currentTarget.style.borderColor = colors.primary[300]
-                  e.currentTarget.style.boxShadow = styles.shadow.md
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary[50]
-                  e.currentTarget.style.borderColor = colors.primary[200]
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 
-                    className="font-bold text-lg transition-colors"
-                    style={{ color: styles.text.primary }}
-                  >
-                    {set.title}
-                  </h3>
-                  <ChevronRight className="w-5 h-5 transition-colors" style={{ color: colors.neutral[500] }} />
-                </div>
-                <p className="text-sm mb-3" style={{ color: colors.primary[400] }}>{set.subject}</p>
-                {set.description && (
-                  <p className="text-xs mb-3 line-clamp-2" style={{ color: styles.text.secondary }}>
-                    {set.description}
-                  </p>
-                )}
-                {!!set.cards?.length && (
-                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary[200] }}>
-                    <span className="text-xs font-medium" style={{ color: colors.primary[700] }}>
-                      {set.cards.length} cards
-                    </span>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -555,7 +956,7 @@ export default function Flashcards() {
                 borderColor: styles.border.light
               }}
             >
-              {currentCard && (
+              {currentCard ? (
                 <div
                   onClick={toggleFlip}
                   className="w-full h-[320px] cursor-pointer perspective-1000"
@@ -611,6 +1012,8 @@ export default function Flashcards() {
                     </div>
                   </div>
                 </div>
+              ) : (
+                <p style={{ color: styles.text.secondary }}>No cards in this set</p>
               )}
             </div>
 
