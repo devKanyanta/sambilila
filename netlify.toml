@@ -1,9 +1,15 @@
-
+# netlify.toml
 [build]
-  publish = "out"
-  functions = "functions"
+  command = "npm run build"
+  publish = ".next"  # Keep as .next
+
+[functions]
+  # Remove the @netlify/plugin-nextjs from Netlify UI
+  # or specify a custom directory
+  directory = ".next/serverless"
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+  force = true
