@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, X, RotateCw, BookOpen, Plus, Sparkles, Upload, FileText, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, RotateCw, BookOpen, Plus, Sparkles, Upload, FileText, Trash2, Clock, CheckCircle, AlertCircle, Loader2, AlertTriangle } from 'lucide-react'
 import { colors, gradients, theme } from '@/lib/theme'
 
 type Flashcard = {
@@ -29,6 +29,7 @@ type FlashcardJob = {
   error?: string
   createdAt: string
   flashcardSet?: FlashcardSet
+  progress?: number
 }
 
 export default function Flashcards() {
@@ -50,6 +51,11 @@ export default function Flashcards() {
   const [selectedSet, setSelectedSet] = useState<FlashcardSet | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
+
+  // Modal state
+  const [showJobModal, setShowJobModal] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [jobDetails, setJobDetails] = useState<FlashcardJob | null>(null)
 
   // Theme-based styles
   const styles = {
@@ -124,10 +130,9 @@ export default function Flashcards() {
   }
 
   /* ================= POLL JOB STATUS ================= */
-  const pollJobStatus = useCallback(async (jobId: string) => {
+  const pollJobStatus = useCallback(async (jobId: string): Promise<FlashcardJob | null> => {
     try {
       const token = localStorage.getItem("token")
-      // Poll the upload endpoint for job status
       const res = await fetch(`/api/flashcards/upload?jobId=${jobId}`, {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -135,7 +140,6 @@ export default function Flashcards() {
       })
       
       if (!res.ok) {
-        // If job not found in upload endpoint, try main endpoint
         if (res.status === 404) {
           const mainRes = await fetch(`/api/flashcards?jobId=${jobId}`, {
             headers: {
@@ -144,233 +148,299 @@ export default function Flashcards() {
           })
           
           if (!mainRes.ok) throw new Error(`Failed to poll job (${mainRes.status})`)
-          return await mainRes.json()
+          const data = await mainRes.json()
+          return data.job || null
         }
         throw new Error(`Failed to poll job (${res.status})`)
       }
       
-      return await res.json()
+      const data = await res.json()
+      return data.job || null
     } catch (err) {
       console.error('Error polling job:', err)
       return null
     }
   }, [])
 
-  const startPollingJobs = useCallback((jobIds: string[]) => {
-    if (pollingInterval) clearInterval(pollingInterval)
+  /* ================= START JOB MONITORING ================= */
+  const startJobMonitoring = useCallback((jobId: string) => {
+    // Set the current job and show modal
+    setCurrentJobId(jobId)
+    setShowJobModal(true)
     
+    // Poll immediately
+    const pollImmediately = async () => {
+      const job = await pollJobStatus(jobId)
+      if (job) {
+        setJobDetails(job)
+        updateJobInList(job)
+        
+        // If job is done or failed, start auto-dismiss timer
+        if (job.status === 'DONE' || job.status === 'FAILED') {
+          setTimeout(() => {
+            closeJobModal()
+          }, 5000) // Auto close after 5 seconds for completed jobs
+        }
+      }
+    }
+    
+    pollImmediately()
+    
+    // Start polling interval (every 5 seconds as requested)
     const interval = setInterval(async () => {
-      const updatedJobs = await Promise.all(
-        activeJobs.map(async (job) => {
-          if (job.status === 'PENDING' || job.status === 'PROCESSING') {
-            const data = await pollJobStatus(job.id)
-            if (data?.job) {
-              return {
-                ...job,
-                status: data.job.status,
-                error: data.job.error,
-                flashcardSet: data.flashcardSet
-              }
-            }
-          }
-          return job
-        })
-      )
-      
-      setActiveJobs(updatedJobs)
-      
-      // Remove completed jobs from active list after 10 seconds
-      const completedJobs = updatedJobs.filter(job => 
-        job.status === 'DONE' || job.status === 'FAILED'
-      )
-      
-      if (completedJobs.length > 0) {
-        setTimeout(() => {
-          setActiveJobs(prev => prev.filter(job => 
-            !completedJobs.some(completed => completed.id === job.id)
-          ))
-          // Refresh flashcard sets when jobs complete
+      const job = await pollJobStatus(jobId)
+      if (job) {
+        setJobDetails(job)
+        updateJobInList(job)
+        
+        // If job is done or failed, stop polling
+        if (job.status === 'DONE' || job.status === 'FAILED') {
+          clearInterval(interval)
+          setPollingInterval(null)
+          
+          // Refresh flashcard sets when job completes
           loadFlashcardSets()
-        }, 10000)
+        }
       }
-      
-      // If all jobs are done, clear interval
-      if (updatedJobs.every(job => job.status === 'DONE' || job.status === 'FAILED')) {
-        clearInterval(interval)
-      }
-    }, 3000) // Poll every 3 seconds
+    }, 5000)
     
     setPollingInterval(interval)
-  }, [activeJobs, pollJobStatus])
-
-  /* ================= CREATE FLASHCARDS ================= */
-  // ... (Your imports and state declarations remain the same) ...
-
-  /* ================= CREATE FLASHCARDS ================= */
-async function handleGenerate() {
-  if (!inputText.trim() && !selectedFile) {
-    setError("Please provide either text or upload a PDF file");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError(null);
-
-    const token = localStorage.getItem("token");
-
-    /* ==================================================
-       STEP 1 — CREATE JOB + REQUEST SIGNED UPLOAD DATA
-    ================================================== */
-
-    const metadataForm = new FormData();
-
-    if (inputText.trim()) {
-      metadataForm.append("text", inputText.trim());
-    }
-
-    if (selectedFile) {
-      metadataForm.append("fileName", selectedFile.name);
-      metadataForm.append("contentType", selectedFile.type);
-    }
-
-    metadataForm.append("title", title || "AI Generated Flashcards");
-    metadataForm.append("subject", subject || "General");
-
-    if (description) {
-      metadataForm.append("description", description);
-    }
-
-    const jobRes = await fetch("/api/flashcards/upload", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: metadataForm,
-    });
-
-    const jobData = await jobRes.json();
-
-    if (!jobRes.ok) {
-      throw new Error(jobData?.error || "Failed to create flashcard job");
-    }
-
-    /* ==================================================
-       STEP 2 — UPLOAD FILE TO R2 (PDF ONLY)
-    ================================================== */
-
-    /* ==================================================
-   STEP 2 — UPLOAD FILE TO R2 USING PUT METHOD
-================================================== */
-
-if (selectedFile && jobData.signedUrl) {
-  console.log("📤 Uploading file to R2 using PUT…");
-
-  try {
-    // For PUT method, we just need to send the file directly
-    const r2Res = await fetch(jobData.signedUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": selectedFile.type || "application/pdf",
-        // You might need to add other headers based on your R2 setup
-        // "x-amz-meta-filename": selectedFile.name,
-      },
-      body: selectedFile,
-    });
-
-    if (!r2Res.ok) {
-      console.error("R2 PUT Upload failed:", {
-        status: r2Res.status,
-        statusText: r2Res.statusText,
-      });
-      
-      // Try to get error details
-      let errorDetails = "";
-      try {
-        errorDetails = await r2Res.text();
-        console.error("Error details:", errorDetails);
-      } catch (e) {
-        // Ignore if we can't read response
-      }
-      
-      if (r2Res.status === 403) {
-        throw new Error("Upload denied. The signed URL may have expired.");
-      }
-      
-      throw new Error(`Upload failed: ${r2Res.status} ${r2Res.statusText}`);
-    }
-
-    console.log("✅ R2 PUT upload complete:", jobData.fileKey);
-  } catch (err: any) {
-    console.error("Upload error:", err);
     
-    // Optionally: Cancel the job if upload fails
+    // Return cleanup function
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [pollJobStatus])
+
+  /* ================= UPDATE JOB IN LIST ================= */
+  const updateJobInList = useCallback((updatedJob: FlashcardJob) => {
+    setActiveJobs(prev => prev.map(job => 
+      job.id === updatedJob.id ? { ...job, ...updatedJob } : job
+    ))
+  }, [])
+
+  /* ================= CREATE FLASHCARDS ================= */
+  async function handleGenerate() {
+    if (!inputText.trim() && !selectedFile) {
+      setError("Please provide either text or upload a PDF file");
+      return;
+    }
+
     try {
+      setLoading(true);
+      setError(null);
+
       const token = localStorage.getItem("token");
-      await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+
+      /* ==================================================
+         STEP 1 — CREATE JOB + REQUEST SIGNED UPLOAD DATA
+      ================================================== */
+
+      const metadataForm = new FormData();
+
+      if (inputText.trim()) {
+        metadataForm.append("text", inputText.trim());
+      }
+
+      if (selectedFile) {
+        metadataForm.append("fileName", selectedFile.name);
+        metadataForm.append("contentType", selectedFile.type);
+      }
+
+      metadataForm.append("title", title || "AI Generated Flashcards");
+      metadataForm.append("subject", subject || "General");
+
+      if (description) {
+        metadataForm.append("description", description);
+      }
+
+      const jobRes = await fetch("/api/flashcards/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: metadataForm,
       });
-    } catch (cancelErr) {
-      console.error("Failed to cancel job after upload error:", cancelErr);
+
+      const jobData = await jobRes.json();
+
+      if (!jobRes.ok) {
+        throw new Error(jobData?.error || "Failed to create flashcard job");
+      }
+
+      /* ==================================================
+         STEP 2 — UPLOAD FILE TO R2 (PDF ONLY)
+      ================================================== */
+
+      if (selectedFile && jobData.signedUrl) {
+        console.log("📤 Uploading file to R2 using PUT…");
+
+        try {
+          const r2Res = await fetch(jobData.signedUrl, {
+            method: "PUT",
+            headers: {
+              "Content-Type": selectedFile.type || "application/pdf",
+            },
+            body: selectedFile,
+          });
+
+          if (!r2Res.ok) {
+            console.error("R2 PUT Upload failed:", {
+              status: r2Res.status,
+              statusText: r2Res.statusText,
+            });
+            
+            let errorDetails = "";
+            try {
+              errorDetails = await r2Res.text();
+              console.error("Error details:", errorDetails);
+            } catch (e) {
+              // Ignore if we can't read response
+            }
+            
+            if (r2Res.status === 403) {
+              throw new Error("Upload denied. The signed URL may have expired.");
+            }
+            
+            throw new Error(`Upload failed: ${r2Res.status} ${r2Res.statusText}`);
+          }
+
+          console.log("✅ R2 PUT upload complete:", jobData.fileKey);
+        } catch (err: any) {
+          console.error("Upload error:", err);
+          
+          // Cancel the job if upload fails
+          try {
+            const token = localStorage.getItem("token");
+            await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          } catch (cancelErr) {
+            console.error("Failed to cancel job after upload error:", cancelErr);
+          }
+          
+          throw err;
+        }
+      }
+
+      /* ==================================================
+         STEP 3 — REGISTER JOB LOCALLY
+      ================================================== */
+
+      const newJob: FlashcardJob = {
+        id: jobData.jobId,
+        title: jobData.job.title || title || "AI Generated Flashcards",
+        subject: jobData.job.subject || subject || "General",
+        description: jobData.job.description || description || "",
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        progress: 0,
+      };
+
+      setActiveJobs((prev) => [...prev, newJob]);
+
+      /* ==================================================
+         STEP 4 — START MONITORING THE JOB
+      ================================================== */
+      startJobMonitoring(jobData.jobId);
+
+      /* ==================================================
+         STEP 5 — RESET FORM
+      ================================================== */
+
+      setInputText("");
+      setTitle("");
+      setSubject("");
+      setDescription("");
+      setSelectedFile(null);
+    } catch (err: any) {
+      console.error("GENERATION ERROR:", err);
+      setError(err.message || "Flashcard generation failed");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  /* ================= CLOSE JOB MODAL ================= */
+  const closeJobModal = () => {
+    setShowJobModal(false)
+    setCurrentJobId(null)
+    setJobDetails(null)
     
-    throw err; // Re-throw to be caught by the outer try-catch
+    // Clear polling interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      setPollingInterval(null)
+    }
   }
-}
-    /* ==================================================
-       STEP 3 — REGISTER JOB LOCALLY & START POLLING
-    ================================================== */
 
-    const newJob: FlashcardJob = {
-      id: jobData.jobId,
-      title: jobData.job.title,
-      subject: jobData.job.subject,
-      description: jobData.job.description,
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-    };
-
-    setActiveJobs((prev) => [...prev, newJob]);
-
-    startPollingJobs([
-      ...activeJobs.map((j) => j.id),
-      jobData.jobId,
-    ]);
-
-    /* ==================================================
-       STEP 4 — RESET FORM
-    ================================================== */
-
-    setInputText("");
-    setTitle("");
-    setSubject("");
-    setDescription("");
-    setSelectedFile(null);
-  } catch (err: any) {
-    console.error("GENERATION ERROR:", err);
-    setError(err.message || "Flashcard generation failed");
-  } finally {
-    setLoading(false);
+  /* ================= GET JOB STATUS DISPLAY ================= */
+  const getJobStatusDisplay = (job: FlashcardJob) => {
+    switch (job.status) {
+      case 'PENDING':
+        return {
+          icon: <Clock className="w-6 h-6" style={{ color: colors.primary[500] }} />,
+          title: "Job Queued",
+          description: "Your flashcard generation job is in the queue and will start processing shortly.",
+          color: colors.primary[500],
+          bgColor: colors.primary[50],
+          progress: 10,
+          pulse: true
+        }
+      case 'PROCESSING':
+        return {
+          icon: <Loader2 className="w-6 h-6 animate-spin" style={{ color: colors.primary[500] }} />,
+          title: "Processing",
+          description: "Our AI is analyzing your content and generating flashcards. This may take a minute...",
+          color: colors.primary[500],
+          bgColor: colors.primary[50],
+          progress: 50,
+          pulse: true
+        }
+      case 'DONE':
+        return {
+          icon: <CheckCircle className="w-6 h-6" style={{ color: colors.success[500] }} />,
+          title: "Complete!",
+          description: "Your flashcards have been generated successfully!",
+          color: colors.success[500],
+          bgColor: colors.success[50],
+          progress: 100,
+          pulse: false
+        }
+      case 'FAILED':
+        return {
+          icon: <AlertTriangle className="w-6 h-6" style={{ color: colors.secondary[600] }} />,
+          title: "Failed",
+          description: job.error || "There was an error generating your flashcards.",
+          color: colors.secondary[600],
+          bgColor: colors.secondary[50],
+          progress: 0,
+          pulse: false
+        }
+      default:
+        return {
+          icon: <Clock className="w-6 h-6" style={{ color: colors.neutral[500] }} />,
+          title: "Processing",
+          description: "Checking job status...",
+          color: colors.neutral[500],
+          bgColor: colors.neutral[50],
+          progress: 25,
+          pulse: true
+        }
+    }
   }
-}
 
-// ... (The rest of your component functions remain the same) ...
-
-  // NOTE: You must also ensure your cancelJob function is robust, 
-  // as it may be called if the R2 upload fails.
   /* ================= FILE HANDLING ================= */
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
-      // Validate file type
       if (file.type !== 'application/pdf') {
         setError('Please select a PDF file')
         e.target.value = ''
         return
       }
 
-      // Validate file size (10MB limit)
       const maxSize = 10 * 1024 * 1024 // 10MB
       if (file.size > maxSize) {
         setError('File size must be less than 10MB')
@@ -420,36 +490,6 @@ if (selectedFile && jobData.signedUrl) {
   }
 
   /* ================= HELPER FUNCTIONS ================= */
-  function getJobStatusIcon(status: string) {
-    switch (status) {
-      case 'PENDING':
-        return <Clock className="w-4 h-4" style={{ color: colors.primary[500] }} />
-      case 'PROCESSING':
-        return <RotateCw className="w-4 h-4 animate-spin" style={{ color: colors.primary[500] }} />
-      case 'DONE':
-        return <CheckCircle className="w-4 h-4" style={{ color: colors.success[500] }} />
-      case 'FAILED':
-        return <AlertCircle className="w-4 h-4" style={{ color: colors.secondary[600] }} />
-      default:
-        return <Clock className="w-4 h-4" style={{ color: colors.neutral[500] }} />
-    }
-  }
-
-  function getJobStatusText(status: string) {
-    switch (status) {
-      case 'PENDING':
-        return 'Queued'
-      case 'PROCESSING':
-        return 'Generating...'
-      case 'DONE':
-        return 'Completed'
-      case 'FAILED':
-        return 'Failed'
-      default:
-        return status
-    }
-  }
-
   function formatTimeAgo(dateString: string) {
     const date = new Date(dateString)
     const now = new Date()
@@ -464,29 +504,6 @@ if (selectedFile && jobData.signedUrl) {
     
     const diffDays = Math.floor(diffHours / 24)
     return `${diffDays}d ago`
-  }
-
-  /* ================= HANDLE JOB CANCELLATION ================= */
-  async function cancelJob(jobId: string) {
-    try {
-      const token = localStorage.getItem("token")
-      const response = await fetch(`/api/flashcards/upload?jobId=${jobId}`, {
-        method: 'DELETE',
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to cancel job')
-      }
-      
-      // Remove job from active list
-      setActiveJobs(prev => prev.filter(job => job.id !== jobId))
-    } catch (err) {
-      console.error('Error cancelling job:', err)
-      setError('Failed to cancel job')
-    }
   }
 
   if (!mounted) return null
@@ -509,132 +526,6 @@ if (selectedFile && jobData.signedUrl) {
             </p>
           </div>
         </div>
-
-        {/* Active Jobs Section */}
-        {activeJobs.length > 0 && (
-          <div 
-            className="border rounded-2xl p-6 shadow-lg"
-            style={{ 
-              backgroundColor: styles.background.card,
-              borderColor: styles.border.light,
-              boxShadow: styles.shadow.lg
-            }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5" style={{ color: colors.primary[400] }} />
-              <h2 className="text-xl font-semibold" style={{ color: styles.text.primary }}>
-                Active Processes
-              </h2>
-              <span 
-                className="ml-2 px-2 py-1 text-xs rounded-full"
-                style={{ 
-                  backgroundColor: colors.primary[100],
-                  color: colors.primary[700]
-                }}
-              >
-                {activeJobs.length}
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              {activeJobs.map(job => (
-                <div 
-                  key={job.id}
-                  className="border rounded-xl p-4"
-                  style={{ 
-                    backgroundColor: colors.neutral[50],
-                    borderColor: styles.border.medium
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      {getJobStatusIcon(job.status)}
-                      <div>
-                        <p className="font-medium" style={{ color: styles.text.primary }}>
-                          {job.title}
-                        </p>
-                        <p className="text-sm" style={{ color: styles.text.secondary }}>
-                          {job.subject} • {formatTimeAgo(job.createdAt)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium" style={{ 
-                        color: job.status === 'DONE' ? colors.success[600] : 
-                               job.status === 'FAILED' ? colors.secondary[600] : 
-                               colors.primary[600]
-                      }}>
-                        {getJobStatusText(job.status)}
-                      </span>
-                      
-                      {job.status === 'PENDING' && (
-                        <button
-                          onClick={() => cancelJob(job.id)}
-                          className="px-3 py-1 text-sm rounded-lg transition-colors"
-                          style={{ 
-                            backgroundColor: colors.secondary[100],
-                            color: colors.secondary[700]
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.secondary[200]
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.secondary[100]
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      )}
-                      
-                      {job.status === 'DONE' && job.flashcardSet && (
-                        <button
-                          onClick={() => openSet(job.flashcardSet!)}
-                          className="px-3 py-1 text-sm rounded-lg transition-colors"
-                          style={{ 
-                            backgroundColor: colors.primary[100],
-                            color: colors.primary[700]
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.primary[200]
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = colors.primary[100]
-                          }}
-                        >
-                          View
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {job.status === 'FAILED' && job.error && (
-                    <div className="mt-2 p-2 rounded text-sm" style={{ 
-                      backgroundColor: colors.secondary[50],
-                      color: colors.secondary[700]
-                    }}>
-                      {job.error}
-                    </div>
-                  )}
-                  
-                  {job.status === 'PROCESSING' && (
-                    <div className="mt-2">
-                      <div className="h-1 w-full rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
-                        <div 
-                          className="h-full rounded-full animate-pulse"
-                          style={{ 
-                            backgroundColor: colors.primary[500],
-                            width: '50%'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Create Form */}
         <div 
@@ -914,6 +805,213 @@ if (selectedFile && jobData.signedUrl) {
           )}
         </div>
       </div>
+
+      {/* Job Status Modal */}
+      {showJobModal && (
+        <div 
+          className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        >
+          <div 
+            className="w-full max-w-md border rounded-2xl shadow-2xl transform transition-all duration-300 animate-in zoom-in-95"
+            style={{ 
+              backgroundColor: styles.background.card,
+              borderColor: styles.border.light,
+              boxShadow: styles.shadow.xl
+            }}
+          >
+            {/* Header */}
+            <div className="p-6 pb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold" style={{ color: styles.text.primary }}>
+                  Generating Flashcards
+                </h3>
+                {jobDetails?.status !== 'PROCESSING' && jobDetails?.status !== 'PENDING' && (
+                  <button
+                    onClick={closeJobModal}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    style={{ backgroundColor: 'transparent' }}
+                  >
+                    <X className="w-5 h-5" style={{ color: styles.text.secondary }} />
+                  </button>
+                )}
+              </div>
+              
+              {/* Job Info */}
+              {jobDetails && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className={`p-3 rounded-full ${jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING' ? 'animate-pulse' : ''}`}
+                      style={{ 
+                        backgroundColor: getJobStatusDisplay(jobDetails).bgColor 
+                      }}
+                    >
+                      {getJobStatusDisplay(jobDetails).icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold" style={{ color: styles.text.primary }}>
+                        {jobDetails.title}
+                      </p>
+                      <p className="text-sm" style={{ color: styles.text.secondary }}>
+                        {jobDetails.subject} • {formatTimeAgo(jobDetails.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Status Display */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span 
+                        className="text-sm font-medium"
+                        style={{ color: getJobStatusDisplay(jobDetails).color }}
+                      >
+                        {getJobStatusDisplay(jobDetails).title}
+                      </span>
+                      <span className="text-xs" style={{ color: styles.text.light }}>
+                        Polling every 5s
+                      </span>
+                    </div>
+                    
+                    <div 
+                      className="text-sm p-3 rounded-lg"
+                      style={{ 
+                        backgroundColor: getJobStatusDisplay(jobDetails).bgColor,
+                        color: styles.text.secondary
+                      }}
+                    >
+                      {getJobStatusDisplay(jobDetails).description}
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
+                      <div className="space-y-2">
+                        <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
+                          <div 
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ 
+                              backgroundColor: getJobStatusDisplay(jobDetails).color,
+                              width: `${getJobStatusDisplay(jobDetails).progress}%`
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs" style={{ color: styles.text.light }}>
+                          <span>Starting...</span>
+                          <span>Processing...</span>
+                          <span>Complete</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    <div className="pt-4">
+                      {jobDetails.status === 'DONE' && jobDetails.flashcardSet && (
+                        <div className="space-y-3">
+                          <button
+                            onClick={() => {
+                              openSet(jobDetails.flashcardSet!)
+                              closeJobModal()
+                            }}
+                            className="w-full py-3 rounded-xl text-white font-medium transition-all"
+                            style={{ 
+                              background: gradients.primary,
+                              boxShadow: styles.shadow.md
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = '0.9'
+                              e.currentTarget.style.boxShadow = styles.shadow.lg
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = '1'
+                              e.currentTarget.style.boxShadow = styles.shadow.md
+                            }}
+                          >
+                            View Flashcards
+                          </button>
+                          <button
+                            onClick={closeJobModal}
+                            className="w-full py-2.5 rounded-xl font-medium transition-colors"
+                            style={{ 
+                              backgroundColor: colors.neutral[100],
+                              color: styles.text.secondary
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = colors.neutral[200]
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = colors.neutral[100]
+                            }}
+                          >
+                            Close
+                          </button>
+                        </div>
+                      )}
+                      
+                      {jobDetails.status === 'FAILED' && (
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-lg text-sm" style={{ 
+                            backgroundColor: colors.secondary[50],
+                            color: colors.secondary[700],
+                            border: `1px solid ${colors.secondary[200]}`
+                          }}>
+                            <p className="font-medium">Error Details:</p>
+                            <p className="mt-1">{jobDetails.error}</p>
+                          </div>
+                          <button
+                            onClick={closeJobModal}
+                            className="w-full py-3 rounded-xl font-medium transition-colors"
+                            style={{ 
+                              backgroundColor: colors.neutral[100],
+                              color: styles.text.secondary
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = colors.neutral[200]
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = colors.neutral[100]
+                            }}
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      )}
+                      
+                      {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
+                        <div className="pt-2">
+                          <p className="text-xs text-center" style={{ color: styles.text.light }}>
+                            You can continue using the app while we process your request
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {!jobDetails && (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin mb-3" style={{ color: colors.primary[500] }} />
+                  <p style={{ color: styles.text.secondary }}>Connecting to job server...</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Processing Animation */}
+            {(jobDetails?.status === 'PENDING' || jobDetails?.status === 'PROCESSING') && (
+              <div className="px-6 pb-6">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: colors.primary[500] }}></div>
+                    <div className="w-2 h-2 rounded-full animate-pulse delay-75" style={{ backgroundColor: colors.primary[500] }}></div>
+                    <div className="w-2 h-2 rounded-full animate-pulse delay-150" style={{ backgroundColor: colors.primary[500] }}></div>
+                  </div>
+                  <span className="text-xs" style={{ color: styles.text.light }}>Processing your request</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Flashcard Viewer Modal */}
       {selectedSet && (
