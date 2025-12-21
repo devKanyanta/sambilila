@@ -52,7 +52,7 @@ model FlashcardSet {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   cards         Flashcard[]
   studySessions StudySession[]
-  flashcardJobs FlashcardJob[] // ✅ Add this reciprocal relation
+  flashcardJobs FlashcardJob[] 
 
   @@map("flashcard_sets")
 }
@@ -94,13 +94,6 @@ model FlashcardJob {
   createdAt      DateTime  @default(now())
 
   @@map("flashcard_jobs")
-}
-
-enum JobStatus {
-  PENDING
-  PROCESSING
-  DONE
-  FAILED
 }
 
 model Quiz {
@@ -155,6 +148,38 @@ model QuizResult {
   quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@map("quiz_results")
+}
+
+model QuizJob {
+  id             String   @id @default(cuid())
+  userId         String
+
+  fileUrl        String?
+  text           String?
+
+  title          String
+  subject        String
+  description    String?
+
+  status         JobStatus @default(PENDING)
+  error          String?
+
+  quizId String?
+  
+  // Relations
+  quizId   Quiz? @relation(fields: [quizId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+
+  createdAt      DateTime  @default(now())
+
+  @@map("quiz_job")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
 }
 
 model StudySession {
