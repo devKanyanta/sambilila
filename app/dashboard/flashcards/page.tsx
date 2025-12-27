@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Plus, Sparkles } from 'lucide-react'
 import { colors, gradients, theme } from '@/lib/theme'
 
 // Hooks
@@ -35,6 +35,8 @@ export default function Flashcards() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
 
+  const [showForm, setShowForm] = useState(false)
+  
   // Custom hooks
   const { 
     flashcardSets, 
@@ -279,37 +281,75 @@ export default function Flashcards() {
   }
 
   return (
-    <div style={{ backgroundColor: styles.background.main, minHeight: '100vh' }}>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold" style={{ color: styles.text.primary }}>
-              Flashcard Studio
-            </h1>
-            <p className="text-sm" style={{ color: colors.primary[400] }}>
-              AI-powered learning made simple
-            </p>
+  <div style={{ backgroundColor: styles.background.main, minHeight: '100vh' }}>
+    <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: styles.text.primary }}>
+            Flashcard Generator
+          </h1>
+          <p className="text-sm" style={{ color: colors.primary[400] }}>
+            Learning made simple
+          </p>
+        </div>
+        
+        {/* Generate Flashcards Button (only show when form is hidden) */}
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg active:scale-95"
+            style={{
+              background: gradients.primary,
+              color: 'white',
+            }}
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Generate Flashcards</span>
+            <span className="sm:hidden">Generate</span>
+          </button>
+        )}
+      </div>
+
+      {/* Modal Overlay and Form */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
+          {/* Blurred Background Overlay */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => {
+              setShowForm(false);
+              setFormError(null);
+              setFileError(null);
+            }}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative w-full max-w-2xl mx-auto">
+            <CreateForm
+              title={title}
+              subject={subject}
+              description={description}
+              inputText={inputText}
+              selectedFile={selectedFile}
+              loading={loading}
+              error={formError}
+              onTitleChange={setTitle}
+              onSubjectChange={setSubject}
+              onDescriptionChange={setDescription}
+              onInputTextChange={setInputText}
+              onFileChange={handleFileChange}
+              onRemoveFile={removeFile}
+              onGenerate={handleGenerate}
+              onCancel={() => {
+                setShowForm(false);
+                setFormError(null);
+                setFileError(null);
+              }}
+            />
           </div>
         </div>
-
-        {/* Create Form */}
-        <CreateForm
-          title={title}
-          subject={subject}
-          description={description}
-          inputText={inputText}
-          selectedFile={selectedFile}
-          loading={loading}
-          error={formError}
-          onTitleChange={setTitle}
-          onSubjectChange={setSubject}
-          onDescriptionChange={setDescription}
-          onInputTextChange={setInputText}
-          onFileChange={handleFileChange}
-          onRemoveFile={removeFile}
-          onGenerate={handleGenerate}
-        />
+      )}
 
         {/* Error Message */}
         {error && (

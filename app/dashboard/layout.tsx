@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <Icon name="book" className="w-5 h-5 text-white" />
               </div>
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: gradients.primary }}>
-                StudySaaS
+                Sambilila
               </span>
             </Link>
 

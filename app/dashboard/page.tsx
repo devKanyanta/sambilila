@@ -261,7 +261,6 @@ export default function Dashboard() {
               }}
             ></div>
           </div>
-          <p className="mt-4 font-medium" style={{ color: styles.text.dark }}>Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -365,13 +364,13 @@ export default function Dashboard() {
                     Welcome back, {userProfile?.name || 'Student'}!
                   </h1>
                   <p className="mt-1" style={{ color: colors.neutral[200] }}>
-                    {stats?.streaks.currentStreak ? `🔥 ${stats.streaks.currentStreak}-day streak` : 'Ready to continue learning?'}
+                    Ready to continue learning?
                   </p>
                 </div>
               </div>
             </div>
             
-            {stats?.streaks.currentStreak && (
+            {/* {stats?.streaks.currentStreak && (
               <div 
                 className="backdrop-blur-sm rounded-xl p-4 min-w-[140px]"
                 style={{ 
@@ -387,7 +386,7 @@ export default function Dashboard() {
                   <div className="text-sm" style={{ color: colors.neutral[200] }}>days</div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
           
           {/* Quick Stats Row */}
