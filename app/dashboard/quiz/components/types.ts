@@ -56,7 +56,7 @@ export type QuizJob = {
   difficulty: string
   numberOfQuestions: string
   questionType: string,
-  status: 'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED'
+  status: 'PENDING_UPLOAD' |'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED'
   error?: string
   createdAt: string
   quiz?: Quiz

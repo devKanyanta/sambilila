@@ -52,6 +52,16 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
 
   const getJobStatusDisplay = (job: QuizJob): JobStatusDisplay => {
     switch (job.status) {
+      case 'PENDING_UPLOAD':
+      return {
+        icon: <Clock className="w-6 h-6" style={{ color: colors.primary[500] }} />,
+        title: "Awaiting Upload",
+        description: "Please upload your PDF file to start processing.",
+        color: colors.primary[500],
+        bgColor: colors.primary[50],
+        progress: 5,
+        pulse: false
+      }
       case 'PENDING':
         return {
           icon: <Clock className="w-6 h-6" style={{ color: colors.primary[500] }} />,

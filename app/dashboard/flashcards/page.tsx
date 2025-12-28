@@ -75,112 +75,138 @@ export default function Flashcards() {
     loadFlashcardSets()
   }, [mounted, loadFlashcardSets])
 
-  /* ================= CREATE FLASHCARDS ================= */
-  const handleGenerate = useCallback(async () => {
-    if (!inputText.trim() && !selectedFile) {
-      setFormError("Please provide either text or upload a PDF file");
-      return;
+/* ================= CREATE FLASHCARDS ================= */
+const handleGenerate = useCallback(async () => {
+  if (!inputText.trim() && !selectedFile) {
+    setFormError("Please provide either text or upload a PDF file");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setFormError(null);
+    setFileError(null);
+
+    const token = localStorage.getItem("token");
+
+    /* ==================================================
+       STEP 1 — CREATE JOB + REQUEST SIGNED UPLOAD DATA
+    ================================================== */
+
+    const metadataForm = new FormData();
+
+    if (inputText.trim()) {
+      metadataForm.append("text", inputText.trim());
     }
 
-    try {
-      setLoading(true);
-      setFormError(null);
-      setFileError(null);
+    if (selectedFile) {
+      metadataForm.append("fileName", selectedFile.name);
+      metadataForm.append("contentType", selectedFile.type);
+    }
 
-      const token = localStorage.getItem("token");
+    metadataForm.append("title", title || "AI Generated Flashcards");
+    metadataForm.append("subject", subject || "General");
 
-      /* ==================================================
-         STEP 1 — CREATE JOB + REQUEST SIGNED UPLOAD DATA
-      ================================================== */
+    if (description) {
+      metadataForm.append("description", description);
+    }
 
-      const metadataForm = new FormData();
+    const jobRes = await fetch("/api/flashcards/upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: metadataForm,
+    });
 
-      if (inputText.trim()) {
-        metadataForm.append("text", inputText.trim());
-      }
+    const jobData = await jobRes.json();
 
-      if (selectedFile) {
-        metadataForm.append("fileName", selectedFile.name);
-        metadataForm.append("contentType", selectedFile.type);
-      }
+    if (!jobRes.ok) {
+      throw new Error(jobData?.error || "Failed to create flashcard job");
+    }
 
-      metadataForm.append("title", title || "AI Generated Flashcards");
-      metadataForm.append("subject", subject || "General");
+    /* ==================================================
+       STEP 2 — UPLOAD FILE TO R2 (PDF ONLY)
+    ================================================== */
 
-      if (description) {
-        metadataForm.append("description", description);
-      }
+    let uploadFailed = false;
+    if (selectedFile && jobData.signedUrl) {
+      console.log("📤 Uploading file to R2 using PUT…");
 
-      const jobRes = await fetch("/api/flashcards/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: metadataForm,
-      });
+      try {
+        const r2Res = await fetch(jobData.signedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": selectedFile.type || "application/pdf",
+          },
+          body: selectedFile,
+        });
 
-      const jobData = await jobRes.json();
-
-      if (!jobRes.ok) {
-        throw new Error(jobData?.error || "Failed to create flashcard job");
-      }
-
-      /* ==================================================
-         STEP 2 — UPLOAD FILE TO R2 (PDF ONLY)
-      ================================================== */
-
-      if (selectedFile && jobData.signedUrl) {
-        console.log("📤 Uploading file to R2 using PUT…");
-
-        try {
-          const r2Res = await fetch(jobData.signedUrl, {
-            method: "PUT",
-            headers: {
-              "Content-Type": selectedFile.type || "application/pdf",
-            },
-            body: selectedFile,
+        if (!r2Res.ok) {
+          console.error("R2 PUT Upload failed:", {
+            status: r2Res.status,
+            statusText: r2Res.statusText,
           });
-
-          if (!r2Res.ok) {
-            console.error("R2 PUT Upload failed:", {
-              status: r2Res.status,
-              statusText: r2Res.statusText,
-            });
-            
-            let errorDetails = "";
-            try {
-              errorDetails = await r2Res.text();
-              console.error("Error details:", errorDetails);
-            } catch (e) {
-              // Ignore if we can't read response
-            }
-            
-            if (r2Res.status === 403) {
-              throw new Error("Upload denied. The signed URL may have expired.");
-            }
-            
-            throw new Error(`Upload failed: ${r2Res.status} ${r2Res.statusText}`);
-          }
-
-          console.log("✅ R2 PUT upload complete:", jobData.fileKey);
-        } catch (err: any) {
-          console.error("Upload error:", err);
           
-          // Cancel the job if upload fails
+          let errorDetails = "";
           try {
-            const token = localStorage.getItem("token");
-            await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-          } catch (cancelErr) {
-            console.error("Failed to cancel job after upload error:", cancelErr);
+            errorDetails = await r2Res.text();
+            console.error("Error details:", errorDetails);
+          } catch (e) {
+            // Ignore if we can't read response
           }
           
-          throw err;
+          if (r2Res.status === 403) {
+            throw new Error("Upload denied. The signed URL may have expired.");
+          }
+          
+          throw new Error(`Upload failed: ${r2Res.status} ${r2Res.statusText}`);
         }
-      }
 
+        console.log("✅ R2 PUT upload complete:", jobData.fileKey);
+        
+        /* ==================================================
+           STEP 2b — CONFIRM UPLOAD COMPLETE
+        ================================================== */
+        try {
+          const confirmRes = await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
+            method: "PATCH",
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+          });
+          
+          if (!confirmRes.ok) {
+            const error = await confirmRes.json();
+            console.error("Failed to confirm upload:", error);
+            // We'll still proceed, but log the error
+          }
+        } catch (confirmErr) {
+          console.error("Error confirming upload:", confirmErr);
+          // Non-critical error, continue anyway
+        }
+        
+      } catch (err: any) {
+        console.error("Upload error:", err);
+        uploadFailed = true;
+        
+        // Cancel the job if upload fails
+        try {
+          await fetch(`/api/flashcards/upload?jobId=${jobData.jobId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (cancelErr) {
+          console.error("Failed to cancel job after upload error:", cancelErr);
+        }
+        
+        throw err;
+      }
+    }
+
+    // If no file upload needed (text-only) or upload succeeded
+    if (!uploadFailed) {
       /* ==================================================
          STEP 3 — REGISTER JOB LOCALLY
       ================================================== */
@@ -190,7 +216,7 @@ export default function Flashcards() {
         title: jobData.job.title || title || "AI Generated Flashcards",
         subject: jobData.job.subject || subject || "General",
         description: jobData.job.description || description || "",
-        status: "PENDING",
+        status: selectedFile ? "PENDING_UPLOAD" : "PENDING", // Use correct initial status
         createdAt: new Date().toISOString(),
         progress: 0,
       };
@@ -211,23 +237,24 @@ export default function Flashcards() {
       setSubject("");
       setDescription("");
       removeFile();
-    } catch (err: any) {
-      console.error("GENERATION ERROR:", err);
-      setFormError(err.message || "Flashcard generation failed");
-    } finally {
-      setLoading(false);
     }
-  }, [
-    inputText, 
-    selectedFile, 
-    title, 
-    subject, 
-    description, 
-    startJobMonitoring, 
-    addNewJob, 
-    loadFlashcardSets,
-    setFileError
-  ])
+  } catch (err: any) {
+    console.error("GENERATION ERROR:", err);
+    setFormError(err.message || "Flashcard generation failed");
+  } finally {
+    setLoading(false);
+  }
+}, [
+  inputText, 
+  selectedFile, 
+  title, 
+  subject, 
+  description, 
+  startJobMonitoring, 
+  addNewJob, 
+  loadFlashcardSets,
+  setFileError
+])
 
   /* ================= VIEWER FUNCTIONS ================= */
   const openSet = useCallback((set: FlashcardSet) => {

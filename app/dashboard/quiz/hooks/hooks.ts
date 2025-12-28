@@ -38,68 +38,79 @@ export const useQuizAPI = () => {
     }
   };
 
-  const generateQuiz = async (
-    inputText: string,
-    pdfFile: File | null,
-    numberOfQuestions: number,
-    difficulty: string,
-    questionTypes: string
-  ) => {
-    try {
-      const formData = new FormData();
-      const token = getAuthToken();
-      
-      if (pdfFile) {
-        formData.append('fileName', pdfFile.name);
-        formData.append('contentType', pdfFile.type);
-      } else {
-        formData.append('text', inputText);
-      }
-      
-      formData.append('numberOfQuestions', numberOfQuestions.toString());
-      formData.append('difficulty', difficulty);
-      formData.append('questionTypes', questionTypes);
+const generateQuiz = async (
+  inputText: string,
+  pdfFile: File | null,
+  numberOfQuestions: number,
+  difficulty: string,
+  questionTypes: string
+) => {
+  try {
+    const formData = new FormData();
+    const token = getAuthToken();
+    
+    if (pdfFile) {
+      formData.append('fileName', pdfFile.name);
+      formData.append('contentType', pdfFile.type);
+    } else {
+      formData.append('text', inputText);
+    }
+    
+    formData.append('numberOfQuestions', numberOfQuestions.toString());
+    formData.append('difficulty', difficulty);
+    formData.append('questionTypes', questionTypes);
 
-      const jobRes = await fetch("/api/quizzes/upload", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+    // Step 1: Create job with PENDING_UPLOAD status
+    const jobRes = await fetch("/api/quizzes/upload", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    const jobData = await jobRes.json();
+    if (!jobRes.ok) {
+      throw new Error(jobData?.error || "Failed to create quiz job");
+    }
+
+    // Step 2: Upload PDF to R2 if present
+    if (pdfFile && jobData.signedUrl) {
+      const r2Res = await fetch(jobData.signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": pdfFile.type || "application/pdf" },
+        body: pdfFile,
       });
 
-      const jobData = await jobRes.json();
-      if (!jobRes.ok) {
-        throw new Error(jobData?.error || "Failed to create quiz job");
-      }
-
-      // Upload PDF to R2 if present
-      if (pdfFile && jobData.signedUrl) {
-        const r2Res = await fetch(jobData.signedUrl, {
-          method: "PUT",
-          headers: { "Content-Type": pdfFile.type || "application/pdf" },
-          body: pdfFile,
-        });
-
-        if (!r2Res.ok) {
-          // Cancel job if upload fails
-          try {
-            await fetch(`/api/quizzes/upload?jobId=${jobData.jobId}`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-          } catch (cancelErr) {
-            console.error("Failed to cancel job:", cancelErr);
-          }
-          
-          throw new Error(`Upload failed: ${r2Res.status}`);
+      if (!r2Res.ok) {
+        // Cancel job if upload fails
+        try {
+          await fetch(`/api/quizzes/upload?jobId=${jobData.jobId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (cancelErr) {
+          console.error("Failed to cancel job:", cancelErr);
         }
+        
+        throw new Error(`Upload failed: ${r2Res.status}`);
       }
 
-      return jobData;
-    } catch (err) {
-      console.error('Error generating quiz:', err);
-      throw err;
+      // Step 3: Confirm upload completion - update status to PENDING
+      const confirmRes = await fetch(`/api/quizzes/upload?jobId=${jobData.jobId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!confirmRes.ok) {
+        throw new Error("Failed to confirm upload completion");
+      }
     }
-  };
+
+    return jobData;
+  } catch (err) {
+    console.error('Error generating quiz:', err);
+    throw err;
+  }
+};
 
   const submitQuiz = async (
     quizId: string,

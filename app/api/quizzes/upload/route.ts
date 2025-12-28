@@ -46,10 +46,16 @@ export async function POST(req: NextRequest) {
     const difficulty = formData.get('difficulty') as string || 'medium';
     const questionTypes = formData.get('questionTypes') as string || 'MULTIPLE_CHOICE,TRUE_FALSE';
 
-    const commonData = {
+    // Create base data with explicit type for status
+    const baseData = {
       userId,
       title: (formData.get("title") as string) || "AI Generated Quiz",
-      status: "PENDING" as const,
+      status: clientFileName ? "PENDING_UPLOAD" as const : "PENDING" as const,
+      error: null as string | null,
+      text: text?.trim() || undefined,
+      numberOfQuestions: numberOfQuestions.toString(),
+      difficulty: difficulty,
+      questionTypes: questionTypes
     };
 
     if (!clientFileName && (!text || !text.trim())) {
@@ -62,13 +68,7 @@ export async function POST(req: NextRequest) {
     // --- Case 1: Text Only ---
     if (!clientFileName) {
       const job = await prisma.quizJob.create({
-        data: {
-          ...commonData,
-          text: text?.trim(),
-          numberOfQuestions: numberOfQuestions.toString(),
-          difficulty: difficulty,
-          questionTypes: questionTypes
-        },
+        data: baseData
       });
 
       return NextResponse.json({
@@ -88,15 +88,14 @@ export async function POST(req: NextRequest) {
 
     const signedUrl = await getSignedUrl(r2Client, putCommand, { expiresIn: 3600 });
 
+    // Create data with file URL
+    const jobData = {
+      ...baseData,
+      fileUrl: `r2://${R2_BUCKET_NAME}/${fileKey}`,
+    };
+
     const job = await prisma.quizJob.create({
-      data: {
-        ...commonData,
-        fileUrl: `r2://${R2_BUCKET_NAME}/${fileKey}`,
-        text: text?.trim() || undefined,
-        numberOfQuestions: numberOfQuestions.toString(),
-        difficulty: difficulty,
-        questionTypes: questionTypes
-      },
+      data: jobData
     });
 
     return NextResponse.json({
@@ -107,10 +106,51 @@ export async function POST(req: NextRequest) {
       message: "Quiz generation job created. Please upload the file.",
       uploadMethod: "PUT",
       requiredHeaders: { "Content-Type": contentType || "application/pdf" },
+      initialStatus: "PENDING_UPLOAD"
     });
   } catch (err: any) {
     console.error("❌ Quiz Job POST error:", err);
     return NextResponse.json({ error: "Job creation failed" }, { status: 503 });
+  }
+}
+/* ================================================================
+                              PUT (Confirm Upload Complete)
+   ================================================================ */
+
+export async function PUT(req: NextRequest) {
+  try {
+    const userId = await getUserIdFromToken(req);
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const jobId = req.nextUrl.searchParams.get("jobId");
+    if (!jobId) return NextResponse.json({ error: "Job ID is required" }, { status: 400 });
+
+    // Get the job
+    const job = await prisma.quizJob.findFirst({
+      where: { id: jobId, userId, status: "PENDING_UPLOAD" },
+    });
+
+    if (!job) {
+      return NextResponse.json({ error: "Job not found or not in PENDING_UPLOAD state" }, { status: 404 });
+    }
+
+    // Update job status to PENDING so worker can process it
+    const updatedJob = await prisma.quizJob.update({
+      where: { id: jobId },
+      data: { 
+        status: "PENDING" as const // Explicitly cast to JobStatus enum value
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      jobId: updatedJob.id,
+      status: updatedJob.status,
+      message: "File upload confirmed. Job is now queued for processing."
+    });
+  } catch (err: any) {
+    console.error("❌ Confirm upload error:", err);
+    return NextResponse.json({ error: "Failed to confirm upload" }, { status: 500 });
   }
 }
 

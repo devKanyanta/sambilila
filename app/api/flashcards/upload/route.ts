@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
           title: (formData.get("title") as string) || "AI Flashcards",
           subject: (formData.get("subject") as string) || "General",
           description: (formData.get("description") as string) || "Generated from text",
-          status: "PENDING",
+          status: "PENDING", // Text-only jobs go straight to PENDING
         },
       });
 
@@ -87,11 +87,6 @@ export async function POST(req: NextRequest) {
       Bucket: R2_BUCKET_NAME,
       Key: fileKey,
       ContentType: contentType || 'application/pdf',
-      // Optional: Add metadata
-      // Metadata: {
-      //   originalFilename: clientFileName,
-      //   userId: userId,
-      // },
     });
 
     const signedUrl = await getSignedUrl(r2Client, putCommand, { 
@@ -100,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`✅ Signed PUT URL generated: ${signedUrl}`);
 
-    // --- Create PENDING Job (fileKey will be used by worker) ---
+    // --- Create PENDING_UPLOAD Job (fileKey will be used by worker AFTER upload) ---
     const job = await prisma.flashcardJob.create({
       data: {
         userId,
@@ -110,7 +105,7 @@ export async function POST(req: NextRequest) {
         title: (formData.get("title") as string) || "AI Flashcards",
         subject: (formData.get("subject") as string) || "General",
         description: (formData.get("description") as string) || "Generated from PDF",
-        status: "PENDING",
+        status: "PENDING_UPLOAD", // CHANGED: Job starts in PENDING_UPLOAD state
       },
     });
 
@@ -147,6 +142,52 @@ export async function POST(req: NextRequest) {
       },
       { status: 503 }
     );
+  }
+}
+
+/* ================================================================
+                              PATCH (Confirm Upload Complete)
+   ================================================================ */
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const userId = await getUserIdFromToken(req);
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const jobId = req.nextUrl.searchParams.get("jobId");
+    if (!jobId) return NextResponse.json({ error: "Job ID required" }, { status: 400 });
+
+    // Verify the job exists and belongs to the user
+    const job = await prisma.flashcardJob.findFirst({
+      where: { 
+        id: jobId, 
+        userId,
+        status: "PENDING_UPLOAD" // Only update if still in PENDING_UPLOAD state
+      },
+    });
+
+    if (!job) {
+      return NextResponse.json({ 
+        error: "Job not found, already processed, or not in upload state" 
+      }, { status: 404 });
+    }
+
+    // Update job status to PENDING so the worker can process it
+    const updatedJob = await prisma.flashcardJob.update({
+      where: { id: jobId },
+      data: { 
+        status: "PENDING",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      job: updatedJob,
+      message: "Upload confirmed. Job is now in processing queue."
+    });
+  } catch (err: any) {
+    console.error("❌ Confirm upload error:", err);
+    return NextResponse.json({ error: "Failed to confirm upload" }, { status: 500 });
   }
 }
 

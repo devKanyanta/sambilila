@@ -19,7 +19,7 @@ export type FlashcardJob = {
   title: string
   subject: string
   description: string
-  status: 'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED'
+  status: 'PENDING' | 'PROCESSING' | 'PENDING_UPLOAD' | 'DONE' | 'FAILED'
   error?: string
   createdAt: string
   flashcardSet?: FlashcardSet
