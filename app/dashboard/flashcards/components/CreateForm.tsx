@@ -40,6 +40,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
   onCancel
 }) => {
   const [isMobile, setIsMobile] = useState(false)
+  const [isVerySmall, setIsVerySmall] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
   const [shakeError, setShakeError] = useState(false)
@@ -49,6 +50,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
+      setIsVerySmall(window.innerWidth < 480)
     }
     
     checkMobile()
@@ -75,13 +77,11 @@ const CreateForm: React.FC<CreateFormProps> = ({
 
   const handleNextStep = () => {
     if (currentStep === 1) {
-      // Validate step 1
       if (!title.trim()) {
         triggerErrorAnimation()
         return
       }
     } else if (currentStep === 2) {
-      // Validate step 2
       if (!inputText.trim() && !selectedFile) {
         triggerErrorAnimation()
         return
@@ -104,22 +104,11 @@ const CreateForm: React.FC<CreateFormProps> = ({
 
   const handleGenerateWithSteps = () => {
     if (!inputText.trim() && !selectedFile) {
-      setCurrentStep(2) // Go back to content step
+      setCurrentStep(2)
       triggerErrorAnimation()
       return
     }
     onGenerate()
-  }
-
-  const steps = [
-    { number: 1, title: 'Set Details', description: 'Basic information' },
-    { number: 2, title: 'Content', description: 'Add your material' },
-    { number: 3, title: 'Review', description: 'Confirm and generate' }
-  ]
-
-  const getStepIcon = (stepNumber: number) => {
-    if (currentStep > stepNumber) return <Check className="w-4 h-4" />
-    return stepNumber
   }
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -149,16 +138,16 @@ const CreateForm: React.FC<CreateFormProps> = ({
         backgroundColor: styles.background.modal,
         backdropFilter: 'blur(20px)',
         border: `1px solid rgba(255, 255, 255, 0.2)`,
-        boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)`,
-        borderRadius: '1.5rem',
+        boxShadow: `0 20px 40px -12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)`,
+        borderRadius: '1rem',
         overflow: 'hidden',
         position: 'relative',
         width: '100%',
-        maxWidth: '600px',
+        maxWidth: isVerySmall ? '100%' : '500px',
         margin: '0 auto',
+        minHeight: isVerySmall ? 'auto' : '500px',
       }}
     >
-      {/* Glass effect overlay */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -167,83 +156,67 @@ const CreateForm: React.FC<CreateFormProps> = ({
       />
       
       <div className="relative">
-        {/* Header with Progress Bar */}
-        <div className="p-6 border-b" style={{ borderColor: 'rgba(0, 0, 0, 0.05)' }}>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full" 
+        {/* Header - Simplified for mobile */}
+        <div className={isVerySmall ? "p-4 border-b" : "p-5 border-b"} style={{ borderColor: 'rgba(0, 0, 0, 0.05)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className={isVerySmall ? "p-1.5 rounded-full" : "p-2 rounded-full"} 
                 style={{ 
                   background: gradients.primary,
-                  boxShadow: `0 0 20px ${colors.primary[200]}`
+                  boxShadow: `0 0 15px ${colors.primary[200]}`
                 }}>
-                <Sparkles className="w-5 h-5 text-white" />
+                <Sparkles className={isVerySmall ? "w-4 h-4 text-white" : "w-5 h-5 text-white"} />
               </div>
               <div>
-                <h2 className="text-xl font-bold" style={{ color: styles.text.primary }}>
-                  Create New Set
+                <h2 className={isVerySmall ? "text-base font-bold" : "text-lg font-bold"} style={{ color: styles.text.primary }}>
+                  {isVerySmall ? 'New Set' : 'Create New Set'}
                 </h2>
-                <p className="text-sm" style={{ color: styles.text.secondary }}>
-                  Step {currentStep} of {totalSteps}
-                </p>
+                {!isVerySmall && (
+                  <p className="text-xs" style={{ color: styles.text.secondary }}>
+                    Step {currentStep} of {totalSteps}
+                  </p>
+                )}
               </div>
             </div>
             
             {onCancel && (
               <button
                 onClick={onCancel}
-                className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200 active:scale-95"
+                className={isVerySmall ? "p-1.5 rounded-full" : "p-2 rounded-full"}
                 style={{ 
                   backgroundColor: 'rgba(0, 0, 0, 0.02)',
                   color: styles.text.secondary
                 }}
-                aria-label="Close form"
+                aria-label="Close"
               >
-                <X className="w-5 h-5" />
+                <X className={isVerySmall ? "w-4 h-4" : "w-5 h-5"} />
               </button>
             )}
           </div>
 
-          {/* Progress Steps */}
+          {/* Simplified Progress Steps */}
           <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex flex-col items-center relative z-10">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex flex-col items-center relative">
                 <div 
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${index === steps.length - 1 ? '' : 'mb-2'}`}
+                  className={isVerySmall ? "w-8 h-8 rounded-full flex items-center justify-center" : "w-10 h-10 rounded-full flex items-center justify-center"}
                   style={{
-                    backgroundColor: currentStep >= step.number ? colors.primary[500] : 'rgba(0, 0, 0, 0.05)',
-                    color: currentStep >= step.number ? 'white' : styles.text.secondary,
-                    border: currentStep === step.number ? `2px solid ${colors.primary[300]}` : 'none',
-                    boxShadow: currentStep === step.number ? `0 0 0 4px ${colors.primary[100]}` : 'none',
+                    backgroundColor: currentStep >= step ? colors.primary[500] : 'rgba(0, 0, 0, 0.05)',
+                    color: currentStep >= step ? 'white' : styles.text.secondary,
+                    border: currentStep === step ? `2px solid ${colors.primary[300]}` : 'none',
+                    boxShadow: currentStep === step ? `0 0 0 3px ${colors.primary[100]}` : 'none',
+                    fontSize: isVerySmall ? '0.75rem' : '0.875rem',
                   }}
                 >
-                  {getStepIcon(step.number)}
+                  {currentStep > step ? <Check className="w-3 h-3" /> : step}
                 </div>
-                {index < steps.length - 1 && (
-                  <div 
-                    className="absolute top-5 left-12 w-16 h-0.5 z-0"
-                    style={{ 
-                      backgroundColor: currentStep > step.number ? colors.primary[500] : 'rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.3s ease'
-                    }}
-                  />
-                )}
-                {!isMobile && (
-                  <div className={`text-center mt-2 ${currentStep === step.number ? 'block' : 'hidden sm:block'}`}>
-                    <p className="text-xs font-medium" style={{ color: styles.text.primary }}>
-                      {step.title}
-                    </p>
-                    <p className="text-xs" style={{ color: styles.text.light }}>
-                      {step.description}
-                    </p>
-                  </div>
-                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Form Content with Step Transitions */}
-        <div className="p-6 relative overflow-hidden">
+        {/* Form Content */}
+        <div className={isVerySmall ? "p-4 relative overflow-hidden" : "p-5 relative overflow-hidden"}>
           {/* Step 1: Set Details */}
           <div 
             className={`transition-all duration-300 ease-out ${
@@ -253,88 +226,62 @@ const CreateForm: React.FC<CreateFormProps> = ({
                   ? '-translate-x-full opacity-0 absolute inset-0' 
                   : 'translate-x-full opacity-0 absolute inset-0'
             }`}
-            style={{ padding: currentStep === 1 ? undefined : '0 24px' }}
           >
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: styles.text.primary }}>
-                  Set Details
-                </h3>
-                <p className="text-sm mb-4" style={{ color: styles.text.secondary }}>
-                  Start by giving your flashcard set a title and some basic information
-                </p>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className={isVerySmall ? "text-xs font-medium" : "text-sm font-medium"} style={{ color: styles.text.primary }}>
+                  Set Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={`w-full ${isVerySmall ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'} rounded-lg placeholder-gray-400 focus:outline-none transition-all duration-200 ${
+                    shakeError && !title.trim() ? 'animate-shake' : ''
+                  }`}
+                  style={{ 
+                    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                    border: `1px solid ${shakeError && !title.trim() ? colors.secondary[400] : styles.border.light}`,
+                    color: styles.text.primary,
+                  }}
+                  placeholder="What's this set about?"
+                  value={title}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChange(e.target.value)}
+                />
+                {shakeError && !title.trim() && (
+                  <p className="text-xs text-red-500 animate-in fade-in">Please enter a title</p>
+                )}
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1" style={{ color: styles.text.primary }}>
-                    Set Title
-                    <span className="text-red-500">*</span>
+                  <label className={isVerySmall ? "text-xs font-medium" : "text-sm font-medium"} style={{ color: styles.text.primary }}>
+                    Subject Area
                   </label>
                   <input
-                    className={`w-full px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none transition-all duration-200 text-sm md:text-base ${
-                      shakeError && !title.trim() ? 'animate-shake' : ''
-                    }`}
+                    className={`w-full ${isVerySmall ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'} rounded-lg placeholder-gray-400 focus:outline-none transition-all duration-200`}
                     style={{ 
                       backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                      border: `1px solid ${shakeError && !title.trim() ? colors.secondary[400] : styles.border.light}`,
+                      border: `1px solid ${styles.border.light}`,
                       color: styles.text.primary,
-                      boxShadow: `inset 0 1px 3px rgba(0, 0, 0, 0.05)`
                     }}
-                    placeholder="What's this set about?"
-                    value={title}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChange(e.target.value)}
+                    placeholder="e.g., Biology"
+                    value={subject}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSubjectChange(e.target.value)}
                   />
-                  {shakeError && !title.trim() && (
-                    <p className="text-xs text-red-500 animate-in fade-in">Please enter a title for your set</p>
-                  )}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium" style={{ color: styles.text.primary }}>
-                      Subject Area
-                    </label>
-                    <input
-                      className="w-full px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none transition-all duration-200 text-sm md:text-base"
-                      style={{ 
-                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                        border: `1px solid ${styles.border.light}`,
-                        color: styles.text.primary,
-                        boxShadow: `inset 0 1px 3px rgba(0, 0, 0, 0.05)`
-                      }}
-                      placeholder="e.g., Biology, Programming"
-                      value={subject}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSubjectChange(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium" style={{ color: styles.text.primary }}>
-                      Description
-                      <span className="text-xs font-normal ml-1" style={{ color: styles.text.light }}>
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      className="w-full px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none transition-all duration-200 text-sm md:text-base"
-                      style={{ 
-                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                        border: `1px solid ${styles.border.light}`,
-                        color: styles.text.primary,
-                        boxShadow: `inset 0 1px 3px rgba(0, 0, 0, 0.05)`
-                      }}
-                      placeholder="Brief description"
-                      value={description}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDescriptionChange(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 p-4 rounded-xl mt-6">
-                  <p className="text-sm font-medium flex items-center gap-2" style={{ color: colors.primary[800] }}>
-                    <Sparkles className="w-4 h-4" />
-                    Tip: Be specific with your title for better organization
-                  </p>
+                <div className="space-y-2">
+                  <label className={isVerySmall ? "text-xs font-medium" : "text-sm font-medium"} style={{ color: styles.text.primary }}>
+                    Description <span className="text-xs font-normal" style={{ color: styles.text.light }}>(optional)</span>
+                  </label>
+                  <input
+                    className={`w-full ${isVerySmall ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'} rounded-lg placeholder-gray-400 focus:outline-none transition-all duration-200`}
+                    style={{ 
+                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      border: `1px solid ${styles.border.light}`,
+                      color: styles.text.primary,
+                    }}
+                    placeholder="Brief description"
+                    value={description}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onDescriptionChange(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -351,26 +298,26 @@ const CreateForm: React.FC<CreateFormProps> = ({
                     ? 'translate-x-full opacity-0 absolute inset-0'
                     : ''
             }`}
-            style={{ padding: currentStep === 2 ? undefined : '0 24px' }}
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: styles.text.primary }}>
-                  Add Your Content
+                <h3 className={isVerySmall ? "text-base font-semibold mb-1" : "text-lg font-semibold mb-2"} style={{ color: styles.text.primary }}>
+                  Add Content
                 </h3>
-                <p className="text-sm mb-4" style={{ color: styles.text.secondary }}>
-                  Paste your text or upload a PDF. Our AI will analyze and create flashcards.
-                </p>
+                {!isVerySmall && (
+                  <p className="text-xs mb-3" style={{ color: styles.text.secondary }}>
+                    Paste text or upload a PDF
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1" style={{ color: styles.text.primary }}>
-                    Study Material
-                    <span className="text-red-500">*</span>
+                  <label className={isVerySmall ? "text-xs font-medium" : "text-sm font-medium"} style={{ color: styles.text.primary }}>
+                    Study Material <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    className={`w-full px-4 py-3 rounded-xl placeholder-gray-400 focus:outline-none transition-all duration-200 resize-none text-sm md:text-base min-h-[160px] ${
+                    className={`w-full ${isVerySmall ? 'px-3 py-2 text-xs min-h-[120px]' : 'px-4 py-3 text-sm min-h-[140px]'} rounded-lg placeholder-gray-400 focus:outline-none transition-all duration-200 resize-none ${
                       shakeError && !inputText.trim() && !selectedFile ? 'animate-shake' : ''
                     }`}
                     style={{ 
@@ -381,30 +328,33 @@ const CreateForm: React.FC<CreateFormProps> = ({
                           : styles.border.light
                       }`,
                       color: styles.text.primary,
-                      boxShadow: `inset 0 1px 3px rgba(0, 0, 0, 0.05)`
                     }}
-                    placeholder="Paste your notes, textbook content, or any study material here..."
+                    placeholder="Paste your notes, textbook content, or study material..."
                     value={inputText}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onInputTextChange(e.target.value)}
                   />
                   {shakeError && !inputText.trim() && !selectedFile && (
                     <p className="text-xs text-red-500 animate-in fade-in">
-                      Please add some content or upload a PDF
+                      Please add content or upload a PDF
                     </p>
                   )}
                 </div>
 
                 <div className="relative">
-                  <div className="flex items-center justify-center my-4">
-                    <div className="h-px flex-1" style={{ backgroundColor: styles.border.light }} />
-                    <span className="px-3 text-sm" style={{ color: styles.text.secondary }}>or</span>
-                    <div className="h-px flex-1" style={{ backgroundColor: styles.border.light }} />
-                  </div>
+                  {!isVerySmall && (
+                    <div className="flex items-center justify-center my-2">
+                      <div className="h-px flex-1" style={{ backgroundColor: styles.border.light }} />
+                      <span className="px-2 text-xs" style={{ color: styles.text.secondary }}>or</span>
+                      <div className="h-px flex-1" style={{ backgroundColor: styles.border.light }} />
+                    </div>
+                  )}
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium block" style={{ color: styles.text.primary }}>
-                      Upload PDF
-                    </label>
+                    {!isVerySmall && (
+                      <label className="text-xs font-medium block" style={{ color: styles.text.primary }}>
+                        Upload PDF
+                      </label>
+                    )}
                     
                     {!selectedFile ? (
                       <label className="block">
@@ -415,68 +365,52 @@ const CreateForm: React.FC<CreateFormProps> = ({
                           className="hidden"
                         />
                         <div 
-                          className="border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer hover:border-primary-400 active:scale-[0.98] group"
+                          className="border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 cursor-pointer hover:border-primary-400 active:scale-[0.98]"
                           style={{ 
                             borderColor: styles.border.light,
                             backgroundColor: 'transparent',
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = colors.primary[400]
-                            e.currentTarget.style.backgroundColor = colors.primary[50]
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = styles.border.light
-                            e.currentTarget.style.backgroundColor = 'transparent'
-                          }}
                           onDragOver={handleDragOver}
                           onDrop={handleFileDrop}
                         >
-                          <div className="p-3 rounded-full mx-auto mb-3 w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
+                          <div className="p-2 rounded-full mx-auto mb-2 w-10 h-10 flex items-center justify-center"
                             style={{ backgroundColor: colors.primary[50] }}>
-                            <Upload className="w-6 h-6" style={{ color: colors.primary[500] }} />
+                            <Upload className="w-4 h-4" style={{ color: colors.primary[500] }} />
                           </div>
-                          <p className="text-sm font-medium mb-1" style={{ color: styles.text.primary }}>
-                            Drop PDF here or click to browse
+                          <p className="text-xs font-medium mb-0.5" style={{ color: styles.text.primary }}>
+                            {isVerySmall ? 'Upload PDF' : 'Drop PDF or click to browse'}
                           </p>
-                          <p className="text-xs" style={{ color: styles.text.light }}>
-                            Maximum file size: 10MB
-                          </p>
+                          {!isVerySmall && (
+                            <p className="text-xs" style={{ color: styles.text.light }}>
+                              Max 10MB
+                            </p>
+                          )}
                         </div>
                       </label>
                     ) : (
                       <div 
-                        className="rounded-xl p-4 flex items-center justify-between transition-all duration-200 animate-in fade-in"
+                        className="rounded-lg p-3 flex items-center justify-between transition-all duration-200 animate-in fade-in"
                         style={{ 
                           backgroundColor: colors.primary[50],
                           border: `1px solid ${colors.primary[200]}`,
-                          boxShadow: `0 2px 8px ${colors.primary[100]}`
                         }}
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: colors.primary[500] }}>
-                            <FileText className="w-5 h-5 text-white" />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="p-1.5 rounded" style={{ backgroundColor: colors.primary[500] }}>
+                            <FileText className="w-3.5 h-3.5 text-white" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate" style={{ color: styles.text.primary }}>
+                            <p className="text-xs font-medium truncate" style={{ color: styles.text.primary }}>
                               {selectedFile.name}
                             </p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <p className="text-xs" style={{ color: styles.text.secondary }}>
-                                {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                              </p>
-                              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: styles.text.light }} />
-                              <p className="text-xs" style={{ color: styles.text.secondary }}>
-                                Ready to process
-                              </p>
-                            </div>
                           </div>
                         </div>
                         <button
                           onClick={onRemoveFile}
-                          className="p-2 hover:bg-red-100 rounded-lg transition-colors duration-200 ml-3 shrink-0"
+                          className="p-1 hover:bg-red-100 rounded transition-colors duration-200 ml-2"
                           style={{ backgroundColor: 'transparent' }}
                         >
-                          <Trash2 className="w-4 h-4" style={{ color: colors.secondary[600] }} />
+                          <Trash2 className="w-3.5 h-3.5" style={{ color: colors.secondary[600] }} />
                         </button>
                       </div>
                     )}
@@ -493,108 +427,72 @@ const CreateForm: React.FC<CreateFormProps> = ({
                 ? 'translate-x-0 opacity-100' 
                 : 'translate-x-full opacity-0 absolute inset-0'
             }`}
-            style={{ padding: currentStep === 3 ? undefined : '0 24px' }}
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: styles.text.primary }}>
-                  Review & Generate
+                <h3 className={isVerySmall ? "text-base font-semibold mb-1" : "text-lg font-semibold mb-2"} style={{ color: styles.text.primary }}>
+                  Review
                 </h3>
-                <p className="text-sm mb-6" style={{ color: styles.text.secondary }}>
-                  Confirm your details and generate your flashcards
-                </p>
+                {!isVerySmall && (
+                  <p className="text-xs mb-4" style={{ color: styles.text.secondary }}>
+                    Confirm details and generate
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="space-y-3">
+                <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-xs">
                   <div>
-                    <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
-                      Set Title
+                    <p className="font-medium mb-0.5" style={{ color: styles.text.secondary }}>
+                      Title
                     </p>
-                    <p className="text-sm font-medium" style={{ color: styles.text.primary }}>
+                    <p style={{ color: styles.text.primary }}>
                       {title || <span className="italic text-gray-400">Not provided</span>}
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
+                      <p className="font-medium mb-0.5" style={{ color: styles.text.secondary }}>
                         Subject
                       </p>
-                      <p className="text-sm" style={{ color: styles.text.primary }}>
+                      <p style={{ color: styles.text.primary }}>
                         {subject || <span className="italic text-gray-400">Not specified</span>}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
-                        Content Type
+                      <p className="font-medium mb-0.5" style={{ color: styles.text.secondary }}>
+                        Content
                       </p>
-                      <p className="text-sm" style={{ color: styles.text.primary }}>
-                        {selectedFile ? 'PDF Document' : inputText.trim() ? 'Text Content' : 'No content'}
+                      <p style={{ color: styles.text.primary }}>
+                        {selectedFile ? 'PDF' : inputText.trim() ? 'Text' : 'None'}
                       </p>
                     </div>
                   </div>
 
-                  {description && (
+                  {inputText.trim() && !isVerySmall && (
                     <div>
-                      <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
-                        Description
+                      <p className="font-medium mb-0.5" style={{ color: styles.text.secondary }}>
+                        Preview
                       </p>
-                      <p className="text-sm" style={{ color: styles.text.primary }}>
-                        {description}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedFile && (
-                    <div>
-                      <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
-                        File
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" style={{ color: colors.primary[500] }} />
-                        <p className="text-sm truncate" style={{ color: styles.text.primary }}>
-                          {selectedFile.name}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {inputText.trim() && (
-                    <div>
-                      <p className="text-xs font-medium mb-1" style={{ color: styles.text.secondary }}>
-                        Text Content Preview
-                      </p>
-                      <div className="text-sm max-h-24 overflow-y-auto p-2 rounded bg-white">
-                        <p className="text-gray-600 line-clamp-3">
-                          {inputText.trim().substring(0, 200)}
-                          {inputText.trim().length > 200 ? '...' : ''}
+                      <div className="max-h-20 overflow-y-auto p-2 rounded bg-white">
+                        <p className="text-gray-600 line-clamp-2 text-xs">
+                          {inputText.trim().substring(0, 150)}
+                          {inputText.trim().length > 150 ? '...' : ''}
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-xl">
-                  <p className="text-sm font-medium flex items-center gap-2 mb-2" style={{ color: colors.primary[800] }}>
-                    <Sparkles className="w-4 h-4" />
-                    What happens next?
-                  </p>
-                  <ul className="text-xs space-y-1" style={{ color: colors.primary[700] }}>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                      AI analyzes your content and identifies key concepts
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                      Creates question-answer pairs for optimal learning
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                      Typically takes 30-60 seconds to complete
-                    </li>
-                  </ul>
-                </div>
+                {!isVerySmall && (
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-xs font-medium flex items-center gap-1 mb-1" style={{ color: colors.primary[800] }}>
+                      <Sparkles className="w-3 h-3" />
+                      AI will analyze and create flashcards
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -602,7 +500,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
           {/* Error Display */}
           {error && (
             <div 
-              className={`rounded-xl p-4 mt-4 animate-in fade-in duration-200 ${
+              className={`rounded-lg p-3 mt-3 animate-in fade-in duration-200 text-xs ${
                 shakeError ? 'animate-shake' : ''
               }`}
               style={{ 
@@ -610,8 +508,7 @@ const CreateForm: React.FC<CreateFormProps> = ({
                 border: `1px solid ${colors.secondary[200]}`
               }}
             >
-              <p className="text-sm font-medium flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.secondary[500] }} />
+              <p className="font-medium">
                 {error}
               </p>
             </div>
@@ -619,29 +516,29 @@ const CreateForm: React.FC<CreateFormProps> = ({
         </div>
 
         {/* Navigation Buttons */}
-        <div className="p-6 border-t" style={{ borderColor: 'rgba(0, 0, 0, 0.05)' }}>
+        <div className={isVerySmall ? "p-4 border-t" : "p-5 border-t"} style={{ borderColor: 'rgba(0, 0, 0, 0.05)' }}>
           <div className="flex items-center justify-between">
             <div>
               {currentStep > 1 && (
                 <button
                   onClick={handlePrevStep}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 active:scale-95"
+                  className={`flex items-center gap-1 ${isVerySmall ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'} rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 active:scale-95`}
                   style={{
                     backgroundColor: colors.neutral[50],
                     color: styles.text.secondary,
                   }}
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className={isVerySmall ? "w-3 h-3" : "w-4 h-4"} />
                   Back
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
-              {onCancel && currentStep === 1 && (
+            <div className="flex items-center gap-2">
+              {onCancel && currentStep === 1 && !isVerySmall && (
                 <button
                   onClick={onCancel}
-                  className="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 active:scale-95"
+                  className="px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 active:scale-95"
                   style={{
                     backgroundColor: colors.neutral[50],
                     color: styles.text.secondary,
@@ -654,35 +551,34 @@ const CreateForm: React.FC<CreateFormProps> = ({
               {currentStep < totalSteps ? (
                 <button
                   onClick={handleNextStep}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg active:scale-95"
+                  className={`flex items-center gap-1 ${isVerySmall ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'} rounded-lg font-medium transition-all duration-200 hover:shadow-lg active:scale-95`}
                   style={{
                     background: gradients.primary,
                     color: 'white',
                   }}
                 >
                   Continue
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className={isVerySmall ? "w-3 h-3" : "w-4 h-4"} />
                 </button>
               ) : (
                 <button
                   onClick={handleGenerateWithSteps}
                   disabled={loading || (!inputText.trim() && !selectedFile)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex items-center gap-1 ${isVerySmall ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'} rounded-lg font-medium transition-all duration-200 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
                   style={{
                     background: gradients.primary,
                     color: 'white',
-                    boxShadow: `0 4px 16px ${colors.primary[300]}`
                   }}
                 >
                   {loading ? (
                     <>
-                      <RotateCw className="w-4 h-4 animate-spin" />
-                      Generating...
+                      <RotateCw className={isVerySmall ? "w-3 h-3 animate-spin" : "w-4 h-4 animate-spin"} />
+                      {isVerySmall ? 'Processing...' : 'Generating...'}
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
-                      Generate Flashcards
+                      <Sparkles className={isVerySmall ? "w-3 h-3" : "w-4 h-4"} />
+                      {isVerySmall ? 'Generate' : 'Generate Flashcards'}
                     </>
                   )}
                 </button>

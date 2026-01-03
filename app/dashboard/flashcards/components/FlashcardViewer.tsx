@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { colors, gradients, theme } from '@/lib/theme'
 import { FlashcardSet } from './types'
+import { useEffect, useState } from 'react'
 
 interface FlashcardViewerProps {
   selectedSet: FlashcardSet
@@ -23,6 +24,18 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   onPrevCard,
   onToggleFlip
 }) => {
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const styles = {
     background: {
       card: theme.backgrounds.card,
@@ -41,65 +54,43 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   const currentCard = selectedSet.cards?.[currentCardIndex]
   const totalCards = selectedSet.cards?.length || 0
 
-  const handlePrevCardMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (currentCardIndex !== 0) {
-      e.currentTarget.style.backgroundColor = colors.neutral[200]
-    }
-  }
-
-  const handlePrevCardMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (currentCardIndex !== 0) {
-      e.currentTarget.style.backgroundColor = colors.neutral[100]
-    }
-  }
-
-  const handleNextCardMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (currentCardIndex !== totalCards - 1) {
-      e.currentTarget.style.backgroundColor = colors.neutral[200]
-    }
-  }
-
-  const handleNextCardMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (currentCardIndex !== totalCards - 1) {
-      e.currentTarget.style.backgroundColor = colors.neutral[100]
-    }
-  }
-
   return (
     <div 
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200"
       style={{ backgroundColor: theme.backgrounds.overlay }}
     >
-      <div className="w-full max-w-2xl">
-        {/* Header */}
+      <div className="w-full max-w-2xl h-full sm:h-auto flex flex-col">
+        {/* Header - Simplified for mobile */}
         <div 
-          className="border rounded-t-2xl p-4 flex items-center justify-between shadow-lg"
+          className={`border rounded-t-xl sm:rounded-t-2xl ${isMobile ? 'p-3' : 'p-4'} flex items-center justify-between shadow-lg flex-shrink-0`}
           style={{ 
             backgroundColor: styles.background.card,
             borderColor: styles.border.light,
             boxShadow: styles.shadow.lg
           }}
         >
-          <div>
-            <h3 className="font-bold text-lg" style={{ color: styles.text.primary }}>
+          <div className="min-w-0 flex-1 mr-3">
+            <h3 className={`${isMobile ? 'text-base font-semibold' : 'font-bold text-lg'} truncate`} style={{ color: styles.text.primary }}>
               {selectedSet.title}
             </h3>
-            <p className="text-sm" style={{ color: colors.primary[400] }}>
-              {selectedSet.subject}
-            </p>
+            {!isMobile && (
+              <p className="text-sm" style={{ color: colors.primary[400] }}>
+                {selectedSet.subject}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className={`${isMobile ? 'p-1.5' : 'p-2'} hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0`}
             style={{ backgroundColor: 'transparent' }}
           >
-            <X className="w-6 h-6" style={{ color: styles.text.secondary }} />
+            <X className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
           </button>
         </div>
 
-        {/* Card */}
+        {/* Card Area - Optimized for mobile */}
         <div 
-          className="border-x p-8 min-h-[400px] flex items-center justify-center"
+          className={`border-x flex-1 flex items-center justify-center ${isMobile ? 'p-3' : 'p-8'}`}
           style={{ 
             backgroundColor: colors.neutral[50],
             borderColor: styles.border.light
@@ -108,7 +99,7 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
           {currentCard ? (
             <div
               onClick={onToggleFlip}
-              className="w-full h-[320px] cursor-pointer perspective-1000"
+              className={`w-full ${isMobile ? 'h-full min-h-[280px]' : 'h-[320px]'} cursor-pointer perspective-1000`}
             >
               <div
                 className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
@@ -121,43 +112,47 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
               >
                 {/* Front */}
                 <div
-                  className="absolute inset-0 rounded-2xl shadow-2xl flex flex-col items-center justify-center p-8 backface-hidden"
+                  className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden"
                   style={{ 
                     backfaceVisibility: 'hidden',
                     background: gradients.primary,
-                    boxShadow: styles.shadow.xl
+                    boxShadow: styles.shadow.lg
                   }}
                 >
-                  <p className="text-xs uppercase tracking-wider mb-4" style={{ color: colors.neutral[200] }}>
+                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4`} style={{ color: colors.neutral[200] }}>
                     Question
                   </p>
-                  <p className="text-2xl font-bold text-center" style={{ color: styles.text.inverted }}>
+                  <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-center leading-tight px-2`} style={{ color: styles.text.inverted }}>
                     {currentCard.front}
                   </p>
-                  <p className="text-sm mt-8" style={{ color: colors.neutral[200] }}>
-                    Click to reveal answer
-                  </p>
+                  {!isMobile && (
+                    <p className="text-sm mt-6 sm:mt-8" style={{ color: colors.neutral[200] }}>
+                      Click to reveal answer
+                    </p>
+                  )}
                 </div>
 
                 {/* Back */}
                 <div
-                  className="absolute inset-0 rounded-2xl shadow-2xl flex flex-col items-center justify-center p-8 backface-hidden"
+                  className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden"
                   style={{
                     backfaceVisibility: 'hidden',
                     transform: 'rotateY(180deg)',
                     background: 'linear-gradient(135deg, #58a4b0 0%, #373f51 100%)',
-                    boxShadow: styles.shadow.xl
+                    boxShadow: styles.shadow.lg
                   }}
                 >
-                  <p className="text-xs uppercase tracking-wider mb-4" style={{ color: colors.neutral[200] }}>
+                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4`} style={{ color: colors.neutral[200] }}>
                     Answer
                   </p>
-                  <p className="text-xl font-medium text-center" style={{ color: styles.text.inverted }}>
+                  <p className={`${isMobile ? 'text-base' : 'text-xl'} font-medium text-center leading-tight px-2`} style={{ color: styles.text.inverted }}>
                     {currentCard.back}
                   </p>
-                  <p className="text-sm mt-8" style={{ color: colors.neutral[200] }}>
-                    Click to see question
-                  </p>
+                  {!isMobile && (
+                    <p className="text-sm mt-6 sm:mt-8" style={{ color: colors.neutral[200] }}>
+                      Click to see question
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -166,56 +161,70 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
           )}
         </div>
 
-        {/* Footer Controls */}
+        {/* Footer Controls - Optimized for mobile */}
         <div 
-          className="border rounded-b-2xl p-4 shadow-lg"
+          className={`border rounded-b-xl sm:rounded-b-2xl ${isMobile ? 'p-3' : 'p-4'} shadow-lg flex-shrink-0`}
           style={{ 
             backgroundColor: styles.background.card,
             borderColor: styles.border.light,
             boxShadow: styles.shadow.lg
           }}
         >
+          {/* Simplified progress indicator for mobile */}
+          <div className={`flex items-center justify-center mb-3 ${isMobile ? 'mb-2' : 'mb-3'}`}>
+            <div className="text-center">
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} mb-1`} style={{ color: styles.text.secondary }}>
+                {isMobile ? `${currentCardIndex + 1}/${totalCards}` : `Card ${currentCardIndex + 1} of ${totalCards}`}
+              </p>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <button
               onClick={onPrevCard}
               disabled={currentCardIndex === 0}
-              className="p-3 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              style={{ backgroundColor: colors.neutral[100] }}
-              onMouseEnter={handlePrevCardMouseEnter}
-              onMouseLeave={handlePrevCardMouseLeave}
+              className={`${isMobile ? 'p-2' : 'p-3'} rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95`}
+              style={{ 
+                backgroundColor: colors.neutral[100],
+                minWidth: isMobile ? '44px' : 'auto'
+              }}
             >
-              <ChevronLeft className="w-6 h-6" style={{ color: styles.text.secondary }} />
+              <ChevronLeft className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
             </button>
 
-            <div className="text-center">
-              <p className="text-sm mb-1" style={{ color: styles.text.secondary }}>
-                Card {currentCardIndex + 1} of {totalCards}
-              </p>
-              <div className="flex gap-1">
-                {Array.from({ length: totalCards }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-1.5 rounded-full transition-all"
-                    style={{ 
-                      width: i === currentCardIndex ? '2rem' : '0.375rem',
-                      backgroundColor: i === currentCardIndex ? colors.primary[400] : colors.neutral[300]
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Flip button for mobile */}
+            {isMobile && (
+              <button
+                onClick={onToggleFlip}
+                className="px-4 py-2 rounded-lg font-medium text-sm active:scale-95"
+                style={{ 
+                  background: gradients.primary,
+                  color: 'white',
+                }}
+              >
+                Flip Card
+              </button>
+            )}
 
             <button
               onClick={onNextCard}
               disabled={currentCardIndex === totalCards - 1}
-              className="p-3 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              style={{ backgroundColor: colors.neutral[100] }}
-              onMouseEnter={handleNextCardMouseEnter}
-              onMouseLeave={handleNextCardMouseLeave}
+              className={`${isMobile ? 'p-2' : 'p-3'} rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95`}
+              style={{ 
+                backgroundColor: colors.neutral[100],
+                minWidth: isMobile ? '44px' : 'auto'
+              }}
             >
-              <ChevronRight className="w-6 h-6" style={{ color: styles.text.secondary }} />
+              <ChevronRight className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
             </button>
           </div>
+
+          {/* Mobile swipe hint */}
+          {isMobile && totalCards > 1 && (
+            <p className="text-center text-xs mt-3" style={{ color: styles.text.secondary }}>
+              Swipe left/right or use buttons to navigate
+            </p>
+          )}
         </div>
       </div>
     </div>

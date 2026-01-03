@@ -13,13 +13,16 @@ import {
   FileText,
   Brain,
   PlusCircle,
-  ArrowRight,
   BarChart3,
   Award,
-  TrendingDown
+  TrendingDown,
+  Activity,
+  Sparkles,
+  Users,
+  CheckCircle
 } from 'lucide-react'
 
-// Import theme constants (you'll need to adjust the path based on your project structure)
+// Import theme constants
 import { colors, gradients, theme } from '@/lib/theme'
 
 interface DashboardStats {
@@ -84,48 +87,20 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Theme-based styles
   const styles = {
-    // Backgrounds
     background: {
       main: theme.backgrounds.main,
       card: theme.backgrounds.card,
-      sidebar: theme.backgrounds.sidebar,
-      navbar: theme.backgrounds.navbar,
     },
-    
-    // Text
     text: {
       primary: theme.text.primary,
       secondary: theme.text.secondary,
       light: theme.text.light,
       inverted: theme.text.inverted,
-      accent: theme.text.accent,
-      dark: theme.text.light,
     },
-    
-    // Borders
     border: {
       light: theme.borders.light,
-      medium: theme.borders.medium,
-      dark: theme.borders.dark,
-      accent: theme.borders.accent,
     },
-    
-    // Interactive states
-    state: {
-      hover: {
-        light: theme.states.hover.light,
-        primary: theme.states.hover.primary,
-      },
-      active: {
-        light: theme.states.active.light,
-        primary: theme.states.active.primary,
-      },
-      disabled: theme.states.disabled,
-    },
-    
-    // Shadows
     shadow: theme.shadows,
   }
 
@@ -249,12 +224,12 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]" style={{ backgroundColor: styles.background.main }}>
+      <div className="flex items-center justify-center min-h-screen md:min-h-[calc(100vh-200px)]" style={{ backgroundColor: styles.background.main }}>
         <div className="text-center">
           <div className="relative">
-            <div className="w-16 h-16 border-4 rounded-full" style={{ borderColor: styles.border.light }}></div>
+            <div className="w-12 h-12 md:w-16 md:h-16 border-2 rounded-full" style={{ borderColor: styles.border.light }}></div>
             <div 
-              className="absolute top-0 left-0 w-16 h-16 border-4 rounded-full animate-spin" 
+              className="absolute top-0 left-0 w-12 h-12 md:w-16 md:h-16 border-2 rounded-full animate-spin" 
               style={{ 
                 borderColor: colors.primary[400],
                 borderTopColor: 'transparent' 
@@ -270,20 +245,20 @@ export default function Dashboard() {
     return (
       <div className="max-w-md mx-auto text-center py-12 px-4" style={{ backgroundColor: styles.background.main }}>
         <div 
-          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4"
           style={{ backgroundColor: 'rgba(88, 164, 176, 0.1)' }}
         >
-          <div className="text-2xl" style={{ color: colors.primary[400] }}>⚠️</div>
+          <div className="text-xl md:text-2xl" style={{ color: colors.primary[400] }}>⚠️</div>
         </div>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: styles.text.dark }}>Unable to load dashboard</h3>
-        <p className="mb-6" style={{ color: styles.text.secondary }}>{error}</p>
+        <h3 className="text-base md:text-lg font-medium mb-2" style={{ color: styles.text.primary }}>Unable to load dashboard</h3>
+        <p className="mb-6 text-sm md:text-base" style={{ color: styles.text.secondary }}>{error}</p>
         <button
           onClick={fetchDashboardData}
-          className="px-6 py-3 rounded-xl transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+          className="px-4 py-2.5 md:px-6 md:py-3 rounded-lg transition-all duration-200 font-medium"
           style={{ 
-            background: gradients.primary,
-            color: styles.text.inverted,
-            boxShadow: styles.shadow.sm
+            backgroundColor: colors.primary[600],
+            color: 'white',
+            border: '1px solid rgba(59, 130, 246, 0.2)',
           }}
         >
           Try Again
@@ -297,25 +272,29 @@ export default function Dashboard() {
       name: 'Flashcard Sets', 
       value: stats?.counts.flashcardSets.toString() || '0',
       change: calculateChange(stats?.counts.flashcardSets || 0, (stats?.counts.flashcardSets || 0) - 3),
-      icon: <FileText className="w-5 h-5" />,
+      icon: <FileText className="w-4 h-4 md:w-5 md:h-5" />,
+      color: colors.primary[500]
     },
     { 
-      name: 'Quizzes Created', 
+      name: 'Quizzes', 
       value: stats?.counts.quizzes.toString() || '0',
       change: calculateChange(stats?.counts.quizzes || 0, (stats?.counts.quizzes || 0) - 1),
-      icon: <Brain className="w-5 h-5" />,
+      icon: <Brain className="w-4 h-4 md:w-5 md:h-5" />,
+      color: colors.secondary[500]
     },
     { 
-      name: 'Study Sessions', 
+      name: 'Sessions', 
       value: stats?.counts.studySessions.toString() || '0',
       change: calculateChange(stats?.counts.studySessions || 0, (stats?.counts.studySessions || 0) - 2),
-      icon: <BookOpen className="w-5 h-5" />,
+      icon: <BookOpen className="w-4 h-4 md:w-5 md:h-5" />,
+      color: colors.accent[500]
     },
     { 
       name: 'Avg Score', 
       value: `${stats?.performance.averageScore || 0}%`,
       change: calculateChange(stats?.performance.averageScore || 0, (stats?.performance.averageScore || 0) - 5),
-      icon: <Target className="w-5 h-5" />,
+      icon: <Target className="w-4 h-4 md:w-5 md:h-5" />,
+      color: colors.success[500]
     },
   ]
 
@@ -327,7 +306,8 @@ export default function Dashboard() {
       title: result.quiz.title,
       description: `${result.score}/${result.totalQuestions} correct • ${result.quiz.subject}`,
       date: result.completedAt,
-      icon: <Brain className="w-4 h-4" />,
+      icon: <Brain className="w-3 h-3 md:w-4 md:h-4" />,
+      color: colors.secondary[400]
     })) || []),
     ...(recentActivity?.studySessions.slice(0, 2).map(session => ({
       type: 'study' as const,
@@ -335,129 +315,115 @@ export default function Dashboard() {
       title: `${session.cardsStudied} Questions studied`,
       description: `${session.correctAnswers} correct • ${session.duration} min`,
       date: session.startedAt,
-      icon: <BookOpen className="w-4 h-4" />,
+      icon: <BookOpen className="w-3 h-3 md:w-4 md:h-4" />,
+      color: colors.primary[400]
     })) || [])
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4)
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3)
 
   return (
-    <div className="space-y-6 pb-8" style={{ backgroundColor: styles.background.main }}>
-      {/* Welcome Header with Streak */}
-      <div 
-        className="relative overflow-hidden rounded-2xl p-6 md:p-8 text-white shadow-lg"
-        style={{ 
-          background: gradients.primary,
-          boxShadow: styles.shadow.lg
-        }}
-      >
-        <div className="relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="pb-8" style={{ backgroundColor: styles.background.main }}>
+      {/* Welcome Header */}
+      <div className="px-4 sm:px-6 md:px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-start md:items-center justify-between gap-4 mb-6">
             <div>
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-2">
                 <div 
-                  className="w-12 h-12 backdrop-blur-sm rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(59, 130, 246, 0.08)' }}
                 >
-                  <span className="text-2xl">{getUserAvatar()}</span>
+                  <span className="text-xl md:text-2xl">{getUserAvatar()}</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold" style={{ color: styles.text.inverted }}>
+                  <h1 className="text-xl md:text-2xl font-medium" style={{ color: styles.text.primary }}>
                     Welcome back, {userProfile?.name || 'Student'}!
                   </h1>
-                  <p className="mt-1" style={{ color: colors.neutral[200] }}>
+                  <p className="text-sm md:text-base mt-0.5" style={{ color: styles.text.secondary }}>
                     Ready to continue learning?
                   </p>
                 </div>
               </div>
             </div>
             
-            {/* {stats?.streaks.currentStreak && (
+            {/* Streak Badge - Hidden on mobile if space is tight */}
+            {stats?.streaks.currentStreak && stats.streaks.currentStreak > 0 && (
               <div 
-                className="backdrop-blur-sm rounded-xl p-4 min-w-[140px]"
+                className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-lg"
                 style={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                  backgroundColor: 'rgba(255, 245, 235, 0.8)',
+                  border: '1px solid rgba(249, 115, 22, 0.2)',
                 }}
               >
-                <div className="text-sm font-medium" style={{ color: colors.neutral[200] }}>Current Streak</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="text-2xl font-bold" style={{ color: styles.text.inverted }}>
-                    {stats.streaks.currentStreak}
+                <Sparkles className="w-4 h-4" style={{ color: colors.accent[500] }} />
+                <div>
+                  <div className="text-sm font-medium" style={{ color: colors.accent[700] }}>Streak</div>
+                  <div className="text-base font-bold" style={{ color: colors.accent[600] }}>
+                    {stats.streaks.currentStreak} days
                   </div>
-                  <div className="text-sm" style={{ color: colors.neutral[200] }}>days</div>
                 </div>
               </div>
-            )} */}
+            )}
           </div>
-          
+
           {/* Quick Stats Row */}
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: styles.text.inverted }}>
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
+              <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {stats?.performance.totalCardsStudied || 0}
               </div>
-              <div className="text-sm" style={{ color: colors.neutral[200] }}>Questions Studied</div>
+              <div className="text-xs md:text-sm mt-1" style={{ color: styles.text.secondary }}>Questions</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: styles.text.inverted }}>
+            <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
+              <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {formatStudyTime(stats?.performance.totalStudyTime || 0)}
               </div>
-              <div className="text-sm" style={{ color: colors.neutral[200] }}>Study Time</div>
+              <div className="text-xs md:text-sm mt-1" style={{ color: styles.text.secondary }}>Study Time</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold" style={{ color: styles.text.inverted }}>
+            <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
+              <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {stats?.performance.averageScore || 0}%
               </div>
-              <div className="text-sm" style={{ color: colors.neutral[200] }}>Avg Score</div>
+              <div className="text-xs md:text-sm mt-1" style={{ color: styles.text.secondary }}>Avg Score</div>
             </div>
           </div>
         </div>
-        
-        {/* Background Pattern */}
-        <div 
-          className="absolute top-0 right-0 w-64 h-64 rounded-full -translate-y-32 translate-x-32"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-        ></div>
-        <div 
-          className="absolute bottom-0 left-0 w-48 h-48 rounded-full translate-y-24 -translate-x-24"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-        ></div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {dashboardStats.map((stat) => (
-          <div 
-            key={stat.name} 
-            className="group bg-white rounded-xl border p-5 hover:shadow-lg transition-all duration-200"
-            style={{ 
-              borderColor: styles.border.light,
-              backgroundColor: styles.background.card,
-              boxShadow: styles.shadow.sm
-            }}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
+      {/* Main Content Grid */}
+      <div className="px-4 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {dashboardStats.map((stat) => (
+              <div 
+                key={stat.name} 
+                className="bg-white rounded-lg sm:rounded-xl border p-4"
+                style={{ 
+                  borderColor: styles.border.light,
+                  backgroundColor: styles.background.card,
+                }}
+              >
+                <div className="flex items-center gap-3 mb-3">
                   <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ background: gradients.primary }}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${stat.color}15` }}
                   >
-                    <div className="text-white">
+                    <div style={{ color: stat.color }}>
                       {stat.icon}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: styles.text.secondary }}>
+                    <p className="text-xs sm:text-sm truncate" style={{ color: styles.text.secondary }}>
                       {stat.name}
                     </p>
-                    <p className="text-2xl font-bold mt-1" style={{ color: styles.text.primary }}>
+                    <p className="text-lg sm:text-xl font-medium mt-0.5" style={{ color: styles.text.primary }}>
                       {stat.value}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <div 
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${
                       stat.change.isPositive 
                         ? 'bg-green-50 text-green-700' 
                         : 'bg-red-50 text-red-700'
@@ -470,325 +436,319 @@ export default function Dashboard() {
                     )}
                     {stat.change.value}
                   </div>
-                  <span className="text-xs" style={{ color: styles.text.secondary }}>vs last week</span>
+                  <span className="text-xs" style={{ color: styles.text.light }}>vs last week</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Quick Actions */}
+            <div className="lg:col-span-2">
+              <div 
+                className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
+                style={{ 
+                  borderColor: styles.border.light,
+                  backgroundColor: styles.background.card
+                }}
+              >
+                <h2 className="text-base sm:text-lg font-medium mb-4 sm:mb-6" style={{ color: styles.text.primary }}>
+                  Quick Actions
+                </h2>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <Link
+                    href="/dashboard/flashcards"
+                    className="group p-4 sm:p-5 rounded-lg border transition-all duration-200 hover:border-primary/30"
+                    style={{ 
+                      borderColor: styles.border.light,
+                      backgroundColor: styles.background.card
+                    }}
+                  >
+                    <div className="flex flex-col items-center text-center">
+                      <div 
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3"
+                        style={{ 
+                          backgroundColor: colors.primary[50],
+                          color: colors.primary[600]
+                        }}
+                      >
+                        <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                      <p className="font-medium text-sm sm:text-base mb-1" style={{ color: styles.text.primary }}>
+                        New Flashcards
+                      </p>
+                      <p className="text-xs sm:text-sm" style={{ color: styles.text.secondary }}>
+                        Create and study
+                      </p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/dashboard/quiz"
+                    className="group p-4 sm:p-5 rounded-lg border transition-all duration-200 hover:border-primary/30"
+                    style={{ 
+                      borderColor: styles.border.light,
+                      backgroundColor: styles.background.card
+                    }}
+                  >
+                    <div className="flex flex-col items-center text-center">
+                      <div 
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3"
+                        style={{ 
+                          backgroundColor: colors.secondary[50],
+                          color: colors.secondary[600]
+                        }}
+                      >
+                        <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                      <p className="font-medium text-sm sm:text-base mb-1" style={{ color: styles.text.primary }}>
+                        Generate Quiz
+                      </p>
+                      <p className="text-xs sm:text-sm" style={{ color: styles.text.secondary }}>
+                        Test your knowledge
+                      </p>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <div className="lg:col-span-2">
-          <div 
-            className="bg-white rounded-xl border p-6"
-            style={{ 
-              borderColor: styles.border.light,
-              backgroundColor: styles.background.card
-            }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold" style={{ color: styles.text.primary }}>
-                Quick Actions
+            {/* Recent Activity */}
+            <div 
+              className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
+              style={{ 
+                borderColor: styles.border.light,
+                backgroundColor: styles.background.card
+              }}
+            >
+              <h2 className="text-base sm:text-lg font-medium mb-4 sm:mb-6" style={{ color: styles.text.primary }}>
+                Recent Activity
               </h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-              <Link
-                href="/dashboard/flashcards"
-                className="group relative overflow-hidden rounded-xl border-2 border-dashed p-6 transition-all duration-200 text-center hover:shadow-lg"
-                style={{ 
-                  borderColor: styles.border.light,
-                  backgroundColor: styles.background.card
-                }}
-              >
-                <div className="relative z-10">
+              
+              {allRecentActivities.length > 0 ? (
+                <div className="space-y-3 sm:space-y-4">
+                  {allRecentActivities.map((activity) => (
+                    <div 
+                      key={`${activity.type}-${activity.id}`} 
+                      className="flex items-center gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/dashboard/${activity.type}`)}
+                    >
+                      <div 
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ 
+                          backgroundColor: `${activity.color}15`,
+                          color: activity.color
+                        }}
+                      >
+                        {activity.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-xs sm:text-sm truncate" style={{ color: styles.text.primary }}>
+                          {activity.title}
+                        </p>
+                        <p className="text-xs truncate" style={{ color: styles.text.secondary }}>
+                          {activity.description}
+                        </p>
+                      </div>
+                      <span className="text-xs flex-shrink-0" style={{ color: styles.text.light }}>
+                        {formatRelativeTime(activity.date)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 sm:py-8">
                   <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200"
-                    style={{ 
-                      background: gradients.primary
-                    }}
+                    className="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-full flex items-center justify-center mb-3 sm:mb-4"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}
                   >
-                    <PlusCircle className="w-6 h-6 text-white" />
+                    <FileText className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: colors.neutral[400] }} />
                   </div>
-                  <p className="font-semibold group-hover:text-blue-700" style={{ color: styles.text.primary }}>
-                    New Flashcards
+                  <p className="font-medium text-sm sm:text-base mb-1" style={{ color: styles.text.primary }}>
+                    No recent activity
                   </p>
-                  <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
-                    Create and study flashcards
+                  <p className="text-xs sm:text-sm" style={{ color: styles.text.secondary }}>
+                    Start by creating flashcards
                   </p>
                 </div>
-              </Link>
-              <Link
-                href="/dashboard/quiz"
-                className="group relative overflow-hidden rounded-xl border-2 border-dashed p-6 transition-all duration-200 text-center hover:shadow-lg"
-                style={{ 
-                  borderColor: styles.border.light,
-                  backgroundColor: styles.background.card
-                }}
-              >
-                <div className="relative z-10">
-                  <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-200"
-                    style={{ 
-                      background: gradients.primary
-                    }}
-                  >
-                    <Brain className="w-6 h-6 text-white" />
-                  </div>
-                  <p className="font-semibold group-hover:text-blue-700" style={{ color: styles.text.primary }}>
-                    Generate Quiz
-                  </p>
-                  <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
-                    Test your knowledge
-                  </p>
-                </div>
-              </Link>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Recent Activity */}
-        <div 
-          className="bg-white rounded-xl border p-6"
-          style={{ 
-            borderColor: styles.border.light,
-            backgroundColor: styles.background.card
-          }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold" style={{ color: styles.text.primary }}>
-              Recent Activity
-            </h2>
-          </div>
-          
-          {allRecentActivities.length > 0 ? (
-            <div className="space-y-4">
-              {allRecentActivities.map((activity) => (
+          {/* Performance Overview */}
+          {stats && (
+            <div 
+              className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
+              style={{ 
+                borderColor: styles.border.light,
+                backgroundColor: styles.background.card
+              }}
+            >
+              <h2 className="text-base sm:text-lg font-medium mb-4 sm:mb-6" style={{ color: styles.text.primary }}>
+                Performance
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div 
-                  key={`${activity.type}-${activity.id}`} 
-                  className="group flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-all duration-200 cursor-pointer"
-                  onClick={() => router.push(`/dashboard/${activity.type}`)}
+                  className="p-3 sm:p-4 rounded-lg border"
                   style={{ 
-                    backgroundColor: 'transparent',
-                    borderColor: 'transparent'
+                    borderColor: 'rgba(88, 164, 176, 0.1)',
+                    backgroundColor: 'rgba(88, 164, 176, 0.02)'
                   }}
                 >
-                  <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ 
-                      backgroundColor: 'rgba(88, 164, 176, 0.1)',
-                      color: colors.primary[400]
-                    }}
-                  >
-                    {activity.icon}
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+                      style={{ 
+                        backgroundColor: 'white',
+                        border: '1px solid rgba(88, 164, 176, 0.1)',
+                      }}
+                    >
+                      <Zap className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: colors.primary[400] }} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium" style={{ color: styles.text.primary }}>
+                        Efficiency
+                      </p>
+                      <p className="text-base sm:text-lg font-medium" style={{ color: styles.text.primary }}>
+                        {stats.performance.cardsPerMinute.toFixed(1)} cards/min
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate" style={{ color: styles.text.primary }}>
-                      {activity.title}
-                    </p>
-                    <p className="text-xs truncate" style={{ color: styles.text.secondary }}>
-                      {activity.description}
-                    </p>
-                  </div>
-                  <span className="text-xs flex-shrink-0" style={{ color: styles.text.secondary }}>
-                    {formatRelativeTime(activity.date)}
-                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div 
-                className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4"
-                style={{ backgroundColor: colors.neutral[200] }}
-              >
-                <FileText className="w-8 h-8" style={{ color: colors.neutral[500] }} />
+                
+                <div 
+                  className="p-3 sm:p-4 rounded-lg border"
+                  style={{ 
+                    borderColor: 'rgba(88, 164, 176, 0.1)',
+                    backgroundColor: 'rgba(88, 164, 176, 0.02)'
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+                      style={{ 
+                        backgroundColor: 'white',
+                        border: '1px solid rgba(88, 164, 176, 0.1)',
+                      }}
+                    >
+                      <Target className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: colors.primary[400] }} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium" style={{ color: styles.text.primary }}>
+                        Accuracy
+                      </p>
+                      <p className="text-base sm:text-lg font-medium" style={{ color: styles.text.primary }}>
+                        {stats.performance.averageScore}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div 
+                  className="p-3 sm:p-4 rounded-lg border"
+                  style={{ 
+                    borderColor: 'rgba(88, 164, 176, 0.1)',
+                    backgroundColor: 'rgba(88, 164, 176, 0.02)'
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+                      style={{ 
+                        backgroundColor: 'white',
+                        border: '1px solid rgba(88, 164, 176, 0.1)',
+                      }}
+                    >
+                      <Calendar className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: colors.primary[400] }} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium" style={{ color: styles.text.primary }}>
+                        Active Days
+                      </p>
+                      <p className="text-base sm:text-lg font-medium" style={{ color: styles.text.primary }}>
+                        {stats.streaks.daysActiveLast30} / 30
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="font-medium mb-2" style={{ color: styles.text.primary }}>
-                No recent activity
-              </p>
-              <p className="text-sm" style={{ color: styles.text.secondary }}>
-                Start by creating flashcards or taking a quiz!
-              </p>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Performance Overview */}
-      {stats && (
-        <div 
-          className="bg-white rounded-xl border p-6"
-          style={{ 
-            borderColor: styles.border.light,
-            backgroundColor: styles.background.card
-          }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold" style={{ color: styles.text.primary }}>
-              Performance Insights
-            </h2>
-            <BarChart3 className="w-5 h-5" style={{ color: colors.neutral[500] }} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div 
-              className="group p-4 rounded-xl hover:shadow-md transition-all duration-200 border"
-              style={{ 
-                background: 'linear-gradient(to right, rgba(88, 164, 176, 0.05), rgba(169, 188, 208, 0.05))',
-                borderColor: 'rgba(88, 164, 176, 0.2)'
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-12 h-12 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm"
-                  style={{ boxShadow: styles.shadow.sm }}
-                >
-                  <Zap className="w-6 h-6" style={{ color: colors.primary[400] }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium" style={{ color: styles.text.primary }}>
-                    Study Efficiency
-                  </p>
-                  <p className="text-lg font-bold" style={{ color: styles.text.primary }}>
-                    {stats.performance.cardsPerMinute.toFixed(1)} cards/min
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div 
-              className="group p-4 rounded-xl hover:shadow-md transition-all duration-200 border"
-              style={{ 
-                background: 'linear-gradient(to right, rgba(88, 164, 176, 0.05), rgba(169, 188, 208, 0.05))',
-                borderColor: 'rgba(88, 164, 176, 0.2)'
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-12 h-12 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm"
-                  style={{ boxShadow: styles.shadow.sm }}
-                >
-                  <Target className="w-6 h-6" style={{ color: colors.primary[400] }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium" style={{ color: styles.text.primary }}>
-                    Quiz Accuracy
-                  </p>
-                  <p className="text-lg font-bold" style={{ color: styles.text.primary }}>
-                    {stats.performance.averageScore}%
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div 
-              className="group p-4 rounded-xl hover:shadow-md transition-all duration-200 border"
-              style={{ 
-                background: 'linear-gradient(to right, rgba(88, 164, 176, 0.05), rgba(169, 188, 208, 0.05))',
-                borderColor: 'rgba(88, 164, 176, 0.2)'
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-12 h-12 rounded-lg bg-white flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm"
-                  style={{ boxShadow: styles.shadow.sm }}
-                >
-                  <Calendar className="w-6 h-6" style={{ color: colors.primary[400] }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium" style={{ color: styles.text.primary }}>
-                    Active Days
-                  </p>
-                  <p className="text-lg font-bold" style={{ color: styles.text.primary }}>
-                    {stats.streaks.daysActiveLast30} / 30 days
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Most Active Subject & Additional Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {stats?.activityPatterns.mostActiveSubject && (
-          <div 
-            className="bg-white rounded-xl border p-6"
-            style={{ 
-              borderColor: styles.border.light,
-              backgroundColor: styles.background.card
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold" style={{ color: styles.text.primary }}>
-                Most Active Subject
-              </h2>
-              <Award className="w-5 h-5" style={{ color: colors.primary[400] }} />
-            </div>
-            <div className="flex items-center gap-4">
+          {/* Most Active Subject & Study Time */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {stats?.activityPatterns.mostActiveSubject && (
               <div 
-                className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg"
+                className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
                 style={{ 
-                  background: gradients.primary,
-                  boxShadow: styles.shadow.md
+                  borderColor: styles.border.light,
+                  backgroundColor: styles.background.card
                 }}
               >
-                <BookOpen className="w-8 h-8 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold" style={{ color: styles.text.primary }}>
-                  {stats.activityPatterns.mostActiveSubject.subject}
-                </h3>
-                <p style={{ color: styles.text.secondary }}>
-                  {stats.activityPatterns.mostActiveSubject.count} activities completed
-                </p>
-                <div className="mt-2">
+                <h2 className="text-base sm:text-lg font-medium mb-4" style={{ color: styles.text.primary }}>
+                  Top Subject
+                </h2>
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div 
-                    className="h-2 rounded-full overflow-hidden"
-                    style={{ backgroundColor: colors.neutral[200] }}
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: colors.primary[50],
+                      color: colors.primary[500]
+                    }}
                   >
-                    <div 
-                      className="h-full rounded-full"
-                      style={{ 
-                        background: gradients.primary,
-                        width: `${Math.min(stats.activityPatterns.mostActiveSubject.count * 10, 100)}%`
-                      }}
-                    ></div>
+                    <BookOpen className="w-6 h-6 sm:w-8 sm:h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-medium" style={{ color: styles.text.primary }}>
+                      {stats.activityPatterns.mostActiveSubject.subject}
+                    </h3>
+                    <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
+                      {stats.activityPatterns.mostActiveSubject.count} activities
+                    </p>
+                    <div className="mt-2">
+                      <div 
+                        className="h-1.5 rounded-full overflow-hidden"
+                        style={{ backgroundColor: colors.neutral[100] }}
+                      >
+                        <div 
+                          className="h-full rounded-full"
+                          style={{ 
+                            backgroundColor: colors.primary[300],
+                            width: `${Math.min(stats.activityPatterns.mostActiveSubject.count * 10, 100)}%`
+                          }}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Time Tracking */}
-        <div 
-          className="bg-white rounded-xl border p-6"
-          style={{ 
-            borderColor: styles.border.light,
-            backgroundColor: styles.background.card
-          }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold" style={{ color: styles.text.primary }}>
-              Study Time
-            </h2>
-            <Clock className="w-5 h-5" style={{ color: colors.neutral[500] }} />
-          </div>
-          <div className="text-center py-4">
-            <div className="text-4xl font-bold mb-2" style={{ color: styles.text.primary }}>
-              {formatStudyTime(stats?.performance.totalStudyTime || 0)}
-            </div>
-            <p style={{ color: styles.text.secondary }}>Total time spent studying</p>
+            {/* Study Time */}
             <div 
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg"
-              style={{ backgroundColor: 'rgba(88, 164, 176, 0.1)' }}
+              className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
+              style={{ 
+                borderColor: styles.border.light,
+                backgroundColor: styles.background.card
+              }}
             >
-              <Zap className="w-4 h-4" style={{ color: colors.primary[400] }} />
-              <span className="text-sm font-medium" style={{ color: colors.primary[400] }}>
-                {stats?.performance.cardsPerMinute.toFixed(1)} cards per minute
-              </span>
+              <h2 className="text-base sm:text-lg font-medium mb-4" style={{ color: styles.text.primary }}>
+                Study Time
+              </h2>
+              <div className="text-center py-2 sm:py-4">
+                <div className="text-2xl sm:text-3xl font-light mb-2" style={{ color: styles.text.primary }}>
+                  {formatStudyTime(stats?.performance.totalStudyTime || 0)}
+                </div>
+                <p className="text-sm" style={{ color: styles.text.secondary }}>Total time spent studying</p>
+                <div 
+                  className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                  style={{ backgroundColor: 'rgba(88, 164, 176, 0.08)' }}
+                >
+                  <Zap className="w-3 h-3 sm:w-4 sm:h-4" style={{ color: colors.primary[400] }} />
+                  <span className="text-xs sm:text-sm font-medium" style={{ color: colors.primary[400] }}>
+                    {stats?.performance.cardsPerMinute.toFixed(1)} cards per minute
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
