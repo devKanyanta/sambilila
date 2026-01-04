@@ -346,7 +346,7 @@ export default function Dashboard() {
             </div>
             
             {/* Streak Badge - Hidden on mobile if space is tight */}
-            {stats?.streaks.currentStreak && stats.streaks.currentStreak > 0 && (
+            {/* {stats?.streaks.currentStreak && stats.streaks.currentStreak > 0 && (
               <div 
                 className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-lg"
                 style={{ 
@@ -362,23 +362,23 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Quick Stats Row */}
-          <div className="grid grid-cols-3 gap-3 mb-8">
+          <div className="grid grid-cols-2 gap-3 mb-8">
             <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
               <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {stats?.performance.totalCardsStudied || 0}
               </div>
               <div className="text-xs md:text-sm mt-1" style={{ color: styles.text.secondary }}>Questions</div>
             </div>
-            <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
+            {/* <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
               <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {formatStudyTime(stats?.performance.totalStudyTime || 0)}
               </div>
               <div className="text-xs md:text-sm mt-1" style={{ color: styles.text.secondary }}>Study Time</div>
-            </div>
+            </div> */}
             <div className="text-center p-3 rounded-lg border" style={{ borderColor: styles.border.light, backgroundColor: 'white' }}>
               <div className="text-lg md:text-xl font-light" style={{ color: styles.text.primary }}>
                 {stats?.performance.averageScore || 0}%
@@ -587,7 +587,7 @@ export default function Dashboard() {
                 Performance
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div 
+                {/* <div 
                   className="p-3 sm:p-4 rounded-lg border"
                   style={{ 
                     borderColor: 'rgba(88, 164, 176, 0.1)',
@@ -613,7 +613,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 
                 <div 
                   className="p-3 sm:p-4 rounded-lg border"
@@ -724,7 +724,7 @@ export default function Dashboard() {
             )}
 
             {/* Study Time */}
-            <div 
+            {/* <div 
               className="bg-white rounded-lg sm:rounded-xl border p-4 sm:p-6"
               style={{ 
                 borderColor: styles.border.light,
@@ -749,7 +749,7 @@ export default function Dashboard() {
                   </span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

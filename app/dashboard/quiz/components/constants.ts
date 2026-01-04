@@ -7,44 +7,49 @@ export const QUIZ_SETTINGS = {
   DIFFICULTY_LEVELS: ['easy', 'medium', 'hard'] as const,
   QUESTION_TYPES: [
     { value: 'MULTIPLE_CHOICE', label: 'Multiple Choice', icon: '🔠' },
-    { value: 'TRUE_FALSE', label: 'True/False', icon: '✓✗' },
+    { value: 'TRUE_FALSE', label: 'True or\nFalse', icon: '✓✗' },
     { value: 'SHORT_ANSWER', label: 'Short Answer', icon: '📝' }
   ] as const
 } as const;
 
 export const getThemeStyles = () => ({
   background: {
-    main: theme.backgrounds.main,
-    card: theme.backgrounds.card,
-    sidebar: theme.backgrounds.sidebar,
-    navbar: theme.backgrounds.navbar,
+    main: '#ffffff',
+    card: '#ffffff',
+    sidebar: '#f8fafc',
+    navbar: '#ffffff',
   },
   text: {
-    primary: theme.text.primary,
-    secondary: theme.text.secondary,
-    light: theme.text.light,
-    inverted: theme.text.inverted,
-    accent: theme.text.accent,
-    dark: theme.text.light,
+    primary: '#1f2937',
+    secondary: '#6b7280',
+    light: '#9ca3af',
+    inverted: '#ffffff',
+    accent: colors.primary[500],
+    dark: '#374151',
   },
   border: {
-    light: theme.borders.light,
-    medium: theme.borders.medium,
-    dark: theme.borders.dark,
-    accent: theme.borders.accent,
+    light: '#e5e7eb',
+    medium: '#d1d5db',
+    dark: '#9ca3af',
+    accent: colors.primary[300],
   },
   state: {
     hover: {
-      light: theme.states.hover.light,
-      primary: theme.states.hover.primary,
+      light: '#f3f4f6',
+      primary: colors.primary[50],
     },
     active: {
-      light: theme.states.active.light,
-      primary: theme.states.active.primary,
+      light: '#e5e7eb',
+      primary: colors.primary[100],
     },
-    disabled: theme.states.disabled,
+    disabled: '#f3f4f6',
   },
-  shadow: theme.shadows,
+  shadow: {
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    md: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+    lg: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    xl: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  },
 });
 
 export { colors, gradients };

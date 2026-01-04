@@ -50,11 +50,9 @@ const FlashcardGrid: React.FC<FlashcardGridProps> = ({
 
   return (
     <div 
-      className="border rounded-2xl p-6"
-      style={{ 
-        backgroundColor: styles.background.card,
-        borderColor: styles.border.light,
-        borderWidth: '1px',
+      className=" rounded-2xl"
+      style={{
+        borderWidth: '0px',
       }}
     >
       {/* Header */}

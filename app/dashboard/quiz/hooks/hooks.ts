@@ -39,12 +39,7 @@ export const useQuizAPI = () => {
   };
 
 const generateQuiz = async (
-  inputText: string,
-  pdfFile: File | null,
-  numberOfQuestions: number,
-  difficulty: string,
-  questionTypes: string
-) => {
+title: string, inputText: string, pdfFile: File | null, numberOfQuestions: number, difficulty: string, questionTypes: string) => {
   try {
     const formData = new FormData();
     const token = getAuthToken();
@@ -59,6 +54,7 @@ const generateQuiz = async (
     formData.append('numberOfQuestions', numberOfQuestions.toString());
     formData.append('difficulty', difficulty);
     formData.append('questionTypes', questionTypes);
+    formData.append('title', title);
 
     // Step 1: Create job with PENDING_UPLOAD status
     const jobRes = await fetch("/api/quizzes/upload", {

@@ -215,7 +215,7 @@ export default function Flashcards() {
           title: jobData.job.title || title || "AI Generated Flashcards",
           subject: jobData.job.subject || subject || "General",
           description: jobData.job.description || description || "",
-          status: selectedFile ? "PENDING_UPLOAD" : "PENDING", // Use correct initial status
+          status: selectedFile ? "PENDING_UPLOAD" : "PENDING",
           createdAt: new Date().toISOString(),
           progress: 0,
         };
@@ -236,6 +236,7 @@ export default function Flashcards() {
         setSubject("");
         setDescription("");
         removeFile();
+        setShowForm(false); 
       }
     } catch (err: any) {
       console.error("GENERATION ERROR:", err);
@@ -375,7 +376,7 @@ export default function Flashcards() {
 
           {/* Stats & Info Bar - Minimal Grid */}
           <div className="mb-10">
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <div 
                 className="rounded-xl p-5 border"
                 style={{ 
@@ -406,7 +407,7 @@ export default function Flashcards() {
                 </p>
               </div>
               
-              <div 
+              {/* <div 
                 className="rounded-xl p-5 border"
                 style={{ 
                   backgroundColor: 'white',
@@ -422,7 +423,7 @@ export default function Flashcards() {
                 <p className="text-sm" style={{ color: styles.text.secondary }}>
                   Active Jobs
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 

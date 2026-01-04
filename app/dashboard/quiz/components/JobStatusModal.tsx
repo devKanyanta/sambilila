@@ -54,7 +54,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
     switch (job.status) {
       case 'PENDING_UPLOAD':
       return {
-        icon: <Clock className="w-6 h-6" style={{ color: colors.primary[500] }} />,
+        icon: <Clock className="w-5 h-5" style={{ color: colors.primary[500] }} />,
         title: "Awaiting Upload",
         description: "Please upload your PDF file to start processing.",
         color: colors.primary[500],
@@ -64,7 +64,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
       }
       case 'PENDING':
         return {
-          icon: <Clock className="w-6 h-6" style={{ color: colors.primary[500] }} />,
+          icon: <Clock className="w-5 h-5" style={{ color: colors.primary[500] }} />,
           title: "Job Queued",
           description: "Your Quiz generation job is in the queue and will start processing shortly.",
           color: colors.primary[500],
@@ -74,7 +74,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
         }
       case 'PROCESSING':
         return {
-          icon: <Loader2 className="w-6 h-6 animate-spin" style={{ color: colors.primary[500] }} />,
+          icon: <Loader2 className="w-5 h-5 animate-spin" style={{ color: colors.primary[500] }} />,
           title: "Processing",
           description: "Our AI is analyzing your content and generating Quiz. This may take a minute...",
           color: colors.primary[500],
@@ -84,7 +84,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
         }
       case 'DONE':
         return {
-          icon: <CheckCircle className="w-6 h-6" style={{ color: colors.success[500] }} />,
+          icon: <CheckCircle className="w-5 h-5" style={{ color: colors.success[500] }} />,
           title: "Complete!",
           description: "Your Quiz have been generated successfully!",
           color: colors.success[500],
@@ -94,7 +94,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
         }
       case 'FAILED':
         return {
-          icon: <AlertTriangle className="w-6 h-6" style={{ color: colors.secondary[600] }} />,
+          icon: <AlertTriangle className="w-5 h-5" style={{ color: colors.secondary[600] }} />,
           title: "Failed",
           description: job.error || "There was an error generating your Quiz.",
           color: colors.secondary[600],
@@ -104,7 +104,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
         }
       default:
         return {
-          icon: <Clock className="w-6 h-6" style={{ color: colors.neutral[500] }} />,
+          icon: <Clock className="w-5 h-5" style={{ color: colors.neutral[500] }} />,
           title: "Processing",
           description: "Checking job status...",
           color: colors.neutral[500],
@@ -117,60 +117,42 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
 
   const statusDisplay = jobDetails ? getJobStatusDisplay(jobDetails) : null
 
-  const handleButtonMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.opacity = '0.9'
-    e.currentTarget.style.boxShadow = styles.shadow.lg
-  }
-
-  const handleButtonMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.opacity = '1'
-    e.currentTarget.style.boxShadow = styles.shadow.md
-  }
-
-  const handleDismissButtonMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.backgroundColor = colors.neutral[200]
-  }
-
-  const handleDismissButtonMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.backgroundColor = colors.neutral[100]
-  }
-
   return (
     <div 
-      className="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-3 z-50"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
     >
       <div 
-        className="w-full max-w-md border rounded-2xl shadow-2xl transform transition-all duration-300 animate-in zoom-in-95"
+        className="w-full max-w-sm border rounded-lg"
         style={{ 
           backgroundColor: styles.background.card,
           borderColor: styles.border.light,
-          boxShadow: styles.shadow.xl
+          boxShadow: styles.shadow.lg
         }}
       >
         {/* Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold" style={{ color: styles.text.primary }}>
+        <div className="p-4 pb-3">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-bold" style={{ color: styles.text.primary }}>
               Generating Quiz
             </h3>
             {jobDetails?.status !== 'PROCESSING' && jobDetails?.status !== 'PENDING' && (
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
                 style={{ backgroundColor: 'transparent' }}
               >
-                <X className="w-5 h-5" style={{ color: styles.text.secondary }} />
+                <X className="w-4 h-4" style={{ color: styles.text.secondary }} />
               </button>
             )}
           </div>
           
           {/* Job Info */}
           {jobDetails && statusDisplay && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
                 <div 
-                  className={`p-3 rounded-full ${jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING' ? 'animate-pulse' : ''}`}
+                  className={`p-2 rounded-full ${jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING' ? 'animate-pulse' : ''}`}
                   style={{ 
                     backgroundColor: statusDisplay.bgColor 
                   }}
@@ -178,7 +160,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                   {statusDisplay.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold" style={{ color: styles.text.primary }}>
+                  <p className="font-medium text-sm" style={{ color: styles.text.primary }}>
                     {jobDetails.title}
                   </p>
                 </div>
@@ -188,7 +170,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span 
-                    className="text-sm font-medium"
+                    className="text-xs font-medium"
                     style={{ color: statusDisplay.color }}
                   >
                     {statusDisplay.title}
@@ -199,7 +181,7 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                 </div>
                 
                 <div 
-                  className="text-sm p-3 rounded-lg"
+                  className="text-xs p-2 rounded"
                   style={{ 
                     backgroundColor: statusDisplay.bgColor,
                     color: styles.text.secondary
@@ -210,8 +192,8 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                 
                 {/* Progress Bar */}
                 {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
+                  <div className="space-y-1">
+                    <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
                       <div 
                         className="h-full rounded-full transition-all duration-500"
                         style={{ 
@@ -220,41 +202,29 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs" style={{ color: styles.text.light }}>
-                      <span>Starting...</span>
-                      <span>Processing...</span>
-                      <span>Complete</span>
-                    </div>
                   </div>
                 )}
                 
                 {/* Action Buttons */}
-                <div className="pt-4">
+                <div className="pt-3">
                   {jobDetails.status === 'DONE' && jobDetails.quiz && (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <button
-                        onClick={() => {
-                          onViewQuiz(jobDetails)
-                        }}
-                        className="w-full py-3 rounded-xl text-white font-medium transition-all"
+                        onClick={() => onViewQuiz(jobDetails)}
+                        className="w-full py-2 rounded text-white text-sm font-medium transition-all"
                         style={{ 
-                          background: gradients.primary,
-                          boxShadow: styles.shadow.md
+                          backgroundColor: colors.primary[500]
                         }}
-                        onMouseEnter={handleButtonMouseEnter}
-                        onMouseLeave={handleButtonMouseLeave}
                       >
                         View Quiz
                       </button>
                       <button
                         onClick={onClose}
-                        className="w-full py-2.5 rounded-xl font-medium transition-colors"
+                        className="w-full py-1.5 rounded text-xs font-medium transition-colors"
                         style={{ 
                           backgroundColor: colors.neutral[100],
                           color: styles.text.secondary
                         }}
-                        onMouseEnter={handleDismissButtonMouseEnter}
-                        onMouseLeave={handleDismissButtonMouseLeave}
                       >
                         Close
                       </button>
@@ -262,35 +232,24 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                   )}
                   
                   {jobDetails.status === 'FAILED' && (
-                    <div className="space-y-3">
-                      <div className="p-3 rounded-lg text-sm" style={{ 
+                    <div className="space-y-2">
+                      <div className="p-2 rounded text-xs" style={{ 
                         backgroundColor: colors.secondary[50],
-                        color: colors.secondary[700],
-                        border: `1px solid ${colors.secondary[200]}`
+                        color: colors.secondary[700]
                       }}>
-                        <p className="font-medium">Error Details:</p>
-                        <p className="mt-1">{jobDetails.error}</p>
+                        <p className="font-medium">Error:</p>
+                        <p className="mt-0.5">{jobDetails.error}</p>
                       </div>
                       <button
                         onClick={onClose}
-                        className="w-full py-3 rounded-xl font-medium transition-colors"
+                        className="w-full py-2 rounded text-sm font-medium transition-colors"
                         style={{ 
                           backgroundColor: colors.neutral[100],
                           color: styles.text.secondary
                         }}
-                        onMouseEnter={handleDismissButtonMouseEnter}
-                        onMouseLeave={handleDismissButtonMouseLeave}
                       >
                         Dismiss
                       </button>
-                    </div>
-                  )}
-                  
-                  {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
-                    <div className="pt-2">
-                      <p className="text-xs text-center" style={{ color: styles.text.light }}>
-                        You can continue using the app while we process your request
-                      </p>
                     </div>
                   )}
                 </div>
@@ -299,26 +258,12 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
           )}
           
           {!jobDetails && (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin mb-3" style={{ color: colors.primary[500] }} />
-              <p style={{ color: styles.text.secondary }}>Connecting to job server...</p>
+            <div className="flex flex-col items-center justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin mb-2" style={{ color: colors.primary[500] }} />
+              <p className="text-xs" style={{ color: styles.text.secondary }}>Connecting...</p>
             </div>
           )}
         </div>
-        
-        {/* Processing Animation */}
-        {(jobDetails?.status === 'PENDING' || jobDetails?.status === 'PROCESSING') && (
-          <div className="px-6 pb-6">
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: colors.primary[500] }}></div>
-                <div className="w-2 h-2 rounded-full animate-pulse delay-75" style={{ backgroundColor: colors.primary[500] }}></div>
-                <div className="w-2 h-2 rounded-full animate-pulse delay-150" style={{ backgroundColor: colors.primary[500] }}></div>
-              </div>
-              <span className="text-xs" style={{ color: styles.text.light }}>Processing your request</span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
