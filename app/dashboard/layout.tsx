@@ -3,6 +3,8 @@
 import { ReactNode, useState } from "react"
 import Link from "next/link"
 import { colors, gradients, theme } from '@/lib/theme'
+import Image from "next/image"
+
 
 // Themed SVG Icons Component
 const Icon = ({ name, className = "w-5 h-5" }: { name: string; className?: string }) => {
@@ -79,14 +81,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   ]
 
   return (
-    <div 
+    <div
       className="min-h-screen"
       style={{ backgroundColor: theme.backgrounds.main }}
     >
       {/* Navbar */}
-      <nav 
+      <nav
         className="fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-sm"
-        style={{ 
+        style={{
           backgroundColor: theme.backgrounds.navbar + 'f5',
           borderColor: theme.borders.light,
           boxShadow: theme.shadows.sm
@@ -106,20 +108,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </button>
 
             {/* Logo */}
-            <Link 
+            <Link
               href="/dashboard"
               className="flex items-center space-x-2 font-bold text-xl group"
               style={{ color: theme.text.primary }}
             >
-              <div 
+              <div
                 className="p-1.5 rounded-lg transition-all duration-300 group-hover:scale-110"
-                style={{ background: gradients.primary }}
+                style={{ background: theme.backgrounds.navbar }}
               >
-                <Icon name="book" className="w-5 h-5 text-white" />
+                <Image
+                  src="/logo.png"
+                  alt="Sambilila Logo"
+                  width={32} 
+                  height={32}
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <span className="bg-clip-text text-transparent" style={{ backgroundImage: gradients.primary }}>
-                Sambilila
-              </span>
             </Link>
 
             {/* Desktop nav items */}
@@ -142,7 +148,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </Link>
               <button
                 className="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium hover:scale-105 active:scale-95 shadow-md"
-                style={{ 
+                style={{
                   color: theme.text.inverted,
                   background: gradients.primary
                 }}
@@ -168,22 +174,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 transform transition-transform duration-300 lg:translate-x-0 lg:top-16 border-r ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ 
+        className={`fixed top-0 left-0 z-50 h-full w-64 transform transition-transform duration-300 lg:translate-x-0 lg:top-16 border-r ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        style={{
           backgroundColor: theme.backgrounds.sidebar,
           borderColor: theme.borders.light
         }}
       >
         <div className="flex flex-col h-full">
           {/* Mobile header */}
-          <div 
-            className="lg:hidden flex items-center justify-between p-4 border-b" 
+          <div
+            className="lg:hidden flex items-center justify-between p-4 border-b"
             style={{ borderColor: theme.borders.light }}
           >
             <div className="flex items-center space-x-2">
-              <div 
+              <div
                 className="p-1.5 rounded-lg"
                 style={{ background: gradients.primary }}
               >
@@ -206,7 +211,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
-            <h3 
+            <h3
               className="px-3 mb-3 text-xs font-semibold uppercase tracking-wider flex items-center space-x-2"
               style={{ color: theme.text.secondary }}
             >
@@ -229,14 +234,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   e.currentTarget.style.transform = 'translateX(0)'
                 }}
               >
-                <div 
+                <div
                   className="p-1.5 rounded-md group-hover:scale-110 transition-all duration-200"
                   style={{ backgroundColor: theme.backgrounds.card }}
                 >
                   <Icon name={item.icon} className="w-4 h-4" />
                 </div>
                 <span className="font-medium">{item.label}</span>
-                <div 
+                <div
                   className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ background: gradients.primary }}
                 />
@@ -245,20 +250,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </nav>
 
           {/* Study tip card */}
-          <div 
+          <div
             className="m-4 p-4 rounded-xl border relative overflow-hidden"
-            style={{ 
+            style={{
               backgroundColor: theme.backgrounds.card,
               borderColor: theme.borders.accent,
               boxShadow: theme.shadows.md
             }}
           >
-            <div 
+            <div
               className="absolute top-0 right-0 w-24 h-24 opacity-10 blur-2xl rounded-full"
               style={{ background: gradients.primary }}
             />
             <div className="flex items-start space-x-3 relative z-10">
-              <div 
+              <div
                 className="p-2 rounded-lg flex-shrink-0"
                 style={{ background: gradients.primary }}
               >
