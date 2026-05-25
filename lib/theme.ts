@@ -1,202 +1,197 @@
-// lib/theme.ts
+// lib/theme.ts — Lernopia Brand Theme
+// Based on Lernopia.png Figma design: forest green + bright red accents + warm grey backgrounds
 
 export const colors = {
-  // Primary Colors - Sophisticated Sage Green
+  // Primary — Forest Green (from logo #193827)
   primary: {
-    50: '#f4f7f5',
-    100: '#e3ede6',
-    200: '#c7dccf',
-    300: '#a0c4ab',
-    400: '#73a582',
-    500: '#52876a',  // DEFAULT
-    600: '#3f6b53',
-    700: '#335644',
-    800: '#2b4638',
-    900: '#243a2f',
+    50: '#e8f0ec',
+    100: '#c4d9cd',
+    200: '#9dbdab',
+    300: '#73a182',
+    400: '#4d8567',
+    500: '#2d6b4d',
+    600: '#1f5238',
+    700: '#193827',  // Logo dark green
+    800: '#122b1d',
+    900: '#0c1f14',
   },
-  
-  // Secondary Colors - Warm Terracotta
+
+  // Secondary — Bright Red (from Figma CTAs #FF5252 / #FC0B06)
   secondary: {
-    50: '#fdf6f3',
-    100: '#fae8e0',
-    200: '#f5d0c1',
-    300: '#edb197',
-    400: '#e3886b',
-    500: '#d96a48',  // DEFAULT
-    600: '#c4543a',
-    700: '#a44332',
-    800: '#85392f',
-    900: '#6d3229',
+    50: '#fff5f5',
+    100: '#ffe3e3',
+    200: '#ffc9c9',
+    300: '#ffa3a3',
+    400: '#ff7a7a',
+    500: '#ff5252',  // DEFAULT - Figma CTA red
+    600: '#fc0b06',  // Figma bright red
+    700: '#d62323',
+    800: '#b11e1e',
+    900: '#8c1a1a',
   },
-  
-  // Neutral Colors - Warm Grays
+
+  // Neutral — Warm Greys (from Figma backgrounds #ECECEC)
   neutral: {
-    50: '#fafaf9',
-    100: '#f5f5f4',
-    200: '#e7e5e4',
-    300: '#d6d3d1',
-    400: '#a8a29e',
-    500: '#78716c',  // DEFAULT
-    600: '#57534e',
-    700: '#44403c',
-    800: '#292524',
-    900: '#1c1917',
+    50: '#f5f5f5',
+    100: '#ececec',  // Figma bg color
+    200: '#e0e0e0',
+    300: '#cccccc',
+    400: '#a8a8a8',
+    500: '#8a8a8a',
+    600: '#6b6b6b',
+    700: '#4d4d4d',
+    800: '#2c2c2c',  // Figma text dark
+    900: '#1a1a1a',
   },
-  
-  // Accent Colors - Dusty Blue
+
+  // Accent — Warm Gold/Amber
   accent: {
-    50: '#f4f6f8',
-    100: '#e6ebf0',
-    200: '#d0dae4',
-    300: '#adbecf',
-    400: '#839db5',
-    500: '#67819d',  // DEFAULT
-    600: '#526782',
-    700: '#44546a',
-    800: '#3a4759',
-    900: '#333d4b',
+    50: '#fefce8',
+    100: '#fef9c3',
+    200: '#fef08a',
+    300: '#fde047',
+    400: '#facc15',
+    500: '#eab308',
+    600: '#ca8a04',
+    700: '#a16207',
+    800: '#854d0e',
+    900: '#713f12',
   },
-  
-  // Success - Muted Forest Green
+
+  // Semantic
   success: {
-    50: '#f3f6f3',
-    100: '#e3ebe4',
-    200: '#c8d8ca',
-    300: '#a0bda5',
-    400: '#729b7a',
-    500: '#527d5b',  // DEFAULT
-    600: '#3f6347',
-    700: '#344f3b',
-    800: '#2c4032',
-    900: '#26362b',
+    50: '#edf7f0',
+    100: '#d1eed9',
+    200: '#a8dbb8',
+    300: '#74c292',
+    400: '#4da574',
+    500: '#328a5b',
+    600: '#256f49',
+    700: '#1f593b',
+    800: '#1c4832',
+    900: '#193c2a',
   },
-  
-  // Warning - Golden Amber
+
   warning: {
     50: '#fefbf3',
     100: '#fdf4e0',
     200: '#fae7c2',
     300: '#f5d498',
     400: '#efb865',
-    500: '#e59f3e',  // DEFAULT
+    500: '#e59f3e',
     600: '#d08329',
     700: '#ad6624',
     800: '#8c5024',
     900: '#724321',
   },
-  
-  // Error - Muted Clay Red
+
   error: {
-    50: '#fdf5f4',
-    100: '#fae8e6',
-    200: '#f5d4d1',
-    300: '#edb3ad',
-    400: '#e18880',
-    500: '#d0655b',  // DEFAULT
-    600: '#b84c43',
-    700: '#9a3f38',
-    800: '#803834',
-    900: '#6c3331',
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444',
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
   },
 }
 
-// Pre-defined gradients for easy use
+// Gradients
 export const gradients = {
-  primary: 'linear-gradient(135deg, #52876a 0%, #67819d 100%)',
-  warm: 'linear-gradient(135deg, #d96a48 0%, #e59f3e 100%)',
-  earth: 'linear-gradient(135deg, #52876a 0%, #d96a48 100%)',
-  sunset: 'linear-gradient(135deg, #e59f3e 0%, #d0655b 100%)',
-  forest: 'linear-gradient(135deg, #527d5b 0%, #52876a 100%)',
-  subtle: 'linear-gradient(135deg, rgba(82, 135, 106, 0.08) 0%, rgba(103, 129, 157, 0.08) 100%)',
-  neutral: 'linear-gradient(135deg, #fafaf9 0%, #e7e5e4 100%)',
+  primary: 'linear-gradient(135deg, #2d6b4d 0%, #4d8567 100%)',
+  primaryLight: 'linear-gradient(135deg, #e8f0ec 0%, #c4d9cd 100%)',
+  coral: 'linear-gradient(135deg, #ff5252 0%, #ff7a7a 100%)',
+  red: 'linear-gradient(135deg, #fc0b06 0%, #ff5252 100%)',
+  warm: 'linear-gradient(135deg, #ff5252 0%, #eab308 100%)',
+  forest: 'linear-gradient(135deg, #193827 0%, #2d6b4d 100%)',
+  subtle: 'linear-gradient(135deg, rgba(45, 107, 77, 0.05) 0%, rgba(255, 82, 82, 0.05) 100%)',
+  neutral: 'linear-gradient(135deg, #ececec 0%, #e0e0e0 100%)',
+  card: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
 }
 
-// Theme configuration for different contexts
+// Theme configuration
 export const theme = {
-  // Backgrounds
   backgrounds: {
-    main: '#fdfcfb',            // Warm off-white
+    main: '#ececec',          // Figma warm grey
     card: '#ffffff',
-    sidebar: '#fafaf9',
+    sidebar: '#ffffff',
     navbar: 'rgba(255, 255, 255, 0.95)',
-    overlay: 'rgba(28, 25, 23, 0.6)',
+    overlay: 'rgba(26, 26, 26, 0.5)',
     dark: colors.neutral[900],
     subtle: colors.neutral[50],
+    section: '#ececec',       // Figma section bg
+    sectionAlt: '#f5f5f5',    // Alternating section
   },
-  
-  // Borders
+
   borders: {
-    light: colors.neutral[200],    // #e7e5e4
-    medium: colors.neutral[300],   // #d6d3d1
-    dark: colors.neutral[500],     // #78716c
-    accent: colors.primary[400],   // #73a582
-    focus: colors.accent[500],     // #67819d
+    light: colors.neutral[200],   // #e0e0e0
+    medium: colors.neutral[300],  // #cccccc
+    dark: colors.neutral[500],    // #8a8a8a
+    accent: colors.primary[400],  // #4d8567
+    focus: colors.primary[500],   // #2d6b4d
   },
-  
-  // Text
+
   text: {
-    primary: colors.neutral[900],  // #1c1917
-    secondary: colors.neutral[600], // #57534e
-    light: colors.neutral[500],    // #78716c
+    primary: colors.neutral[800],  // #2c2c2c
+    secondary: colors.neutral[600], // #6b6b6b
+    light: colors.neutral[500],    // #8a8a8a
     inverted: '#ffffff',
-    accent: colors.primary[600],   // #3f6b53
-    link: colors.accent[600],      // #526782
+    accent: colors.primary[600],   // #1f5238
+    link: colors.primary[500],     // #2d6b4d
   },
-  
-  // Interactive States
+
   states: {
     hover: {
-      light: colors.neutral[100],     // #f5f5f4
-      primary: colors.primary[50],    // #f4f7f5
-      secondary: colors.secondary[50], // #fdf6f3
+      light: colors.neutral[100],     // #ececec
+      primary: colors.primary[50],    // #e8f0ec
+      secondary: colors.secondary[50], // #fff5f5
     },
     active: {
-      light: colors.neutral[200],      // #e7e5e4
-      primary: colors.primary[100],    // #e3ede6
-      secondary: colors.secondary[100], // #fae8e0
+      light: colors.neutral[200],      // #e0e0e0
+      primary: colors.primary[100],    // #c4d9cd
+      secondary: colors.secondary[100], // #ffe3e3
     },
     focus: {
-      ring: colors.primary[500],       // #52876a
-      secondary: colors.accent[500],   // #67819d
+      ring: colors.primary[500],       // #2d6b4d
     },
     disabled: {
-      bg: colors.neutral[100],         // #f5f5f4
-      text: colors.neutral[400],       // #a8a29e
+      bg: colors.neutral[100],
+      text: colors.neutral[400],
     },
   },
-  
-  // Shadows
+
   shadows: {
     sm: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
-    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03)',
-    '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+    md: '0 2px 8px 0 rgba(0, 0, 0, 0.06)',
+    lg: '0 4px 12px -2px rgba(0, 0, 0, 0.08)',
+    xl: '0 8px 24px -4px rgba(0, 0, 0, 0.08)',
+    '2xl': '0 12px 32px -6px rgba(0, 0, 0, 0.1)',
     colored: {
-      primary: '0 8px 24px -4px rgba(82, 135, 106, 0.2)',
-      secondary: '0 8px 24px -4px rgba(217, 106, 72, 0.2)',
-      accent: '0 8px 24px -4px rgba(103, 129, 157, 0.2)',
+      primary: '0 4px 12px -4px rgba(45, 107, 77, 0.2)',
+      secondary: '0 4px 12px -4px rgba(255, 82, 82, 0.25)',
+      accent: '0 4px 12px -4px rgba(234, 179, 8, 0.2)',
     },
   },
-  
-  // Natural textures
-  surfaces: {
-    paper: '#fdfcfb',
-    linen: '#faf9f7',
-    canvas: '#f5f4f2',
-    stone: '#eae8e5',
+
+  radii: {
+    sm: '0.5rem',     // 8px
+    md: '0.75rem',    // 12px
+    lg: '1rem',       // 16px
+    xl: '1.25rem',    // 20px
+    full: '9999px',
   },
 }
 
-// Semantic color aliases
+// Semantic aliases
 export const semantic = {
   brand: colors.primary[500],
-  info: colors.accent[500],
+  info: colors.primary[500],
   success: colors.success[500],
   warning: colors.warning[500],
   error: colors.error[500],
-  
-  // Status indicators
   online: colors.success[500],
   away: colors.warning[500],
   busy: colors.error[500],

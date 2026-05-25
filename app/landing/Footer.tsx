@@ -1,34 +1,34 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { FiBookOpen, FiGlobe, FiTwitter, FiYoutube, FiLinkedin, FiGithub } from 'react-icons/fi'
-import { Twitter, Youtube, Linkedin, X } from 'lucide-react'
+import { FiBookOpen, FiGlobe, FiGithub } from 'react-icons/fi'
+import { X, Youtube, Linkedin } from 'lucide-react'
+
+const footerLinks = [
+  {
+    title: "Product",
+    links: ["Features", "Pricing"]
+  },
+  {
+    title: "Company",
+    links: ["About", "Contact"]
+  },
+  {
+    title: "Resources",
+    links: ["Help Center", "Tutorials", "Privacy"]
+  }
+]
+
+const socialLinks = [
+  { icon: <X className="w-4 h-4" />, label: "X" },
+  { icon: <Youtube className="w-4 h-4" />, label: "YouTube" },
+  { icon: <Linkedin className="w-4 h-4" />, label: "LinkedIn" },
+  { icon: <FiGithub className="w-4 h-4" />, label: "GitHub" }
+]
 
 export function Footer() {
-  const footerLinks = [
-    {
-      title: "Product",
-      links: ["Features", "Pricing"]
-    },
-    {
-      title: "Company",
-      links: ["About", "Contact"]
-    },
-    {
-      title: "Resources",
-      links: ["Help Center","Tutorialss", "Privacy"]
-    }
-  ]
-
-  const socialLinks = [
-    { icon: <X className="w-4 h-4 text-gray-900" />, label: "X", bg: "bg-white" },
-    { icon: <Youtube className="w-4 h-4 text-gray-900" />, label: "YouTube", bg: "bg-white" },
-    { icon: <Linkedin className="w-4 h-4 text-gray-900" />, label: "LinkedIn", bg: "bg-white" },
-    { icon: <FiGithub className="w-4 h-4 text-gray-900" />, label: "GitHub", bg: "bg-white" }
-  ]
-
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-[#0f2a1f] border-t border-white/10 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 mb-8">
           {/* Brand section */}
@@ -38,33 +38,27 @@ export function Footer() {
             viewport={{ once: true }}
             className="md:col-span-2 lg:col-span-2"
           >
-            <div className="flex items-center space-x-3 mb-6">
-              <motion.div 
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-                className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center"
-              >
-                <FiBookOpen className="w-6 h-6" />
-              </motion.div>
-              <span className="text-2xl font-bold">Lernopia</span>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-[#123424] flex items-center justify-center">
+                <FiBookOpen className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-heading font-semibold text-white">Lernopia</span>
             </div>
-            <p className="text-gray-400 mb-6 md:mb-8 max-w-md text-sm md:text-base">
+            <p className="text-slate-300 mb-6 max-w-md text-sm leading-relaxed">
               AI-powered learning platform transforming education through intelligent technology. 
               Helping students, professionals, and lifelong learners achieve their goals faster.
             </p>
-            <div className="flex space-x-3 md:space-x-4">
+            <div className="flex gap-3">
               {socialLinks.map((social, index) => (
                 <motion.a 
                   key={index}
                   href="#" 
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-lg ${social.bg} flex items-center justify-center hover:bg-gray-200 transition-colors group`}
+                  className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all"
                   aria-label={social.label}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <motion.div whileHover={{ scale: 1.2 }}>
-                    {social.icon}
-                  </motion.div>
+                  {social.icon}
                 </motion.a>
               ))}
             </div>
@@ -79,15 +73,15 @@ export function Footer() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <h4 className="font-semibold text-base md:text-lg mb-4 md:mb-6">{column.title}</h4>
-              <ul className="space-y-2 md:space-y-3">
+              <h4 className="font-semibold text-white text-sm mb-4">{column.title}</h4>
+              <ul className="space-y-3">
                 {column.links.map((link, linkIndex) => (
                   <motion.li 
                     key={linkIndex}
-                    whileHover={{ x: 5 }}
+                    whileHover={{ x: 3 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors text-sm md:text-base">
+                    <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
                       {link}
                     </a>
                   </motion.li>
@@ -101,31 +95,20 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="border-t border-gray-800 mt-8 md:mt-12 pt-6 md:pt-8"
+          className="border-t border-white/10 mt-8 pt-6"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-xs md:text-sm text-center md:text-left">
+            <p className="text-slate-400 text-xs text-center md:text-left">
               &copy; 2026 Lernopia AI. All rights reserved.
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2"
-              >
-                <motion.div 
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="w-4 h-3 rounded bg-gradient-to-r from-emerald-500 to-teal-500"
-                />
-                <span className="text-xs md:text-sm text-gray-400">Made with Love</span>
-              </motion.div>
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 text-xs md:text-sm text-gray-500"
-              >
-                <FiGlobe className="w-3 h-3 md:w-4 md:h-4" />
-                Available worldwide • Local support in Zambia
-              </motion.div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                Made with Love
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <FiGlobe className="w-3 h-3" />
+                Available worldwide &mdash; Local support in Zambia
+              </div>
             </div>
           </div>
         </motion.div>

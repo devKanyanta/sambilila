@@ -9,6 +9,7 @@ import ActivityCard from './components/activityCard'
 import LoadingState from './components/loadingState'
 import ErrorState from './components/errorState'
 import Notification from './components/ui/notification'
+import AnimatedSection from '@/app/dashboard/components/AnimatedSection'
 
 export default function Profile() {
   const {
@@ -54,30 +55,36 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8">
-        <ProfileHeader profile={profile} formatDate={formatDate} />
+        <AnimatedSection>
+          <ProfileHeader profile={profile} formatDate={formatDate} />
+        </AnimatedSection>
         
         {/* Notifications */}
         {error && (
-          <Notification
-            type="error"
-            message={error}
-            onClose={() => {}}
-          />
+          <AnimatedSection delay={0.1}>
+            <Notification
+              type="error"
+              message={error}
+              onClose={() => {}}
+            />
+          </AnimatedSection>
         )}
         
         {success && (
-          <Notification
-            type="success"
-            message={success}
-            onClose={() => {}}
-          />
+          <AnimatedSection delay={0.1}>
+            <Notification
+              type="success"
+              message={success}
+              onClose={() => {}}
+            />
+          </AnimatedSection>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
-          <div className="space-y-6">
+          <AnimatedSection delay={0.15} className="space-y-6">
             <ProfileCard
               profile={profile}
               editingProfile={editingProfile}
@@ -91,29 +98,35 @@ export default function Profile() {
               handleLogout={handleLogout}
               formatDate={formatDate}
             />
-          </div>
+          </AnimatedSection>
 
           {/* Right Column */}
           <div className="lg:col-span-2 space-y-6">
-            <StatsCard
-              stats={stats}
-              formatStudyTime={formatStudyTime}
-            />
-            <ActivityCard
-              recentActivity={profile?.recentActivity}
-            />
-            <SettingsCard
-              settings={settings}
-              changingPassword={changingPassword}
-              passwordForm={passwordForm}
-              deletingAccount={deletingAccount}
-              onSettingToggle={handleSettingToggle}
-              onChangePasswordClick={() => setChangingPassword(true)}
-              onPasswordFormChange={setPasswordForm}
-              onSubmitPassword={handleChangePassword}
-              onCancelPassword={() => setChangingPassword(false)}
-              onDeleteAccount={handleDeleteAccount}
-            />
+            <AnimatedSection delay={0.2}>
+              <StatsCard
+                stats={stats}
+                formatStudyTime={formatStudyTime}
+              />
+            </AnimatedSection>
+            <AnimatedSection delay={0.25}>
+              <ActivityCard
+                recentActivity={profile?.recentActivity}
+              />
+            </AnimatedSection>
+            <AnimatedSection delay={0.3}>
+              <SettingsCard
+                settings={settings}
+                changingPassword={changingPassword}
+                passwordForm={passwordForm}
+                deletingAccount={deletingAccount}
+                onSettingToggle={handleSettingToggle}
+                onChangePasswordClick={() => setChangingPassword(true)}
+                onPasswordFormChange={setPasswordForm}
+                onSubmitPassword={handleChangePassword}
+                onCancelPassword={() => setChangingPassword(false)}
+                onDeleteAccount={handleDeleteAccount}
+              />
+            </AnimatedSection>
           </div>
         </div>
       </div>

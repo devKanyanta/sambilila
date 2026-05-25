@@ -8,9 +8,8 @@ import QuizView from './components/quizView';
 import QuizList from './components/quizList';
 import QuizResultsModal from './components/quizResults';
 import JobStatusModal from './components/JobStatusModal';
-import { getThemeStyles, colors } from './components/constants';
 import { QuizJob } from './components/types';
-import { Plus, List, Brain, Home, ArrowLeft } from 'lucide-react';
+import { Plus, List, Brain, ArrowLeft, Sparkles } from 'lucide-react';
 
 type View = 'dashboard' | 'quiz-list' | 'quiz-view';
 
@@ -19,12 +18,12 @@ export default function QuizGenerator() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showResultsModal, setShowResultsModal] = useState<boolean>(false);
-  
+
   // Add loading state for individual quiz loading
-  const [loadingQuizId, setLoadingQuizId] = useState<string | null>(null); // Add this line
+  const [loadingQuizId, setLoadingQuizId] = useState<string | null>(null);
 
   // State
-  const [title, setTitle] = useState<string>(''); // Add title state
+  const [title, setTitle] = useState<string>('');
   const [inputText, setInputText] = useState<string>('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [numberOfQuestions, setNumberOfQuestions] = useState<number>(10);
@@ -70,8 +69,6 @@ export default function QuizGenerator() {
     addNewJob,
   } = useQuizJobs();
 
-  const styles = getThemeStyles();
-
   // Scroll to top when view changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -95,7 +92,6 @@ export default function QuizGenerator() {
   };
 
   const handleGenerateQuiz = async () => {
-    // Add title validation
     if (!title.trim()) {
       setError('Please enter a title for your quiz');
       return;
@@ -119,10 +115,9 @@ export default function QuizGenerator() {
         questionTypes
       );
 
-      // Create job object for monitoring
       const newJob = {
         id: jobData.jobId,
-        title: title, // Use the actual title
+        title: title,
         difficulty,
         numberOfQuestions: numberOfQuestions.toString(),
         questionType: questionTypes,
@@ -134,8 +129,7 @@ export default function QuizGenerator() {
       addNewJob(newJob);
       startJobMonitoring(jobData.jobId, loadQuizList);
 
-      // Reset form and close modal
-      setTitle(''); // Clear title
+      setTitle('');
       setInputText('');
       setPdfFile(null);
       setShowCreateModal(false);
@@ -171,7 +165,7 @@ export default function QuizGenerator() {
   };
 
   const handleSelectQuiz = async (quizId: string) => {
-    setLoadingQuizId(quizId); // Set loading state
+    setLoadingQuizId(quizId);
     try {
       const loadedQuiz = await loadQuiz(quizId);
       setQuiz(loadedQuiz);
@@ -179,10 +173,7 @@ export default function QuizGenerator() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load quiz');
     } finally {
-      // Clear loading state after a timeout (safety measure)
-      setTimeout(() => {
-        setLoadingQuizId(null);
-      }, 2000);
+      setTimeout(() => setLoadingQuizId(null), 2000);
     }
   };
 
@@ -196,7 +187,7 @@ export default function QuizGenerator() {
 
   const handleStartNewQuiz = () => {
     resetQuizState();
-    setTitle(''); // Clear title
+    setTitle('');
     setInputText('');
     setPdfFile(null);
     setShowResultsModal(false);
@@ -205,7 +196,7 @@ export default function QuizGenerator() {
   };
 
   const handleClearAll = () => {
-    setTitle(''); // Clear title
+    setTitle('');
     setInputText('');
     setPdfFile(null);
     setError('');
@@ -214,39 +205,38 @@ export default function QuizGenerator() {
   const renderHeader = () => {
     if (currentView === 'dashboard') {
       return (
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: styles.text.primary }}>
-              Quiz Generator
-            </h1>
-            <p className="text-sm mt-1" style={{ color: styles.text.secondary }}>
-              AI-powered quiz generation
-            </p>
-          </div>
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white"
-            style={{ background: colors.primary[500] }}
-          >
-            <Brain size={20} />
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-heading font-semibold text-neutral-800">
+                Quiz Generator
+              </h1>
+              <p className="text-sm text-neutral-500 mt-0.5">
+                AI-powered quiz generation from your content
+              </p>
+            </div>
+            <button onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-md active:scale-[0.98]"
+              style={{ backgroundColor: '#ff5252' }}>
+              <Plus size={18} />
+              <span>Create</span>
+            </button>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex items-center space-x-4 mb-8">
-        <button
-          onClick={() => setCurrentView('dashboard')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          style={{ backgroundColor: 'transparent' }}
-        >
-          <ArrowLeft size={20} style={{ color: styles.text.secondary }} />
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={() => setCurrentView('dashboard')}
+          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white border border-neutral-200 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 transition-all">
+          <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-xl font-bold" style={{ color: styles.text.primary }}>
+          <h1 className="text-lg font-heading font-semibold text-neutral-800">
             {currentView === 'quiz-list' ? 'All Quizzes' : quiz?.title || 'Quiz'}
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: styles.text.secondary }}>
+          <p className="text-xs text-neutral-500 mt-0.5">
             {currentView === 'quiz-list' ? `${quizList.length} quizzes available` : `Question ${Object.keys(userAnswers).length}/${quiz?.questions.length || 0} answered`}
           </p>
         </div>
@@ -264,7 +254,7 @@ export default function QuizGenerator() {
             onSelectQuiz={handleSelectQuiz}
             onRefreshQuizzes={loadQuizList}
             onCreateNewQuiz={() => setShowCreateModal(true)}
-            loadingQuizId={loadingQuizId} // Pass loadingQuizId to QuizList
+            loadingQuizId={loadingQuizId}
           />
         );
 
@@ -280,13 +270,11 @@ export default function QuizGenerator() {
             onBack={() => setCurrentView('quiz-list')}
           />
         ) : (
-          <div className="text-center py-12">
-            <p style={{ color: styles.text.secondary }}>No quiz loaded</p>
-            <button
-              onClick={() => setCurrentView('quiz-list')}
-              className="text-sm font-medium mt-2 hover:underline"
-              style={{ color: colors.primary[500] }}
-            >
+          <div className="text-center py-12 bg-white rounded-xl shadow-md">
+            <Brain className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
+            <p className="text-sm text-neutral-500 mb-2">No quiz loaded</p>
+            <button onClick={() => setCurrentView('quiz-list')}
+              className="text-sm font-medium text-[#ff5252] hover:underline">
               Browse quizzes →
             </button>
           </div>
@@ -296,61 +284,28 @@ export default function QuizGenerator() {
         return (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-8">
-              <div className="border rounded-lg p-4">
-                <div className="text-sm" style={{ color: styles.text.secondary }}>Quizzes</div>
-                <div className="text-2xl font-bold mt-1" style={{ color: styles.text.primary }}>
-                  {quizList.length}
-                </div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white rounded-xl shadow-md p-4">
+                <p className="text-xs text-neutral-500 font-medium">Quizzes</p>
+                <p className="text-2xl font-bold text-neutral-800 mt-1">{quizList.length}</p>
               </div>
-              <div className="border rounded-lg p-4">
-                <div className="text-sm" style={{ color: styles.text.secondary }}>Continue</div>
-                <div className="text-2xl font-bold mt-1" style={{ color: styles.text.primary }}>
-                  {quiz ? 1 : 0}
-                </div>
+              <div className="bg-white rounded-xl shadow-md p-4">
+                <p className="text-xs text-neutral-500 font-medium">Continue</p>
+                <p className="text-2xl font-bold text-neutral-800 mt-1">{quiz ? 1 : 0}</p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="border rounded-lg p-6 text-left hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: colors.primary[50] }}
-                  >
-                    <Plus style={{ color: colors.primary[500] }} size={20} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <button onClick={() => setCurrentView('quiz-list')}
+                className="bg-white rounded-xl shadow-md p-5 text-left hover:shadow-lg transition-all group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-[#ff5252]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <List className="w-5 h-5 text-[#ff5252]" />
                   </div>
                   <div>
-                    <h3 className="font-bold" style={{ color: styles.text.primary }}>
-                      Create Quiz
-                    </h3>
-                    <p className="text-sm" style={{ color: styles.text.secondary }}>
-                      From text or PDF
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setCurrentView('quiz-list')}
-                className="border rounded-lg p-6 text-left hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: colors.secondary[50] }}
-                  >
-                    <List style={{ color: colors.secondary[500] }} size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold" style={{ color: styles.text.primary }}>
-                      Browse Quizzes
-                    </h3>
-                    <p className="text-sm" style={{ color: styles.text.secondary }}>
-                      Take existing quizzes
-                    </p>
+                    <h3 className="font-semibold text-sm text-neutral-800">Browse Quizzes</h3>
+                    <p className="text-xs text-neutral-500">Take existing quizzes</p>
                   </div>
                 </div>
               </button>
@@ -358,62 +313,48 @@ export default function QuizGenerator() {
 
             {/* Recent Quizzes */}
             {quizList.length > 0 && (
-              <div className="mt-8">
+              <div className="bg-white rounded-xl shadow-md p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold" style={{ color: styles.text.primary }}>
-                    Recent Quizzes
-                  </h2>
-                  <button
-                    onClick={() => setCurrentView('quiz-list')}
-                    className="text-sm hover:underline"
-                    style={{ color: colors.primary[500] }}
-                  >
+                  <h2 className="text-sm font-semibold text-neutral-800">Recent Quizzes</h2>
+                  <button onClick={() => setCurrentView('quiz-list')}
+                    className="text-xs font-medium text-[#ff5252] hover:underline">
                     View all
                   </button>
                 </div>
                 <div className="space-y-2">
                   {quizList.slice(0, 3).map((quizItem) => {
                     const isLoading = loadingQuizId === quizItem.id;
-
                     return (
-                      <div
-                        key={quizItem.id}
+                      <div key={quizItem.id}
                         onClick={() => !isLoading && handleSelectQuiz(quizItem.id)}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors relative ${isLoading ? 'opacity-70 cursor-wait bg-blue-50' : 'hover:bg-gray-50'
-                          }`}
-                      >
-                        {/* Loading overlay */}
+                        className={`p-3 rounded-lg border border-neutral-200 cursor-pointer transition-all relative ${
+                          isLoading ? 'opacity-70 cursor-wait' : 'hover:bg-neutral-50 hover:border-[#193827]/20'
+                        }`}>
                         {isLoading && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg">
-                            <div
-                              className="w-4 h-4 border-2 rounded-full animate-spin"
-                              style={{
-                                borderColor: colors.primary[400],
-                                borderTopColor: 'transparent'
-                              }}
-                            ></div>
-                            <span className="ml-2 text-xs" style={{ color: colors.primary[500] }}>
-                              Opening...
-                            </span>
+                          <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg z-10">
+                            <div className="w-4 h-4 border-2 border-[#193827]/30 border-t-[#193827] rounded-full animate-spin" />
                           </div>
                         )}
-
                         <div className="flex items-center justify-between">
-                          <span className="text-sm flex items-center" style={{ color: styles.text.primary }}>
-                            {quizItem.title}
-                            {isLoading && (
-                              <span className="ml-2 text-xs" style={{ color: colors.primary[500] }}>
-                                (Opening...)
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-xs" style={{ color: styles.text.secondary }}>
-                            {quizItem._count.questions} questions
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-[#ff5252]" />
+                            <span className="text-sm text-neutral-800">{quizItem.title}</span>
+                          </div>
+                          <span className="text-xs text-neutral-400">{quizItem._count.questions} questions</span>
                         </div>
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Active Jobs */}
+            {activeJobs.length > 0 && (
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-[#ff5252]" />
+                  <span className="text-sm font-medium text-neutral-600">{activeJobs.length} active job{activeJobs.length > 1 ? 's' : ''}</span>
                 </div>
               </div>
             )}
@@ -423,17 +364,16 @@ export default function QuizGenerator() {
   };
 
   return (
-    <div style={{ backgroundColor: styles.background.main, minHeight: '100vh' }} className="p-2 sm:p-4">
+    <div className="min-h-screen">
       <div className="max-w-3xl mx-auto">
         {renderHeader()}
         {renderContent()}
       </div>
 
-      {/* Modals */}
       <QuizFormModal
         show={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title={title} // Add this
+        title={title}
         inputText={inputText}
         pdfFile={pdfFile}
         numberOfQuestions={numberOfQuestions}
@@ -441,7 +381,7 @@ export default function QuizGenerator() {
         questionTypes={questionTypes}
         isGenerating={isGenerating}
         error={error}
-        onTitleChange={setTitle} // Add this
+        onTitleChange={setTitle}
         onInputTextChange={setInputText}
         onPdfFileChange={setPdfFile}
         onNumberOfQuestionsChange={setNumberOfQuestions}
@@ -465,7 +405,6 @@ export default function QuizGenerator() {
         />
       )}
 
-      {/* Job Status Modal */}
       <JobStatusModal
         show={showJobModal}
         jobDetails={jobDetails}

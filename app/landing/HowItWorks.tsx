@@ -1,163 +1,98 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { FiUpload, FiCpu, FiTarget, FiEye } from 'react-icons/fi'
-import { colors, theme, gradients } from '@/lib/theme'
+import Link from 'next/link'
+
+const features = [
+  {
+    title: (
+      <>
+        Master Your Subjects in <span className="text-[#ff5252]">Seconds</span>, Not Hours
+      </>
+    ),
+    description:
+      "Just upload your notes, and AI generates a personalized practice quiz. Test your understanding instantly so you know exactly what to review before the big exam.",
+    buttonText: "Try it out",
+    buttonHref: "/auth/register",
+    // Replace with your actual image/illustration path when ready
+    imageSrc: "/quiz-feature.png", 
+  },
+  {
+    title: (
+      <>
+        Ace Your Finals with Personalized <span className="text-[#ff5252]">Flashcards</span>
+      </>
+    ),
+    description:
+      "Stop stressing about what will be on the test. Upload your lecture notes or textbook, and get custom flashcards tailored to your exact course requirements.",
+    buttonText: "Get Started",
+    buttonHref: "/auth/register",
+    // Replace with your actual image/illustration path when ready
+    imageSrc: "/flashcards-feature.png", 
+  },
+]
 
 export function HowItWorks() {
-  const steps = [
-    {
-      number: "01",
-      title: "Upload Content",
-      description: "Paste notes, upload documents, or import from your favorite apps",
-      icon: <FiUpload className="w-6 h-6 md:w-8 md:h-8" />,
-      color: `linear-gradient(135deg, ${colors.accent[500]} 0%, ${colors.accent[400]} 100%)`
-    },
-    {
-      number: "02",
-      title: "AI Generates Materials",
-      description: "Our AI creates optimized flashcards and quizzes instantly",
-      icon: <FiCpu className="w-6 h-6 md:w-8 md:h-8" />,
-      color: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.primary[400]} 100%)`
-    },
-    {
-      number: "03",
-      title: "Smart Study Sessions",
-      description: "Learn with adaptive algorithms that optimize for retention",
-      icon: <FiTarget className="w-6 h-6 md:w-8 md:h-8" />,
-      color: `linear-gradient(135deg, ${colors.secondary[500]} 0%, ${colors.secondary[400]} 100%)`
-    },
-    {
-      number: "04",
-      title: "Track & Improve",
-      description: "Monitor progress and get personalized recommendations",
-      icon: <FiEye className="w-6 h-6 md:w-8 md:h-8" />,
-      color: `linear-gradient(135deg, ${colors.warning[500]} 0%, ${colors.warning[400]} 100%)`
-    }
-  ];
-
   return (
-    <section className="py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12 md:mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-4 border"
-            style={{
-              backgroundColor: colors.accent[50],
-              color: colors.accent[700],
-              borderColor: colors.accent[200]
-            }}
+    <section className="bg-[#ececec] py-20 md:py-28 lg:py-36 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto flex flex-col gap-24 md:gap-32 lg:gap-40">
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className={`flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 w-full ${
+              index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+            }`}
           >
-            <FiUpload className="w-4 h-4 mr-2" />
-            Simple Process
-          </motion.div>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 md:mb-6"
-            style={{ color: theme.text.primary }}
-          >
-            Start Learning in Minutes
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-base md:text-lg lg:text-xl max-w-2xl lg:max-w-3xl mx-auto px-4"
-            style={{ color: theme.text.secondary }}
-          >
-            Four simple steps to transform your learning experience
-          </motion.p>
-        </div>
+            {/* Media / Image Column */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-xl aspect-[4/3] bg-[#d6d6d6] rounded-2xl overflow-hidden shadow-sm shrink-0 relative flex items-center justify-center"
+            >
+              {/* Fallback mockup styling until you add real images */}
+              <img
+                src={feature.imageSrc}
+                alt=""
+                className="object-contain w-full h-full p-8 opacity-0 transition-opacity duration-300"
+                onError={(e) => {
+                  // Keeps the container as a clean gray placeholder if image path doesn't exist yet
+                  e.currentTarget.style.opacity = '0'
+                }}
+                onLoad={(e) => {
+                  e.currentTarget.style.opacity = '1'
+                }}
+              />
+            </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 relative">
-          {/* Connecting lines for desktop */}
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="hidden lg:block absolute top-12 md:top-24 left-1/4 right-1/4 h-0.5 -translate-y-1/2 origin-left"
-            style={{ background: `linear-gradient(to right, ${colors.accent[200]} 0%, ${colors.primary[200]} 50%, ${colors.secondary[200]} 100%)` }}
-          />
-          
-          {steps.map((step, index) => (
-            <motion.div 
-              key={index}
+            {/* Copy / Content Column */}
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: Math.min(index * 0.1, 0.3) }}
-              whileHover={{ y: -5 }}
-              className="relative"
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="w-full max-w-xl"
             >
-              <div className="text-center">
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="relative inline-block mb-4 md:mb-6"
+              <h2 className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-[#2d4a3e] leading-[1.2] tracking-tight">
+                {feature.title}
+              </h2>
+              
+              <p className="mt-6 text-base sm:text-lg text-neutral-600 leading-relaxed font-medium">
+                {feature.description}
+              </p>
+
+              <div className="mt-8">
+                <Link
+                  href={feature.buttonHref}
+                  className="inline-flex items-center justify-center px-7 py-3 rounded-full text-base font-semibold text-white bg-[#ff5252] hover:bg-[#eb4b4b] hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  <div className="absolute inset-0 rounded-xl md:rounded-2xl blur-lg opacity-50" style={{ background: step.color }} />
-                  <div 
-                    className="relative w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl md:rounded-2xl text-white flex items-center justify-center text-lg md:text-xl lg:text-2xl font-bold"
-                    style={{ background: step.color }}
-                  >
-                    {step.icon}
-                  </div>
-                </motion.div>
-                <div 
-                  className="text-xs md:text-sm font-semibold mb-2"
-                  style={{ color: colors.neutral[500] }}
-                >
-                  STEP {step.number}
-                </div>
-                <h3 
-                  className="text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4"
-                  style={{ color: theme.text.primary }}
-                >
-                  {step.title}
-                </h3>
-                <p 
-                  className="text-sm md:text-base px-2"
-                  style={{ color: theme.text.secondary }}
-                >
-                  {step.description}
-                </p>
+                  {feature.buttonText}
+                </Link>
               </div>
             </motion.div>
-          ))}
-        </div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-3 text-white rounded-lg font-semibold hover:shadow-xl transition-all duration-300"
-            style={{
-              background: gradients.primary,
-              boxShadow: theme.shadows.colored.primary
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = theme.shadows.xl;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = theme.shadows.colored.primary;
-            }}
-          >
-            Explore Now!
-          </motion.button>
-        </motion.div>
+          </div>
+        ))}
       </div>
     </section>
   )

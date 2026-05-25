@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { colors, gradients, theme } from '@/lib/theme'
-import { FiUser, FiMail, FiLock, FiCheck, FiBookOpen, FiUsers, FiTrendingUp, FiBarChart2 } from 'react-icons/fi'
+import { FiUser, FiMail, FiLock, FiCheck, FiArrowRight } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 
 interface FormData {
@@ -36,48 +36,22 @@ export default function Register() {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }))
-    // Clear error when user starts typing
     if (errors[name as keyof FormData]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }))
+      setErrors(prev => ({ ...prev, [name]: undefined }))
     }
-    // Clear server error when user interacts
-    if (serverError) {
-      setServerError(null)
-    }
+    if (serverError) setServerError(null)
   }
 
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required'
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = true
-    }
-
+    if (!formData.name.trim()) newErrors.name = 'Full name is required'
+    if (!formData.email) newErrors.email = 'Email is required'
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid'
+    if (!formData.password) newErrors.password = 'Password is required'
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters'
+    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password'
+    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match'
+    if (!formData.agreeToTerms) newErrors.agreeToTerms = true
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -85,16 +59,12 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setServerError(null)
-
     if (!validateForm()) return
     setIsLoading(true)
-
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -102,51 +72,34 @@ export default function Register() {
           userType: formData.userType
         })
       })
-
       const data = await res.json()
-
       if (!res.ok) {
         setServerError(data.message || 'Registration failed')
         return
       }
-
-      // Save token
       localStorage.setItem('token', data.token)
-
-      // Show success animation before redirect
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
-
-    } catch (error) {
-      console.error(error)
+      setTimeout(() => router.push('/dashboard'), 1000)
+    } catch {
       setServerError('Server error. Try again later.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Animation variants
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4 }
-  }
-
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-6 md:mb-8"
+        transition={{ duration: 0.5 }}
+        className="text-center"
       >
-        <h2 className="text-2xl md:text-3xl font-bold" style={{ color: theme.text.primary }}>
+        <h2 className="text-2xl md:text-3xl font-heading font-semibold text-neutral-800">
           Create your account
         </h2>
-        <p className="mt-2 text-sm md:text-base" style={{ color: theme.text.secondary }}>
-          Join thousands of students and teachers using Sambilila
+        <p className="mt-2 text-sm text-neutral-500">
+          Join thousands of students and teachers using Lernopia
         </p>
       </motion.div>
 
@@ -155,364 +108,170 @@ export default function Register() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 rounded-xl flex items-center gap-3"
-          style={{ 
-            backgroundColor: colors.error[50],
-            border: `1px solid ${colors.error[200]}`,
-            color: colors.error[700]
-          }}
+          className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3"
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: colors.error[100] }}
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           </div>
-          <div>
-            <p className="font-medium text-sm md:text-base">{serverError}</p>
-          </div>
+          <p className="text-sm font-medium text-red-700">{serverError}</p>
         </motion.div>
       )}
 
-      {/* Registration Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* User Type Selection */}
-        {/* <motion.div variants={fadeInUp} initial="initial" animate="animate">
-          <label className="block text-sm font-medium mb-3" style={{ color: theme.text.primary }}>
-            I am a...
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              {
-                value: 'STUDENT',
-                label: 'STUDENT',
-                description: 'Learn and study',
-                icon: '🎓',
-                color: colors.primary,
-                gradient: gradients.primary
-              },
-              {
-                value: 'TEACHER',
-                label: 'TEACHER',
-                description: 'Teach and create',
-                icon: '👨‍🏫',
-                color: colors.secondary,
-                gradient: gradients.warm
-              }
-            ].map((type) => (
-              <label
-                key={type.value}
-                className={`relative flex cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 ${
-                  formData.userType === type.value 
-                    ? 'scale-[1.02] shadow-lg ring-2 ring-offset-2' 
-                    : 'hover:scale-[1.01] hover:shadow-md'
-                }`}
-                style={{
-                  backgroundColor: formData.userType === type.value ? `${type.color[50]}E6` : 'rgba(255, 255, 255, 0.8)',
-                  borderColor: formData.userType === type.value ? type.color[400] : colors.neutral[200],
-                  borderWidth: '2px',
-                  boxShadow: formData.userType === type.value ? theme.shadows.md : 'none',
-                }}
-              >
-                <input
-                  type="radio"
-                  name="userType"
-                  value={type.value}
-                  checked={formData.userType === type.value}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div className="flex w-full items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="text-2xl md:text-3xl mr-3">{type.icon}</div>
-                    <div className="text-left">
-                      <p className="font-semibold" style={{ color: theme.text.primary }}>
-                        {type.label}
-                      </p>
-                      <p className="text-xs md:text-sm mt-0.5" style={{ color: theme.text.secondary }}>
-                        {type.description}
-                      </p>
-                    </div>
-                  </div>
-                  {formData.userType === type.value && (
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
-                      style={{ 
-                        backgroundColor: type.color[400],
-                        color: 'white'
-                      }}
-                    >
-                      <FiCheck className="w-3 h-3" />
-                    </div>
-                  )}
-                </div>
-              </label>
-            ))}
-          </div>
-        </motion.div> */}
-
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
-          <label htmlFor="name" className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1.5">
             Full name
           </label>
           <div className="relative">
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <FiUser className="w-5 h-5" style={{ color: colors.neutral[400] }} />
-            </div>
+            <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ${
-                errors.name ? 'border-red-300 bg-red-50' : 'border-neutral-200 focus:border-primary-400'
+              id="name" name="name" type="text" value={formData.name} onChange={handleChange}
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
+                errors.name
+                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
               }`}
-              style={{
-                backgroundColor: errors.name ? colors.error[50] : 'rgba(255, 255, 255, 0.9)',
-                borderColor: errors.name ? colors.error[300] : colors.neutral[200],
-                color: theme.text.primary,
-                boxShadow: theme.shadows.sm
-              }}
               placeholder="Enter your full name"
             />
-            {errors.name && (
-              <motion.p 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm px-1"
-                style={{ color: colors.error[600] }}
-              >
-                {errors.name}
-              </motion.p>
-            )}
           </div>
-        </motion.div>
+          {errors.name && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+              {errors.name}
+            </motion.p>
+          )}
+        </div>
 
         {/* Email */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.2 }}>
-          <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1.5">
             Email address
           </label>
           <div className="relative">
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <FiMail className="w-5 h-5" style={{ color: colors.neutral[400] }} />
-            </div>
+            <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ${
-                errors.email ? 'border-red-300 bg-red-50' : 'border-neutral-200 focus:border-primary-400'
+              id="email" name="email" type="email" value={formData.email} onChange={handleChange}
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
+                errors.email
+                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
               }`}
-              style={{
-                backgroundColor: errors.email ? colors.error[50] : 'rgba(255, 255, 255, 0.9)',
-                borderColor: errors.email ? colors.error[300] : colors.neutral[200],
-                color: theme.text.primary,
-                boxShadow: theme.shadows.sm
-              }}
               placeholder="Enter your email"
             />
-            {errors.email && (
-              <motion.p 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm px-1"
-                style={{ color: colors.error[600] }}
-              >
-                {errors.email}
-              </motion.p>
-            )}
           </div>
-        </motion.div>
+          {errors.email && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+              {errors.email}
+            </motion.p>
+          )}
+        </div>
 
         {/* Password */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.3 }}>
-          <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1.5">
             Password
           </label>
           <div className="relative">
-             <div className="absolute left-3 top-1/3 transform -translate-y-1/2">
-              <FiLock className="w-5 h-5" style={{ color: colors.neutral[400] }} />
-            </div>
+            <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ${
-                errors.password ? 'border-red-300 bg-red-50' : 'border-neutral-200 focus:border-primary-400'
+              id="password" name="password" type="password" value={formData.password} onChange={handleChange}
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
+                errors.password
+                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
               }`}
-              style={{
-                backgroundColor: errors.password ? colors.error[50] : 'rgba(255, 255, 255, 0.9)',
-                borderColor: errors.password ? colors.error[300] : colors.neutral[200],
-                color: theme.text.primary,
-                boxShadow: theme.shadows.sm
-              }}
-              placeholder="Create a password"
+              placeholder="Create a password (min. 6 characters)"
             />
-            {errors.password ? (
-              <motion.p 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm px-1"
-                style={{ color: colors.error[600] }}
-              >
-                {errors.password}
-              </motion.p>
-            ) : (
-              <p className="mt-2 text-xs px-1" style={{ color: theme.text.secondary }}>
-                Must be at least 6 characters
-              </p>
-            )}
           </div>
-        </motion.div>
+          {errors.password && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+              {errors.password}
+            </motion.p>
+          )}
+        </div>
 
         {/* Confirm Password */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.4 }}>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 mb-1.5">
             Confirm password
           </label>
           <div className="relative">
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <FiLock className="w-5 h-5" style={{ color: colors.neutral[400] }} />
-            </div>
+            <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ${
-                errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-neutral-200 focus:border-primary-400'
+              id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange}
+              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
+                errors.confirmPassword
+                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
+                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
               }`}
-              style={{
-                backgroundColor: errors.confirmPassword ? colors.error[50] : 'rgba(255, 255, 255, 0.9)',
-                borderColor: errors.confirmPassword ? colors.error[300] : colors.neutral[200],
-                color: theme.text.primary,
-                boxShadow: theme.shadows.sm
-              }}
               placeholder="Confirm your password"
             />
-            {errors.confirmPassword && (
-              <motion.p 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm px-1"
-                style={{ color: colors.error[600] }}
-              >
-                {errors.confirmPassword}
-              </motion.p>
-            )}
           </div>
-        </motion.div>
+          {errors.confirmPassword && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+              {errors.confirmPassword}
+            </motion.p>
+          )}
+        </div>
 
-        {/* Terms and Conditions */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.5 }}
-          className="flex items-start space-x-3"
-        >
+        {/* Terms */}
+        <div className="flex items-start gap-3">
           <input
-            id="agreeToTerms"
-            name="agreeToTerms"
-            type="checkbox"
-            checked={formData.agreeToTerms}
-            onChange={handleChange}
-            className="h-5 w-5 rounded border-2 focus:ring-2 focus:ring-offset-2 mt-0.5 transition-all duration-300"
-            style={{
-              backgroundColor: formData.agreeToTerms ? colors.primary[500] : 'white',
-              borderColor: formData.agreeToTerms ? colors.primary[500] : colors.neutral[300],
-            }}
+            id="agreeToTerms" name="agreeToTerms" type="checkbox" checked={formData.agreeToTerms} onChange={handleChange}
+            className="mt-0.5 h-4 w-4 rounded border-2 border-neutral-300 text-[#193827] focus:ring-[#193827]/30 transition-colors"
           />
-          <label htmlFor="agreeToTerms" className="text-sm" style={{ color: theme.text.secondary }}>
+          <label htmlFor="agreeToTerms" className="text-xs text-neutral-500">
             I agree to the{' '}
-            <Link href="/terms" className="font-medium hover:underline" style={{ color: colors.primary[600] }}>
-              Terms and Conditions
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="font-medium hover:underline" style={{ color: colors.primary[600] }}>
-              Privacy Policy
-            </Link>
+            <Link href="/terms" className="font-medium text-[#193827] hover:underline">Terms and Conditions</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="font-medium text-[#193827] hover:underline">Privacy Policy</Link>
           </label>
-        </motion.div>
+        </div>
         {errors.agreeToTerms && (
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-sm"
-            style={{ color: colors.error[600] }}
-          >
-            You must agree to the terms and conditions
-          </motion.p>
+          <p className="text-xs text-red-500">You must agree to the terms and conditions</p>
         )}
 
-        {/* Submit Button */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.6 }}>
-          <motion.button
-            type="submit"
-            disabled={isLoading}
-            whileHover={!isLoading ? { scale: 1.02 } : {}}
-            whileTap={!isLoading ? { scale: 0.98 } : {}}
-            className="w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ 
-              background: gradients.primary,
-              color: theme.text.inverted,
-              boxShadow: theme.shadows.md
-            }}
-          >
-            {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-              translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            
-            {isLoading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Creating account...</span>
-              </div>
-            ) : (
-              <>
-                Create account
-                <FiCheck className="inline-block ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </>
-            )}
-          </motion.button>
-        </motion.div>
+        {/* Submit */}
+        <motion.button
+          type="submit"
+          disabled={isLoading}
+          whileHover={!isLoading ? { scale: 1.02 } : {}}
+          whileTap={!isLoading ? { scale: 0.98 } : {}}
+          className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white transition-all duration-200 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#ff5252' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Creating account...</span>
+            </div>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              Create account
+              <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          )}
+        </motion.button>
       </form>
 
       {/* Divider */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        className="my-6 flex items-center"
-      >
-        <div className="flex-grow h-px" style={{ backgroundColor: colors.neutral[200] }} />
-        <span className="mx-4 text-sm" style={{ color: theme.text.secondary }}>Already have an account?</span>
-        <div className="flex-grow h-px" style={{ backgroundColor: colors.neutral[200] }} />
-      </motion.div>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-neutral-200" />
+        <span className="text-xs text-neutral-400">Already have an account?</span>
+        <div className="flex-1 h-px bg-neutral-200" />
+      </div>
 
-      {/* Login Link */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="text-center"
+      {/* Login link */}
+      <Link
+        href="/auth/login"
+        className="block w-full py-2.5 px-4 rounded-xl text-sm font-medium text-center border-2 border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-all"
       >
-        <Link 
-          href="/auth/login" 
-          className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 border hover:shadow-md"
-          style={{ 
-            backgroundColor: colors.neutral[50],
-            color: colors.primary[600],
-            borderColor: colors.neutral[200]
-          }}
-        >
-          Sign in to your account
-        </Link>
-      </motion.div>
+        Sign in to your account
+      </Link>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { colors, gradients, theme } from '@/lib/theme'
 import { FlashcardSet } from './types'
 import { useEffect, useState } from 'react'
 
@@ -25,182 +24,101 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   onToggleFlip
 }) => {
   const [isMobile, setIsMobile] = useState(false)
-  
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const styles = {
-    background: {
-      card: theme.backgrounds.card,
-    },
-    text: {
-      primary: theme.text.primary,
-      secondary: theme.text.secondary,
-      inverted: theme.text.inverted,
-    },
-    border: {
-      light: theme.borders.light,
-    },
-    shadow: theme.shadows,
-  }
-
   const currentCard = selectedSet.cards?.[currentCardIndex]
   const totalCards = selectedSet.cards?.length || 0
 
   return (
-    <div 
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200"
-      style={{ backgroundColor: theme.backgrounds.overlay }}
-    >
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
       <div className="w-full max-w-2xl h-full sm:h-auto flex flex-col">
-        {/* Header - Simplified for mobile */}
-        <div 
-          className={`border rounded-t-xl sm:rounded-t-2xl ${isMobile ? 'p-3' : 'p-4'} flex items-center justify-between shadow-lg flex-shrink-0`}
-          style={{ 
-            backgroundColor: styles.background.card,
-            borderColor: styles.border.light,
-            boxShadow: styles.shadow.lg
-          }}
-        >
+        {/* Header */}
+        <div className={`border-x border-t border-neutral-200 rounded-t-xl sm:rounded-t-2xl ${isMobile ? 'p-3' : 'p-4'} flex items-center justify-between bg-white flex-shrink-0 shadow-sm`}>
           <div className="min-w-0 flex-1 mr-3">
-            <h3 className={`${isMobile ? 'text-base font-semibold' : 'font-bold text-lg'} truncate`} style={{ color: styles.text.primary }}>
+            <h3 className={`${isMobile ? 'text-base font-heading font-medium' : 'text-lg font-heading font-semibold'} truncate text-neutral-800`}>
               {selectedSet.title}
             </h3>
-            {!isMobile && (
-              <p className="text-sm" style={{ color: colors.primary[400] }}>
-                {selectedSet.subject}
-              </p>
-            )}
+            {!isMobile && <p className="text-sm text-primary-500">{selectedSet.subject}</p>}
           </div>
           <button
             onClick={onClose}
-            className={`${isMobile ? 'p-1.5' : 'p-2'} hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0`}
-            style={{ backgroundColor: 'transparent' }}
+            className={`${isMobile ? 'p-1.5' : 'p-2'} hover:bg-neutral-100 rounded-lg transition-colors flex-shrink-0`}
           >
-            <X className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
+            <X className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: '#8a8a8a' }} />
           </button>
         </div>
 
-        {/* Card Area - Optimized for mobile */}
-        <div 
-          className={`border-x flex-1 flex items-center justify-center ${isMobile ? 'p-3' : 'p-8'}`}
-          style={{ 
-            backgroundColor: colors.neutral[50],
-            borderColor: styles.border.light
-          }}
-        >
+        {/* Card Area */}
+        <div className={`border-x border-neutral-200 flex-1 flex items-center justify-center ${isMobile ? 'p-3' : 'p-8'} bg-neutral-50`}>
           {currentCard ? (
             <div
               onClick={onToggleFlip}
-              className={`w-full ${isMobile ? 'h-full min-h-[280px]' : 'h-[320px]'} cursor-pointer perspective-1000`}
+              className={`w-full ${isMobile ? 'h-full min-h-[280px]' : 'h-[320px]'} cursor-pointer perspective`}
             >
               <div
                 className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
                   isFlipped ? 'rotate-y-180' : ''
                 }`}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                }}
               >
                 {/* Front */}
-                <div
-                  className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden"
-                  style={{ 
-                    backfaceVisibility: 'hidden',
-                    background: gradients.primary,
-                    boxShadow: styles.shadow.lg
-                  }}
-                >
-                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4`} style={{ color: colors.neutral[200] }}>
+                <div className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden bg-primary-500">
+                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4 text-neutral-200/80`}>
                     Question
                   </p>
-                  <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-center leading-tight px-2`} style={{ color: styles.text.inverted }}>
+                  <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-heading font-semibold text-center leading-tight px-2 text-white`}>
                     {currentCard.front}
                   </p>
-                  {!isMobile && (
-                    <p className="text-sm mt-6 sm:mt-8" style={{ color: colors.neutral[200] }}>
-                      Click to reveal answer
-                    </p>
-                  )}
+                  {!isMobile && <p className="text-sm mt-6 sm:mt-8 text-neutral-200/60">Click to reveal answer</p>}
                 </div>
 
                 {/* Back */}
-                <div
-                  className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden"
-                  style={{
-                    backfaceVisibility: 'hidden',
-                    transform: 'rotateY(180deg)',
-                    background: 'linear-gradient(135deg, #58a4b0 0%, #373f51 100%)',
-                    boxShadow: styles.shadow.lg
-                  }}
+                <div className="absolute inset-0 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl flex flex-col items-center justify-center p-4 sm:p-8 backface-hidden bg-neutral-800"
+                  style={{ transform: 'rotateY(180deg)' }}
                 >
-                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4`} style={{ color: colors.neutral[200] }}>
+                  <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} uppercase tracking-wider mb-3 sm:mb-4 text-neutral-200/80`}>
                     Answer
                   </p>
-                  <p className={`${isMobile ? 'text-base' : 'text-xl'} font-medium text-center leading-tight px-2`} style={{ color: styles.text.inverted }}>
+                  <p className={`${isMobile ? 'text-base' : 'text-xl'} font-medium text-center leading-tight px-2 text-white`}>
                     {currentCard.back}
                   </p>
-                  {!isMobile && (
-                    <p className="text-sm mt-6 sm:mt-8" style={{ color: colors.neutral[200] }}>
-                      Click to see question
-                    </p>
-                  )}
+                  {!isMobile && <p className="text-sm mt-6 sm:mt-8 text-neutral-200/60">Click to see question</p>}
                 </div>
               </div>
             </div>
           ) : (
-            <p style={{ color: styles.text.secondary }}>No cards in this set</p>
+            <p className="text-neutral-500">No cards in this set</p>
           )}
         </div>
 
-        {/* Footer Controls - Optimized for mobile */}
-        <div 
-          className={`border rounded-b-xl sm:rounded-b-2xl ${isMobile ? 'p-3' : 'p-4'} shadow-lg flex-shrink-0`}
-          style={{ 
-            backgroundColor: styles.background.card,
-            borderColor: styles.border.light,
-            boxShadow: styles.shadow.lg
-          }}
-        >
-          {/* Simplified progress indicator for mobile */}
-          <div className={`flex items-center justify-center mb-3 ${isMobile ? 'mb-2' : 'mb-3'}`}>
-            <div className="text-center">
-              <p className={`${isMobile ? 'text-xs' : 'text-sm'} mb-1`} style={{ color: styles.text.secondary }}>
-                {isMobile ? `${currentCardIndex + 1}/${totalCards}` : `Card ${currentCardIndex + 1} of ${totalCards}`}
-              </p>
-            </div>
+        {/* Footer Controls */}
+        <div className={`border-x border-b border-neutral-200 rounded-b-xl sm:rounded-b-2xl ${isMobile ? 'p-3' : 'p-4'} bg-white flex-shrink-0 shadow-sm`}>
+          {/* Progress indicator */}
+          <div className={`flex items-center justify-center ${isMobile ? 'mb-2' : 'mb-3'}`}>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-neutral-500`}>
+              {isMobile ? `${currentCardIndex + 1}/${totalCards}` : `Card ${currentCardIndex + 1} of ${totalCards}`}
+            </p>
           </div>
 
           <div className="flex items-center justify-between">
             <button
               onClick={onPrevCard}
               disabled={currentCardIndex === 0}
-              className={`${isMobile ? 'p-2' : 'p-3'} rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95`}
-              style={{ 
-                backgroundColor: colors.neutral[100],
-                minWidth: isMobile ? '44px' : 'auto'
-              }}
+              className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-white border-2 border-neutral-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 hover:bg-neutral-50 hover:border-neutral-300`}
+              style={{ minWidth: isMobile ? '44px' : 'auto' }}
             >
-              <ChevronLeft className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
+              <ChevronLeft className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-neutral-600`} />
             </button>
 
-            {/* Flip button for mobile */}
             {isMobile && (
               <button
                 onClick={onToggleFlip}
-                className="px-4 py-2 rounded-lg font-medium text-sm active:scale-95"
-                style={{ 
-                  background: gradients.primary,
-                  color: 'white',
-                }}
+                className="px-5 py-2.5 rounded-xl font-medium text-sm active:scale-95 bg-primary-500 text-white shadow-sm hover:shadow-md transition-all"
               >
                 Flip Card
               </button>
@@ -209,21 +127,15 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
             <button
               onClick={onNextCard}
               disabled={currentCardIndex === totalCards - 1}
-              className={`${isMobile ? 'p-2' : 'p-3'} rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-95`}
-              style={{ 
-                backgroundColor: colors.neutral[100],
-                minWidth: isMobile ? '44px' : 'auto'
-              }}
+              className={`${isMobile ? 'p-2.5' : 'p-3'} rounded-xl bg-white border-2 border-neutral-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 hover:bg-neutral-50 hover:border-neutral-300`}
+              style={{ minWidth: isMobile ? '44px' : 'auto' }}
             >
-              <ChevronRight className={isMobile ? "w-5 h-5" : "w-6 h-6"} style={{ color: styles.text.secondary }} />
+              <ChevronRight className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-neutral-600`} />
             </button>
           </div>
 
-          {/* Mobile swipe hint */}
           {isMobile && totalCards > 1 && (
-            <p className="text-center text-xs mt-3" style={{ color: styles.text.secondary }}>
-              Swipe left/right or use buttons to navigate
-            </p>
+            <p className="text-center text-xs mt-3 text-neutral-500">Swipe left/right or use buttons to navigate</p>
           )}
         </div>
       </div>

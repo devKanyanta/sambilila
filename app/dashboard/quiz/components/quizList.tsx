@@ -1,8 +1,7 @@
 'use client'
 
-import { Search, FileText, Clock, Hash } from 'lucide-react';
+import { Search, FileText, Clock, ChevronRight } from 'lucide-react';
 import { QuizListItem } from './types';
-import { getThemeStyles, colors } from './constants';
 import { useState, useEffect } from 'react';
 
 interface QuizListProps {
@@ -21,10 +20,8 @@ export default function QuizList({
   onRefreshQuizzes,
   onCreateNewQuiz,
 }: QuizListProps) {
-  const styles = getThemeStyles();
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingQuizId, setLoadingQuizId] = useState<string | null>(null);
-  
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -32,16 +29,9 @@ export default function QuizList({
   }, []);
 
   const handleQuizClick = (quizId: string) => {
-    // Set the loading state for this specific quiz
     setLoadingQuizId(quizId);
-    
-    // Call the original handler
     onSelectQuiz(quizId);
-    
-    // Optional: Clear loading state after a timeout in case the navigation fails
-    setTimeout(() => {
-      setLoadingQuizId(null);
-    }, 3000); // 3 second timeout
+    setTimeout(() => setLoadingQuizId(null), 3000);
   };
 
   const filteredQuizzes = quizList.filter(quiz =>
@@ -52,14 +42,8 @@ export default function QuizList({
   if (isLoadingQuizzes) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <div 
-          className="w-8 h-8 border-2 rounded-full animate-spin mb-4"
-          style={{ 
-            borderColor: colors.primary[400],
-            borderTopColor: 'transparent'
-          }}
-        ></div>
-        <p className="text-sm" style={{ color: styles.text.secondary }}>Loading quizzes...</p>
+        <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm text-secondary">Loading quizzes...</p>
       </div>
     );
   }
@@ -68,28 +52,18 @@ export default function QuizList({
     <div className="space-y-4">
       {/* Search Bar */}
       <div className="relative">
-        <Search 
-          size={18} 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2"
-          style={{ color: styles.text.secondary }}
-        />
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search quizzes..."
-          className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-1 focus:border-transparent text-sm transition-all duration-150"
-          style={{ 
-            backgroundColor: colors.neutral[50],
-            borderColor: styles.border.medium,
-            color: styles.text.primary
-          }}
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-neutral-200 bg-neutral-50 text-sm text-neutral-800 outline-none transition-all duration-150 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 placeholder-neutral-400"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs"
-            style={{ color: styles.text.secondary }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 hover:text-neutral-700"
           >
             Clear
           </button>
@@ -98,13 +72,12 @@ export default function QuizList({
 
       {/* Quizzes Count */}
       <div className="flex items-center justify-between text-sm">
-        <span style={{ color: styles.text.secondary }}>
+        <span className="text-neutral-500">
           {filteredQuizzes.length} {filteredQuizzes.length === 1 ? 'quiz' : 'quizzes'}
         </span>
         <button
           onClick={onRefreshQuizzes}
-          className="text-xs hover:underline"
-          style={{ color: colors.primary[500] }}
+          className="text-xs font-medium text-primary-500 hover:text-primary-600 transition-colors"
         >
           Refresh
         </button>
@@ -113,110 +86,62 @@ export default function QuizList({
       {/* Quizzes List */}
       {filteredQuizzes.length === 0 ? (
         <div className="text-center py-8">
-          <div 
-            className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3"
-            style={{ 
-              backgroundColor: colors.primary[50],
-              color: colors.primary[500]
-            }}
-          >
-            <FileText size={24} />
+          <div className="w-12 h-12 mx-auto rounded-xl bg-primary-50 flex items-center justify-center mb-3">
+            <FileText size={24} className="text-primary-500" />
           </div>
-          <p className="text-sm mb-4" style={{ color: styles.text.secondary }}>
+          <p className="text-sm text-neutral-500 mb-4">
             {searchQuery ? 'No quizzes found' : 'No quizzes created yet'}
           </p>
           {!searchQuery && (
             <button
               onClick={onCreateNewQuiz}
-              className="text-sm font-medium hover:underline"
-              style={{ color: colors.primary[500] }}
+              className="text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
             >
               Create your first quiz →
             </button>
           )}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredQuizzes.map((quizItem) => {
             const isLoading = loadingQuizId === quizItem.id;
-            
+
             return (
-              <div
+              <button
                 key={quizItem.id}
                 onClick={() => !isLoading && handleQuizClick(quizItem.id)}
-                className={`group p-3 border rounded-lg cursor-pointer transition-all duration-150 hover:border-blue-300 hover:shadow-sm ${
+                className={`bg-white rounded-xl p-5 text-left shadow-md transition-all group hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 ${
                   isLoading ? 'opacity-70 cursor-wait' : ''
                 }`}
-                style={{ 
-                  borderColor: isLoading ? colors.primary[300] : styles.border.light,
-                  backgroundColor: styles.background.card
-                }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <div 
-                        className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: colors.primary[50] }}
-                      >
-                        {isLoading ? (
-                          <div 
-                            className="w-4 h-4 border-2 rounded-full animate-spin"
-                            style={{ 
-                              borderColor: colors.primary[400],
-                              borderTopColor: 'transparent'
-                            }}
-                          ></div>
-                        ) : (
-                          <FileText size={14} style={{ color: colors.primary[500] }} />
-                        )}
-                      </div>
-                      <h3 className="font-medium text-sm truncate"
-                        style={{ color: styles.text.primary }}
-                      >
-                        {quizItem.title}
-                        {isLoading && (
-                          <span className="ml-2 text-xs" style={{ color: colors.primary[500] }}>
-                            Opening...
-                          </span>
-                        )}
-                      </h3>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3 text-xs ml-8">
-                      <span style={{ color: colors.primary[500] }}>
-                        {quizItem.subject}
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        <span style={{ color: styles.text.secondary }}>
-                          {quizItem._count.questions} questions
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock size={12} style={{ color: styles.text.secondary }} />
-                        <span style={{ color: styles.text.secondary }}>
-                          {new Date(quizItem.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ml-2 flex-shrink-0">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-heading font-semibold text-base text-neutral-800 pr-2 transition-colors group-hover:text-primary-500 truncate flex items-center gap-2">
                     {isLoading ? (
-                      <div 
-                        className="w-4 h-4 border-2 rounded-full animate-spin"
-                        style={{ 
-                          borderColor: colors.primary[400],
-                          borderTopColor: 'transparent'
-                        }}
-                      ></div>
+                      <span className="inline-block w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
                     ) : (
-                      <span className="text-sm group-hover:translate-x-0.5 transition-transform"
-                        style={{ color: colors.neutral[500] }}
-                      >→</span>
+                      <FileText size={16} className="text-primary-400 flex-shrink-0" />
                     )}
-                  </div>
+                    {quizItem.title}
+                    {isLoading && <span className="text-xs text-primary-500 font-normal ml-1">Opening...</span>}
+                  </h3>
+                  <ChevronRight className="w-4 h-4 text-primary-400 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all flex-shrink-0 mt-1" />
                 </div>
-              </div>
+
+                <span className="inline-block text-xs font-medium mb-3 px-2.5 py-1 rounded-full bg-primary-50 text-primary-500">
+                  {quizItem.subject}
+                </span>
+
+                <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                  <span className="text-xs font-medium text-neutral-400 flex items-center gap-1">
+                    <FileText size={12} className="text-neutral-400" />
+                    {quizItem._count.questions} questions
+                  </span>
+                  <span className="text-xs text-neutral-400 flex items-center gap-1">
+                    <Clock size={12} />
+                    {new Date(quizItem.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </button>
             );
           })}
         </div>
