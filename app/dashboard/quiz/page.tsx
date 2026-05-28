@@ -9,20 +9,21 @@ import QuizList from './components/quizList';
 import QuizResultsModal from './components/quizResults';
 import JobStatusModal from './components/JobStatusModal';
 import { QuizJob } from './components/types';
-import { Plus, List, Brain, ArrowLeft, Sparkles } from 'lucide-react';
+import { Plus, List, Brain, ArrowLeft, Sparkles, BarChart3 } from 'lucide-react';
+import PageHeader from '@/app/dashboard/components/PageHeader';
+import StatBlock from '@/app/dashboard/components/StatBlock';
+import Card from '@/app/dashboard/components/Card';
+import AnimatedSection from '@/app/dashboard/components/AnimatedSection';
+import { ShimmerBlock, ShimmerStatBlock } from '@/app/dashboard/components/Shimmer';
 
 type View = 'dashboard' | 'quiz-list' | 'quiz-view';
 
 export default function QuizGenerator() {
-  // View state
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showResultsModal, setShowResultsModal] = useState<boolean>(false);
-
-  // Add loading state for individual quiz loading
   const [loadingQuizId, setLoadingQuizId] = useState<string | null>(null);
 
-  // State
   const [title, setTitle] = useState<string>('');
   const [inputText, setInputText] = useState<string>('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -30,7 +31,6 @@ export default function QuizGenerator() {
   const [difficulty, setDifficulty] = useState<string>('medium');
   const [questionTypes, setQuestionTypes] = useState<string>('MULTIPLE_CHOICE,TRUE_FALSE');
 
-  // Custom hooks
   const {
     quiz,
     quizList,
@@ -69,15 +69,65 @@ export default function QuizGenerator() {
     addNewJob,
   } = useQuizJobs();
 
-  // Scroll to top when view changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView]);
 
-  // Fetch quiz list on component mount
   useEffect(() => {
     loadQuizList();
   }, []);
+
+  /* ─── Shimmer Loading State ─── */
+  if (isLoadingQuizzes && quizList.length === 0) {
+    return (
+      <div className="min-h-screen max-w-3xl mx-auto space-y-6" role="status" aria-label="Loading quizzes">
+        {/* Header Shimmer */}
+        <div className="flex items-center gap-4">
+          <ShimmerBlock className="w-10 h-10 rounded-xl" />
+          <div className="space-y-1.5 flex-1">
+            <ShimmerBlock className="h-6 w-36" />
+            <ShimmerBlock className="h-3 w-24" />
+          </div>
+        </div>
+
+        {/* Stats Shimmer */}
+        <div className="grid grid-cols-2 gap-4">
+          {[1, 2].map((i) => (
+            <ShimmerStatBlock key={i} />
+          ))}
+        </div>
+
+        {/* Quick Action Card Shimmer */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <div className="flex items-center gap-4">
+            <ShimmerBlock className="w-12 h-12 rounded-xl" />
+            <div className="flex-1 space-y-2">
+              <ShimmerBlock className="h-4 w-28" />
+              <ShimmerBlock className="h-3 w-44" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Quizzes Shimmer */}
+        <div className="space-y-3">
+          <ShimmerBlock className="h-5 w-28" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ShimmerBlock className="w-2 h-2 rounded-full" />
+                  <ShimmerBlock className="h-4 w-36" />
+                </div>
+                <ShimmerBlock className="h-3 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <span className="sr-only">Loading quizzes...</span>
+      </div>
+    )
+  }
 
   const loadQuizList = async () => {
     setIsLoadingQuizzes(true);
@@ -96,7 +146,6 @@ export default function QuizGenerator() {
       setError('Please enter a title for your quiz');
       return;
     }
-
     if (!inputText.trim() && !pdfFile) {
       setError('Please provide text or upload a PDF file');
       return;
@@ -106,15 +155,7 @@ export default function QuizGenerator() {
     setError('');
 
     try {
-      const jobData = await apiGenerateQuiz(
-        title,
-        inputText,
-        pdfFile,
-        numberOfQuestions,
-        difficulty,
-        questionTypes
-      );
-
+      const jobData = await apiGenerateQuiz(title, inputText, pdfFile, numberOfQuestions, difficulty, questionTypes);
       const newJob = {
         id: jobData.jobId,
         title: title,
@@ -125,10 +166,8 @@ export default function QuizGenerator() {
         createdAt: new Date().toISOString(),
         progress: 0,
       };
-
       addNewJob(newJob);
       startJobMonitoring(jobData.jobId, loadQuizList);
-
       setTitle('');
       setInputText('');
       setPdfFile(null);
@@ -142,16 +181,10 @@ export default function QuizGenerator() {
 
   const handleSubmitQuiz = async () => {
     if (!quiz) return;
-
     setIsSubmitting(true);
     setError('');
-
     try {
-      const answers = Object.entries(userAnswers).map(([questionId, answer]) => ({
-        questionId,
-        answer
-      }));
-
+      const answers = Object.entries(userAnswers).map(([questionId, answer]) => ({ questionId, answer }));
       const result = await apiSubmitQuiz(quiz.id, answers);
       setQuizResult(result.result);
       setDetailedResults(result.detailedResults);
@@ -202,172 +235,169 @@ export default function QuizGenerator() {
     setError('');
   };
 
-  const renderHeader = () => {
-    if (currentView === 'dashboard') {
-      return (
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-heading font-semibold text-neutral-800">
-                Quiz Generator
-              </h1>
-              <p className="text-sm text-neutral-500 mt-0.5">
-                AI-powered quiz generation from your content
-              </p>
-            </div>
-            <button onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-md active:scale-[0.98]"
-              style={{ backgroundColor: '#ff5252' }}>
-              <Plus size={18} />
-              <span>Create</span>
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => setCurrentView('dashboard')}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white border border-neutral-200 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 transition-all">
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          <h1 className="text-lg font-heading font-semibold text-neutral-800">
-            {currentView === 'quiz-list' ? 'All Quizzes' : quiz?.title || 'Quiz'}
-          </h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            {currentView === 'quiz-list' ? `${quizList.length} quizzes available` : `Question ${Object.keys(userAnswers).length}/${quiz?.questions.length || 0} answered`}
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  const renderContent = () => {
-    switch (currentView) {
-      case 'quiz-list':
-        return (
-          <QuizList
-            quizList={quizList}
-            isLoadingQuizzes={isLoadingQuizzes}
-            onSelectQuiz={handleSelectQuiz}
-            onRefreshQuizzes={loadQuizList}
-            onCreateNewQuiz={() => setShowCreateModal(true)}
-            loadingQuizId={loadingQuizId}
-          />
-        );
-
-      case 'quiz-view':
-        return quiz ? (
-          <QuizView
-            quiz={quiz}
-            userAnswers={userAnswers}
-            isSubmitting={isSubmitting}
-            onAnswer={handleAnswer}
-            onSubmit={handleSubmitQuiz}
-            onStartNewQuiz={handleStartNewQuiz}
-            onBack={() => setCurrentView('quiz-list')}
-          />
+  return (
+    <div className="min-h-screen">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        {currentView === 'dashboard' ? (
+          <AnimatedSection>
+            <PageHeader
+              title="Quiz Generator"
+              subtitle="AI-powered quiz generation from your content"
+              action={
+                <button onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-primary-500 hover:bg-primary-600 hover:shadow-sm transition-all active:scale-95">
+                  <Plus size={18} />
+                  <span>Create</span>
+                </button>
+              }
+            />
+          </AnimatedSection>
         ) : (
-          <div className="text-center py-12 bg-white rounded-xl shadow-md">
-            <Brain className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
-            <p className="text-sm text-neutral-500 mb-2">No quiz loaded</p>
-            <button onClick={() => setCurrentView('quiz-list')}
-              className="text-sm font-medium text-[#ff5252] hover:underline">
-              Browse quizzes →
-            </button>
-          </div>
-        );
+          <AnimatedSection>
+            <div className="flex items-center gap-4 mb-8">
+              <button onClick={() => setCurrentView('dashboard')}
+                className="w-10 h-10 rounded-xl flex items-center justify-center bg-white border border-neutral-200 text-neutral-400 hover:text-neutral-600 hover:border-neutral-300 transition-all active:scale-95">
+                <ArrowLeft size={18} />
+              </button>
+              <div>
+                <h1 className="text-lg font-heading font-medium text-neutral-900">
+                  {currentView === 'quiz-list' ? 'All Quizzes' : quiz?.title || 'Quiz'}
+                </h1>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  {currentView === 'quiz-list' ? `${quizList.length} quizzes available` : `Question ${Object.keys(userAnswers).length}/${quiz?.questions.length || 0} answered`}
+                </p>
+              </div>
+            </div>
+          </AnimatedSection>
+        )}
 
-      default:
-        return (
+        {/* Content */}
+        {currentView === 'quiz-list' ? (
+          <AnimatedSection delay={0.1}>
+            <QuizList
+              quizList={quizList}
+              isLoadingQuizzes={isLoadingQuizzes}
+              onSelectQuiz={handleSelectQuiz}
+              onRefreshQuizzes={loadQuizList}
+              onCreateNewQuiz={() => setShowCreateModal(true)}
+              loadingQuizId={loadingQuizId}
+            />
+          </AnimatedSection>
+        ) : currentView === 'quiz-view' ? (
+          quiz ? (
+            <AnimatedSection delay={0.1}>
+              <QuizView
+                quiz={quiz}
+                userAnswers={userAnswers}
+                isSubmitting={isSubmitting}
+                onAnswer={handleAnswer}
+                onSubmit={handleSubmitQuiz}
+                onStartNewQuiz={handleStartNewQuiz}
+                onBack={() => setCurrentView('quiz-list')}
+              />
+            </AnimatedSection>
+          ) : (
+            <Card className="text-center py-16">
+              <Brain className="w-10 h-10 text-neutral-200 mx-auto mb-4" />
+              <p className="text-sm text-neutral-400 mb-3">No quiz loaded</p>
+              <button onClick={() => setCurrentView('quiz-list')}
+                className="text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors">
+                Browse quizzes &rarr;
+              </button>
+            </Card>
+          )
+        ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white rounded-xl shadow-md p-4">
-                <p className="text-xs text-neutral-500 font-medium">Quizzes</p>
-                <p className="text-2xl font-bold text-neutral-800 mt-1">{quizList.length}</p>
+            <AnimatedSection delay={0.05}>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <StatBlock
+                  label="Quizzes Created"
+                  value={quizList.length}
+                  icon={BarChart3}
+                  color="#2d6b4d"
+                />
+                <StatBlock
+                  label="In Progress"
+                  value={quiz ? 1 : 0}
+                  icon={Brain}
+                  color="#ff5252"
+                />
               </div>
-              <div className="bg-white rounded-xl shadow-md p-4">
-                <p className="text-xs text-neutral-500 font-medium">Continue</p>
-                <p className="text-2xl font-bold text-neutral-800 mt-1">{quiz ? 1 : 0}</p>
-              </div>
-            </div>
+            </AnimatedSection>
 
-            {/* Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <button onClick={() => setCurrentView('quiz-list')}
-                className="bg-white rounded-xl shadow-md p-5 text-left hover:shadow-lg transition-all group">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-[#ff5252]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <List className="w-5 h-5 text-[#ff5252]" />
+            {/* Quick Actions */}
+            <AnimatedSection delay={0.1}>
+              <Card
+                className="p-5 cursor-pointer hover:shadow-lg transition-all group active:scale-[0.99]"
+                onClick={() => setCurrentView('quiz-list')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <List className="w-6 h-6 text-primary-500" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm text-neutral-800">Browse Quizzes</h3>
-                    <p className="text-xs text-neutral-500">Take existing quizzes</p>
+                    <h3 className="text-sm font-medium text-neutral-900">Browse Quizzes</h3>
+                    <p className="text-xs text-neutral-400 mt-0.5">Take existing quizzes and track your progress</p>
                   </div>
                 </div>
-              </button>
-            </div>
+              </Card>
+            </AnimatedSection>
 
             {/* Recent Quizzes */}
             {quizList.length > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-neutral-800">Recent Quizzes</h2>
-                  <button onClick={() => setCurrentView('quiz-list')}
-                    className="text-xs font-medium text-[#ff5252] hover:underline">
-                    View all
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {quizList.slice(0, 3).map((quizItem) => {
-                    const isLoading = loadingQuizId === quizItem.id;
-                    return (
-                      <div key={quizItem.id}
-                        onClick={() => !isLoading && handleSelectQuiz(quizItem.id)}
-                        className={`p-3 rounded-lg border border-neutral-200 cursor-pointer transition-all relative ${
-                          isLoading ? 'opacity-70 cursor-wait' : 'hover:bg-neutral-50 hover:border-[#193827]/20'
-                        }`}>
-                        {isLoading && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-lg z-10">
-                            <div className="w-4 h-4 border-2 border-[#193827]/30 border-t-[#193827] rounded-full animate-spin" />
+              <AnimatedSection delay={0.15}>
+                <div className="mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-medium text-neutral-900">Recent Quizzes</h2>
+                    <button onClick={() => setCurrentView('quiz-list')}
+                      className="text-xs font-medium text-primary-500 hover:text-primary-600 transition-colors">
+                      View all
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {quizList.slice(0, 3).map((quizItem) => {
+                      const isLoading = loadingQuizId === quizItem.id;
+                      return (
+                        <Card
+                          key={quizItem.id}
+                          onClick={() => !isLoading && handleSelectQuiz(quizItem.id)}
+                          className={`p-4 cursor-pointer transition-all relative ${
+                            isLoading ? 'opacity-60 cursor-wait' : 'hover:shadow-lg active:scale-[0.99]'
+                          }`}
+                        >
+                          {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-xl z-10">
+                              <div className="w-5 h-5 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-primary-400" />
+                              <span className="text-sm text-neutral-900">{quizItem.title}</span>
+                            </div>
+                            <span className="text-xs text-neutral-400">{quizItem._count.questions} questions</span>
                           </div>
-                        )}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-[#ff5252]" />
-                            <span className="text-sm text-neutral-800">{quizItem.title}</span>
-                          </div>
-                          <span className="text-xs text-neutral-400">{quizItem._count.questions} questions</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              </AnimatedSection>
             )}
 
             {/* Active Jobs */}
             {activeJobs.length > 0 && (
-              <div className="mt-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-[#ff5252]" />
-                  <span className="text-sm font-medium text-neutral-600">{activeJobs.length} active job{activeJobs.length > 1 ? 's' : ''}</span>
+              <AnimatedSection delay={0.2}>
+                <div className="mt-8 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary-500" />
+                  <span className="text-sm text-neutral-500">{activeJobs.length} active job{activeJobs.length > 1 ? 's' : ''}</span>
                 </div>
-              </div>
+              </AnimatedSection>
             )}
           </>
-        );
-    }
-  };
-
-  return (
-    <div className="min-h-screen">
-      <div className="max-w-3xl mx-auto">
-        {renderHeader()}
-        {renderContent()}
+        )}
       </div>
 
       <QuizFormModal
@@ -388,7 +418,6 @@ export default function QuizGenerator() {
         onDifficultyChange={setDifficulty}
         onQuestionTypesChange={setQuestionTypes}
         onGenerateQuiz={handleGenerateQuiz}
-        onClearAll={handleClearAll}
       />
 
       {quizResult && detailedResults && (

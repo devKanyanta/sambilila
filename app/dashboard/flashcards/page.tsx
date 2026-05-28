@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Sparkles } from 'lucide-react'
+import { Plus, Sparkles, BookOpen } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 // Hooks
 import { useFlashcardSets } from './hooks/useFlashcardsSets'
@@ -13,9 +14,14 @@ import CreateForm from './components/CreateForm'
 import FlashcardGrid from './components/FlashcardGrid'
 import FlashcardViewer from './components/FlashcardViewer'
 import JobStatusModal from './components/JobStatusModal'
+import PageHeader from '../components/PageHeader'
+import StatBlock from '../components/StatBlock'
 
 // Types
 import { FlashcardSet, FlashcardJob } from './components/types'
+import { AnimatedItem } from '../components/AnimatedSection'
+import { containerStagger, fadeSlideUp, scaleInBouncy } from '../animations';
+import { ShimmerBlock, ShimmerStatBlock, ShimmerHeading } from '../components/Shimmer'
 
 export default function Flashcards() {
   /* =================== STATE =================== */
@@ -71,7 +77,7 @@ export default function Flashcards() {
   useEffect(() => {
     if (!mounted) return
     loadFlashcardSets()
-  }, [mounted, loadFlashcardSets])
+  }, [mounted])
 
   /* ================= CREATE FLASHCARDS ================= */
   const handleGenerate = useCallback(async () => {
@@ -242,79 +248,124 @@ export default function Flashcards() {
     }
   }, [openSet, closeJobModal])
 
-  if (!mounted) return null
+  if (!mounted) {
+    return (
+      <div className="space-y-6" role="status" aria-label="Loading flashcards">
+        {/* Header Shimmer */}
+        <ShimmerHeading />
+
+        {/* Stats Row Shimmer */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <ShimmerStatBlock key={i} />
+          ))}
+        </div>
+
+        {/* Grid Shimmer */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <ShimmerBlock className="w-10 h-10 rounded-xl" />
+              <div className="space-y-1">
+                <ShimmerBlock className="h-5 w-24" />
+                <ShimmerBlock className="h-3 w-16" />
+              </div>
+            </div>
+            <ShimmerBlock className="w-9 h-9 rounded-xl" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <ShimmerBlock className="h-5 w-3/4" />
+                  <ShimmerBlock className="w-4 h-4 rounded-sm" />
+                </div>
+                <ShimmerBlock className="h-5 w-20 rounded-full mb-3" />
+                <div className="space-y-2 mb-4">
+                  <ShimmerBlock className="h-3 w-full" />
+                  <ShimmerBlock className="h-3 w-2/3" />
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                  <ShimmerBlock className="h-3 w-16" />
+                  <ShimmerBlock className="h-3 w-12" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <span className="sr-only">Loading flashcards...</span>
+      </div>
+    )
+  }
 
   const error = formError || fileError || setsError
+  const totalCards = flashcardSets.reduce((acc, set) => acc + (set.cards?.length || 0), 0)
 
   return (
-    <div className="min-h-screen">
-      {/* Header - Minimal */}
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-heading font-semibold text-neutral-800">
-              Flashcards
-            </h1>
-            <p className="text-sm text-neutral-500 mt-0.5">
-              AI-powered learning tools
-            </p>
-          </div>
-
-          {!showForm && (
-            <button onClick={() => setShowForm(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-md active:scale-[0.98]"
-              style={{ backgroundColor: '#ff5252' }}>
-              <Plus size={18} />
-              <span>Generate</span>
-            </button>
-          )}
-        </div>
-      </div>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerStagger}
+      className="min-h-screen"
+    >
+      {/* Header */}
+      <AnimatedItem variants={fadeSlideUp}>
+        <PageHeader
+          title="Flashcards"
+          subtitle="AI-powered learning tools"
+          emoji="📚"
+          action={
+            !showForm ? (
+              <motion.button
+                onClick={() => setShowForm(true)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-[#ff5252] hover:bg-[#fc0b06] transition-all shadow-md"
+              >
+                <Plus size={18} />
+                <span>Generate</span>
+              </motion.button>
+            ) : undefined
+          }
+        />
+      </AnimatedItem>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200"
+        >
           <p className="text-sm font-medium text-red-600">{error}</p>
-        </div>
+        </motion.div>
       )}
 
-      {/* Stats */}
+      {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <p className="text-2xl font-bold text-neutral-800 mb-1">
-            {flashcardSets.length}
-          </p>
-          <p className="text-xs text-neutral-500">Flashcard Sets</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <p className="text-2xl font-bold text-neutral-800 mb-1">
-            {flashcardSets.reduce((acc, set) => acc + (set.cards?.length || 0), 0)}
-          </p>
-          <p className="text-xs text-neutral-500">Total Cards</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles size={18} className="text-[#ff5252]" />
-            <p className="text-2xl font-bold text-neutral-800">{activeJobs.length}</p>
-          </div>
-          <p className="text-xs text-neutral-500">Active Jobs</p>
-        </div>
+        <StatBlock icon={BookOpen} value={flashcardSets.length} label="Flashcard Sets" color="#193827" iconBg="#1938271a" />
+        <StatBlock icon={BookOpen} value={totalCards} label="Total Cards" color="#2d6b4d" iconBg="#2d6b4d1a" />
+        <StatBlock icon={Sparkles} value={activeJobs.length} label="Active Jobs" color="#ff5252" iconBg="#ff52521a" />
       </div>
 
       {/* Flashcard Sets Grid */}
-      <FlashcardGrid
-        flashcardSets={flashcardSets}
-        onOpenSet={openSet}
-        onRefresh={loadFlashcardSets}
-        loading={loadingSets}
-      />
+      <div>
+        <FlashcardGrid
+          flashcardSets={flashcardSets}
+          onOpenSet={openSet}
+          onRefresh={loadFlashcardSets}
+          loading={loadingSets}
+        />
+      </div>
 
-      {/* Modal Overlay and Form */}
+      {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
             onClick={() => {
               setShowForm(false);
               setFormError(null);
@@ -322,7 +373,12 @@ export default function Flashcards() {
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="relative w-full max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25, mass: 0.8 }}
+              className="relative w-full max-w-md mx-auto"
+            >
               <CreateForm
                 title={title}
                 subject={subject}
@@ -344,7 +400,7 @@ export default function Flashcards() {
                   setFileError(null);
                 }}
               />
-            </div>
+            </motion.div>
           </div>
         </div>
       )}
@@ -369,6 +425,6 @@ export default function Flashcards() {
           onToggleFlip={toggleFlip}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

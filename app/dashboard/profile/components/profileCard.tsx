@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ProfileResponse, ProfileFormData } from '../types/profile'
+import { User, Mail, Calendar, Edit3, LogOut, MoreVertical, Camera } from 'lucide-react'
+import Card from '@/app/dashboard/components/Card'
 
 interface ProfileCardProps {
   profile: ProfileResponse | null
@@ -18,53 +20,43 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({
-  profile,
-  editingProfile,
-  setEditingProfile,
-  profileForm,
-  setProfileForm,
-  uploadingAvatar,
-  handleUpdateProfile,
-  handleAvatarUpload,
-  handleRemoveAvatar,
-  handleLogout,
-  formatDate
+  profile, editingProfile, setEditingProfile, profileForm, setProfileForm,
+  uploadingAvatar, handleUpdateProfile, handleAvatarUpload, handleRemoveAvatar,
+  handleLogout, formatDate
 }: ProfileCardProps) {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false)
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <div className="flex items-start gap-4">
+    <Card className="p-5 overflow-visible">
+      <div className="flex flex-col items-center text-center">
         {/* Avatar */}
-        <div className="relative">
+        <div className="relative mb-4">
           {profile?.user.avatar ? (
-            <img
-              src={profile.user.avatar}
-              alt={profile.user.name}
-              className="w-16 h-16 rounded-xl object-cover border-2 border-neutral-100"
-            />
+            <img src={profile.user.avatar} alt={profile.user.name}
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-neutral-100" />
           ) : (
-            <div className="w-16 h-16 rounded-xl bg-[#193827]/10 flex items-center justify-center border-2 border-neutral-100">
-              <span className="text-xl font-bold text-[#193827]">
+            <div className="w-20 h-20 rounded-2xl bg-primary-50 flex items-center justify-center border-2 border-neutral-100">
+              <span className="text-2xl font-medium text-primary-500">
                 {profile?.user.name?.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
-          <button
-            onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-            className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 transition-colors shadow-sm"
-          >
-            <span className="text-xs text-neutral-500">⋯</span>
+          <button onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 transition-colors shadow-sm">
+            <Camera size={12} className="text-neutral-400" />
           </button>
 
           {showAvatarMenu && (
-            <div className="absolute z-10 mt-1 w-36 bg-white border border-neutral-200 rounded-xl shadow-lg overflow-hidden">
-              <label className="block px-3 py-2 text-xs text-neutral-700 hover:bg-neutral-50 cursor-pointer transition-colors">
+            <div className="absolute z-10 mt-2 w-40 bg-white border border-neutral-200 rounded-xl shadow-lg overflow-hidden left-1/2 -translate-x-1/2">
+              <label className="flex items-center gap-2 px-3 py-2.5 text-xs text-neutral-700 hover:bg-neutral-50 cursor-pointer transition-colors">
+                <Camera size={14} />
                 Change Photo
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" disabled={uploadingAvatar} />
               </label>
               {profile?.user.avatar && (
-                <button onClick={handleRemoveAvatar} className="block w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors">
+                <button onClick={handleRemoveAvatar}
+                  className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-xs text-red-400 hover:bg-red-50 transition-colors">
+                  <Camera size={14} />
                   Remove
                 </button>
               )}
@@ -73,68 +65,63 @@ export default function ProfileCard({
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          {editingProfile ? (
-            <form onSubmit={handleUpdateProfile} className="space-y-3">
-              <input
-                type="text" value={profileForm.name}
-                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border-2 border-neutral-200 text-sm outline-none focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20 transition-all"
-                placeholder="Your name"
-                required
-              />
-              <select
-                value={profileForm.userType}
-                onChange={(e) => setProfileForm({ ...profileForm, userType: e.target.value as 'STUDENT' | 'TEACHER' })}
-                className="w-full px-3 py-2 rounded-lg border-2 border-neutral-200 text-sm outline-none focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20 transition-all"
-              >
-                <option value="STUDENT">Student</option>
-                <option value="TEACHER">Teacher</option>
-              </select>
-              <div className="flex gap-2">
-                <button type="submit" className="flex-1 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all"
-                  style={{ backgroundColor: '#193827' }}>
-                  Save
-                </button>
-                <button type="button" onClick={() => setEditingProfile(false)}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 border-2 border-neutral-200 hover:bg-neutral-50 transition-all">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-bold text-neutral-800">{profile?.user.name}</h2>
-                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
-                  profile?.user.userType === 'TEACHER'
-                    ? 'bg-[#ff5252]/10 text-[#ff5252]'
-                    : 'bg-[#193827]/10 text-[#193827]'
-                }`}>
-                  {profile?.user.userType === 'TEACHER' ? 'Teacher' : 'Student'}
-                </span>
-              </div>
-              <p className="text-sm text-neutral-500 mt-0.5">{profile?.user.email}</p>
-              <p className="text-xs text-neutral-400 mt-2">
-                Joined {profile ? formatDate(profile.user.createdAt) : 'Loading...'}
-              </p>
-            </>
-          )}
-        </div>
+        {editingProfile ? (
+          <form onSubmit={handleUpdateProfile} className="w-full space-y-3">
+            <input type="text" value={profileForm.name}
+              onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 bg-neutral-50 outline-none text-neutral-900 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all text-center"
+              placeholder="Your name" required />
+            <select value={profileForm.userType}
+              onChange={(e) => setProfileForm({ ...profileForm, userType: e.target.value as 'STUDENT' | 'TEACHER' })}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 bg-neutral-50 outline-none text-neutral-900 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all text-center">
+              <option value="STUDENT">Student</option>
+              <option value="TEACHER">Teacher</option>
+            </select>
+            <div className="flex gap-2 pt-1">
+              <button type="submit" disabled={uploadingAvatar}
+                className="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-primary-500 text-white hover:bg-primary-600 transition-all active:scale-95">
+                Save
+              </button>
+              <button type="button" onClick={() => setEditingProfile(false)}
+                className="flex-1 px-3 py-2 rounded-xl text-sm font-medium text-neutral-600 border border-neutral-200 hover:bg-neutral-50 transition-all active:scale-95">
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <h2 className="text-lg font-heading font-medium text-neutral-900">{profile?.user.name}</h2>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span className={`px-2.5 py-0.5 text-[10px] font-medium rounded-full ${
+                profile?.user.userType === 'TEACHER'
+                  ? 'bg-accent-50 text-accent-600'
+                  : 'bg-primary-50 text-primary-600'
+              }`}>
+                {profile?.user.userType === 'TEACHER' ? 'Teacher' : 'Student'}
+              </span>
+            </div>
+            <p className="text-sm text-neutral-400 mt-2 flex items-center justify-center gap-1.5">
+              <Mail size={14} /> {profile?.user.email}
+            </p>
+            <p className="text-xs text-neutral-400 mt-1.5 flex items-center justify-center gap-1.5">
+              <Calendar size={12} /> Joined {profile ? formatDate(profile.user.createdAt) : 'Loading...'}
+            </p>
+          </>
+        )}
       </div>
 
       {!editingProfile && (
         <div className="mt-5 pt-4 border-t border-neutral-100 space-y-2">
           <button onClick={() => setEditingProfile(true)}
-            className="w-full py-2 px-3 rounded-lg text-sm font-medium border-2 border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:shadow-sm transition-all">
-            Edit Profile
+            className="w-full py-2.5 px-3 rounded-xl text-sm font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <Edit3 size={14} /> Edit Profile
           </button>
           <button onClick={handleLogout}
-            className="w-full py-2 px-3 rounded-lg text-sm font-medium border-2 border-red-200 text-red-500 hover:bg-red-50 transition-all">
-            Logout
+            className="w-full py-2.5 px-3 rounded-xl text-sm font-medium border border-red-100 text-red-400 hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <LogOut size={14} /> Logout
           </button>
         </div>
       )}
-    </div>
+    </Card>
   )
 }

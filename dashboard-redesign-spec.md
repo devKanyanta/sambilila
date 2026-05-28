@@ -1,234 +1,350 @@
 # Dashboard Redesign Specification
 
-> **Status:** Draft (based on user interview)  
-> **Date:** May 21, 2026
+> **Status:** Draft (based on 6 rounds of user interview)  
+> **Date:** May 28, 2026  
+> **Author:** Buffy AI
 
 ---
 
-## 1. Core Design Principles
+## 1. Executive Summary
 
-| Principle | Description |
-|-----------|-------------|
-| **No gradients** | Replace all gradient backgrounds with solid colors. Exception: progress bars keep their gradient fills. |
-| **Subtle cards** | Remove borders from cards. Use `shadow-md` for separation on white backgrounds. |
-| **Generous spacing** | Increase overall whitespace — padding, gaps between sections, internal card padding. |
-| **Consistent alignment** | Standardize heading sizes, card padding, and grid gaps across all dashboard pages. |
-| **Color hierarchy** | Green (`#193827` family) = primary brand. Red (`#ff5252` family) = secondary/CTA. Warm greys (`#ececec` / `#f5f5f5`) = backgrounds. |
+A full visual and UX redesign of the Lernopia student dashboard (`app/dashboard/*`). The goal is to transform the current dashboard from inconsistent and cluttered to **minimal, airy, and cohesive** — prioritizing study progress and activity while improving mobile experience and establishing a consistent visual language across all pages.
 
 ---
 
-## 2. Color System (No Changes to Palette)
+## 2. Design Principles
 
-Keep existing CSS variables as defined in `app/globals.css` and `lib/theme.ts`:
-
-- **Primary (Forest Green):** `#193827` → `#2d6b4d` → `#4d8567` → tints
-- **Secondary (Bright Red):** `#ff5252` → `#fc0b06` → tints
-- **Neutral (Warm Greys):** `#ececec` → `#e0e0e0` → `#8a8a8a` → `#2c2c2c`
-- **Accent (Gold):** Keep as-is for badges/awards
-
----
-
-## 3. Card Design
-
-### Current → Target
-
-| Aspect | Current | Target |
-|--------|---------|--------|
-| Background | `bg-white` | `bg-white` (unchanged) |
-| Border | `border border-neutral-200` | **Remove border entirely** |
-| Shadow | None (relies on border) | `shadow-md` (moderate) |
-| Border radius | `rounded-xl` (12px) | `rounded-xl` (unchanged) |
-| Internal padding | Inconsistent (p-4, p-5 mixed) | **Standardize to p-5** for main cards, p-4 for compact cards |
-
-### Card Categories
-| Card Type | Padding | Additional Notes |
-|-----------|---------|------------------|
-| Main content cards | `p-5` | Stats panels, action grids, activity lists |
-| Compact/stat cards | `p-4` | Small stat displays, mini-cards |
-| Modals/overlays | `p-6` | Create forms, job modals |
+| # | Principle | How It Manifests |
+|---|-----------|-----------------|
+| 1 | **Minimal & airy** | Generous whitespace, restrained use of color, clean typography, subtle shadows, no visual noise |
+| 2 | **Stats-first hierarchy** | Study streaks, learning time, and flashcard/quiz counts are the hero content on the home page |
+| 3 | **Consistent card language** | White cards on light grey (`#ececec`) background — same border-radius, same shadow, same padding roles |
+| 4 | **Mobile-first responsive** | Layouts adapt fluidly; swipeable cards, pull-to-refresh, bottom sheets for mobile interactions |
+| 5 | **Expressive motion** | Bouncy spring animations, staggered reveals, playful micro-interactions throughout |
+| 6 | **Color balance preserved** | Keep current brand color ratio (forest green primary, coral/red CTAs, warm grey backgrounds) |
 
 ---
 
-## 4. Gradient Replacement Map
+## 3. Information Architecture (Unchanged)
 
-Every gradient in the dashboard must be changed according to the table below:
+Same 4-page structure, restyled:
 
-### 4.1 Main Dashboard (`app/dashboard/page.tsx`)
-
-| Location | Current | Replacement |
-|----------|---------|-------------|
-| Welcome header icon (line 254) | `bg-gradient-to-br from-[#193827]/10 to-[#ff5252]/10` border | `bg-[#193827]/10` border |
-| Top subject progress bar (line 508) | `bg-gradient-to-r from-[#ff5252] to-[#ff7a7a]` | **Keep gradient** (progress bars exempted) |
-| StreakCard fire icon bg | `bg-gradient-to-br from-orange-50 to-rose-50` | `bg-[#ff5252]/10` |
-| StreakCard progress bar | `bg-gradient-to-r from-orange-400 to-[#ff5252]` | **Keep gradient** (progress bars exempted) |
-
-### 4.2 Flashcards
-
-| Location | Current | Replacement |
-|----------|---------|-------------|
-| CreateForm header icon (line 106) | `bg-gradient-to-br from-[#2d6b4d] to-[#4d8567]` | `bg-primary-500` (solid #2d6b4d) |
-| FlashcardViewer — front (line 70) | `bg-gradient-to-br from-[#2d6b4d] to-[#4d8567]` | `bg-primary-500` (solid #2d6b4d) |
-| FlashcardViewer — back (line 81) | `bg-gradient-to-br from-[#58a4b0] to-[#373f51]` | Solid dark teal `bg-[#373f51]` or keep as neutral dark `bg-neutral-800` |
-
-### 4.3 Profile
-
-| Location | Current | Replacement |
-|----------|---------|-------------|
-| ProfileCard avatar placeholder (line 47) | `bg-gradient-to-br from-[#193827]/10 to-[#ff5252]/10` | `bg-[#193827]/10` |
-
-### 4.4 Layout
-
-| Location | Current | Replacement |
-|----------|---------|-------------|
-| Sidebar study tip card (line 147) | `bg-gradient-to-br from-[#193827]/5 to-[#ff5252]/5` | `bg-[#193827]/8` |
-| Sidebar study tip card border | `border-[#193827]/10` | `border-primary-100` or no border |
-
-### 4.5 CSS Classes (`app/globals.css`)
-
-| Class | Action |
-|-------|--------|
-| `.gradient-text-primary` | Keep — gradient text may still be useful for hero sections on landing page |
-| `.gradient-text-red` | Keep |
-| `.gradient-text-gold` | Keep |
-
-### 4.6 Landing Page & Auth Pages
-
-These are out of scope for this dashboard-specific spec. Focus is `app/dashboard/*` only.
+| Page | Route | Purpose |
+|------|-------|---------|
+| **Home** | `/dashboard` | Stats, streak, activity, quick actions |
+| **Flashcards** | `/dashboard/flashcards` | View sets, create/view flashcards |
+| **Quiz Generator** | `/dashboard/quiz` | Create and take quizzes |
+| **Profile** | `/dashboard/profile` | Activity timeline, stats, settings |
 
 ---
 
-## 5. Spacing Standardization
+## 4. Navigation (Keep Current Structure, Restyled)
 
-### 5.1 Section/Grid Gaps
+### Desktop
+- **Top navbar:** Brand logo (left) + Home link + Upgrade CTA (right) — restyled for cleaner look
+- **Sidebar:** Left sidebar with 4 nav items (Dashboard, Flashcards, Quiz Generator, Profile) + study tip card at bottom — refined styling, more breathing room
 
-| Context | Current | Target |
-|---------|---------|--------|
-| Main section spacing | `space-y-6` | `space-y-8` |
-| Card grid gaps | `gap-3` | `gap-4` |
-| Two-column layouts | `gap-6` | `gap-8` |
+### Mobile
+- **Bottom tab bar:** 4 tabs (Home, Cards, Quiz, Me) — restyled with active indicator
+- **Burger menu:** That triggers the sidebar overlay
 
-### 5.2 Internal Card Padding
-
-| Component | Current | Target |
-|-----------|---------|--------|
-| Stat cards (dashboard) | `p-4` | `p-4` (compact OK) |
-| Quick Actions card | `p-5` | `p-6` |
-| Recent Activity card | `p-5` | `p-6` |
-| Performance card | `p-5` | `p-6` |
-| Top Subject card | `p-5` | `p-6` |
-| Flashcard stats | `p-5` | `p-4` (compact OK) |
-| Quiz dashboard cards | `p-4` or `p-5` | `p-5` (standardize) |
-| Profile cards | `p-5` | `p-6` |
-| Motion list items | `p-2.5` | `p-3` |
-
-### 5.3 Heading Size Consistency
-
-| Heading Role | Size | Font Stack |
-|-------------|------|------------|
-| Page title (h1) | `text-xl` | `font-heading font-semibold` |
-| Section title (h2) | `text-base` | `font-heading font-semibold` |
-| Card subtitle (h3) | `text-sm` | `font-heading font-medium` |
-| Stat value | `text-lg` | `font-heading font-semibold` |
-| Stat label | `text-xs` | `font-medium` (Inter) |
+### New Mobile Patterns to Add
+- Swipeable cards for navigating between sections
+- Pull-to-refresh on data views
+- Bottom sheets for forms and modals instead of full-screen overlays
 
 ---
 
-## 6. Page-by-Page Changes
+## 5. Home Page Layout (Revised)
 
-### 6.1 Dashboard Home (`app/dashboard/page.tsx`)
+The home page is reorganized into this vertical flow:
 
-- **Welcome header:** Remove gradient from icon bg → solid tint. Standardize spacing.
-- **Stat cards:** Remove borders, add shadow-md. All cards get same padding.
-- **Quick Actions card:** Remove border, shadow-md, increase internal padding to p-6.
-- **Recent Activity card:** Same treatment. Increase list item padding to p-3.
-- **Performance card:** Same treatment. Increase gap between items to gap-4.
-- **Top Subject card:** Remove gradient from progress bar bg (keep gradient fill). Remove border.
-- **Error/loading states:** Ensure consistent card styling.
-
-### 6.2 Flashcards (`app/dashboard/flashcards/page.tsx`)
-
-- **Header:** Keep as-is (already minimal).
-- **Stats row:** Remove borders, add shadow-md. Standardize padding.
-- **Generate button:** Keep current red CTA style.
-- **CreateForm modal:** Replace gradient icon with solid primary-500. Keep card styling but no border on the inner card.
-- **FlashcardViewer:** Front card = solid primary-500 green. Back card = solid dark. Remove gradients.
-- **JobStatusModal:** Ensure card has shadow, no border.
-
-### 6.3 Quiz (`app/dashboard/quiz/page.tsx`)
-
-- **Stats cards:** Remove borders, shadow-md, standardize padding.
-- **Action cards:** Same treatment, increase gap between icon and text.
-- **Recent quizzes:** Remove border, shadow-md.
-- **QuizForm modal:** Remove border from inner content area, use shadow instead.
-- **QuizResults modal:** Same treatment — shadow over border.
-- **QuizView:** Ensure consistent heading sizes.
-
-### 6.4 Profile (`app/dashboard/profile/`)
-
-- **ProfileHeader:** Keep page title style consistent with other pages.
-- **ProfileCard:** Remove border, add shadow-md. Replace gradient avatar placeholder with solid tint.
-- **StatsCard:** Remove border, shadow-md. Standardize padding.
-- **ActivityCard:** Remove border, shadow-md.
-- **SettingsCard:** Remove border, shadow-md.
-- **Loading/Error states:** Ensure cards match the new style.
-
-### 6.5 Layout (`app/dashboard/layout.tsx`)
-
-- **Sidebar study tip card:** Replace gradient mix with solid green tint (`bg-[#193827]/8`).
-- **Navbar:** Keep current style (already no border issues).
-- **Mobile bottom nav:** Keep current style.
+```
+┌─────────────────────────────────────────┐
+│  Greeting + Streak Hero                  │  ← "Welcome back, [Name]! 🔥"
+│  [Streak card with progress bar]         │
+├─────────────────────────────────────────┤
+│  Stat Blocks (2×2 grid)                  │  ← Clean stat blocks with icon + number + label
+│  ┌─────────┐ ┌─────────┐               │
+│  │ ⚡ Streak │ │ 📚 Sets  │               │
+│  │  7 days  │ │   12    │               │
+│  └─────────┘ └─────────┘               │
+│  ┌─────────┐ ┌─────────┐               │
+│  │ ⏱ Time   │ │ 📝 Quiz  │               │
+│  │ 5.2 hrs  │ │   8     │               │
+│  └─────────┘ └─────────┘               │
+├─────────────────────────────────────────┤
+│  Activity Timeline                       │  ← Chronological feed of recent study activity
+│  - Studied "Biology 101" (2h ago)       │
+│  - Completed "History Quiz" (yesterday)  │
+│  - Created "French Vocab" set (2d ago)   │
+├─────────────────────────────────────────┤
+│  Quick Actions                           │  ← Two cards: "New Flashcards" + "Generate Quiz"
+│  ┌──────────────┐ ┌──────────────┐     │
+│  │  New Cards   │ │  New Quiz    │     │
+│  └──────────────┘ └──────────────┘     │
+└─────────────────────────────────────────┘
+```
 
 ---
 
-## 7. Component-Specific Changes
+## 6. Component Design System
 
-### 7.1 StreakCard
-- Remove border from outer card, add shadow-md
-- Replace gradient fire icon bg with solid tint (`bg-[#ff5252]/10`)
-- Keep progress bar gradient
-- Increase padding to match section (currently p-5 → check if needs to match)
+### 6.1 Card System
 
-### 7.2 AnimatedSection
-- No visual changes needed — animations stay as-is
+| Card Role | Padding | Shadow | Border | Radius |
+|-----------|---------|--------|--------|--------|
+| Main content cards | `p-5` | `shadow-md` | None | `rounded-xl` |
+| Stat blocks | `p-4` | `shadow-sm` | None | `rounded-lg` |
+| Quick action cards | `p-5` | `shadow-md` | None | `rounded-xl` |
+| Modals/bottom sheets | `p-6` | `shadow-2xl` | None | `rounded-2xl` |
+| Activity feed items | `p-3` | None | Bottom border | `rounded-lg` |
 
-### 7.3 Notification Component
-- Keep current styling (error/success alerts don't need shadow changes)
+### 6.2 Typography (Keep Current Pairing)
 
-### 7.4 Skeleton/Loading States
-- Ensure skeletons match the new card dimensions (no border, shadow-md spacing)
+| Role | Size | Weight | Font |
+|------|------|--------|------|
+| Page title (h1) | `text-2xl md:text-3xl` | `font-semibold` | Fredoka |
+| Section heading (h2) | `text-lg` | `font-semibold` | Fredoka |
+| Card subtitle (h3) | `text-sm` | `font-medium` | Fredoka |
+| Stat value | `text-2xl` | `font-semibold` | Fredoka |
+| Stat label | `text-xs` | `font-medium` | Inter |
+| Body text | `text-sm` | `font-normal` | Inter |
+| Small/meta text | `text-xs` | `font-normal` | Inter |
+
+### 6.3 Color Usage
+
+| Color | Role | Hex |
+|-------|------|-----|
+| Primary green | Brand elements, icons, active states | `#2d6b4d` |
+| Secondary red | CTAs, important actions, badges | `#ff5252` |
+| Neutral-50 | Page background | `#f5f5f5` |
+| Neutral-100 | Section backgrounds, card bg | `#ffffff` + shadow |
+| Neutral-400 | Secondary text, placeholder | `#a8a8a8` |
+| Neutral-800 | Primary text, headings | `#2c2c2c` |
+
+### 6.4 Spacing Scale
+
+| Context | Value |
+|---------|-------|
+| Section spacing (vertical) | `space-y-8` or `gap-8` |
+| Grid gaps | `gap-4` / `gap-6` for two-column |
+| Card internal padding | `p-5` (standard), `p-4` (compact) |
+| Page padding (horizontal) | `px-4 sm:px-6 lg:px-8` |
+| List item padding | `p-3` |
+
+### 6.5 Animation & Motion
+
+- **Page transitions:** Fade + slight slide-up on route change
+- **Staggered reveals:** Cards/elements animate in sequentially with `staggerChildren: 0.08`
+- **Hover states:** Cards lift 2px on hover with smooth shadow transition
+- **Button interactions:** Scale bounce on tap (`scale: 0.97` → spring back)
+- **Progress bars:** Animate width on viewport entry
+- **Swipeable:** Touch swipe gestures for mobile card navigation
+- **Pull-to-refresh:** Mobile pull-down gesture to reload data
 
 ---
 
-## 8. Implementation Order
+## 7. Page-by-Page Specifications
 
-1. **CSS variables/globals** — update card base classes (`.card`, `.card-hover`) to remove border defaults and add shadow
-2. **Dashboard home page** — the main page, highest impact
-3. **Layout (sidebar)** — study tip card gradient removal
-4. **Flashcards page** — gradient replacements + card restyling
-5. **Quiz page** — card restyling + consistency fixes
-6. **Profile pages** — card restyling + consistency fixes
-7. **Review pass** — ensure consistency across all pages
+### 7.1 Flashcards Page
+
+#### Desktop Layout
+```
+┌─────────────────────────────────────────┐
+│  Flashcards (page title)                 │
+├─────────────────────────────────────────┤
+│  Stat row: Total Sets | Active Jobs     │  ← Clean stat blocks
+├─────────────────────────────────────────┤
+│  Create Form (bottom sheet / modal)     │  ← Multi-step: 1. Title → 2. Upload → 3. Generate
+├─────────────────────────────────────────┤
+│  Your Sets (grid of cards)              │
+│  ┌────────┐ ┌────────┐ ┌────────┐     │
+│  │ Set 1  │ │ Set 2  │ │ Set 3  │     │
+│  └────────┘ └────────┘ └────────┘     │
+├─────────────────────────────────────────┤
+│  Flashcard Viewer (modal)               │  ← Flip card animation (front/back)
+└─────────────────────────────────────────┘
+```
+
+#### Mobile Adaptations
+- Sets grid → single-column list
+- Create form → bottom sheet (slides up from bottom)
+- Flashcard viewer → swipe left/right between cards
+- Pull-to-refresh to reload sets
+- Bottom sheet for job status modal
+
+#### Key Changes
+- Create form becomes a **multi-step wizard** (Step 1: Name it → Step 2: Upload PDF or paste text → Step 3: Generate)
+- Flashcards use a 3D flip animation for front/back
+- Sets display in a responsive grid (2 columns mobile, 3-4 desktop)
+- Job status uses a bottom sheet on mobile
+
+### 7.2 Quiz Page
+
+#### Desktop Layout
+```
+┌─────────────────────────────────────────┐
+│  Quiz Generator (page title)             │
+├─────────────────────────────────────────┤
+│  Stat row: Total Quizzes | New          │
+├─────────────────────────────────────────┤
+│  Create Quiz (multi-step wizard)        │
+│  Step 1: Upload content (text/PDF)      │
+│  Step 2: Settings (difficulty, type, #) │
+│  Step 3: Generate → view results        │
+├─────────────────────────────────────────┤
+│  Recent Quizzes (list)                  │
+│  - Quiz 1 (score, date)                 │
+│  - Quiz 2 (score, date)                 │
+└─────────────────────────────────────────┘
+```
+
+#### Mobile Adaptations
+- Multi-step wizard becomes vertical stepper (no horizontal sliding)
+- Quiz view → full-screen with large touch targets
+- Results → scrollable with expandable question review
+- Bottom sheet for job status
+
+#### Key Changes
+- **Create and Take tabs merged** into a single multi-step wizard flow
+- Step 1: Upload content (paste text or PDF)
+- Step 2: Configure (difficulty, question types, count)
+- Step 3: Generate → auto-navigate to quiz view
+- Quiz view: one question at a time with progress indicator
+- Results: scrollable summary with expandable answer review
+
+### 7.3 Profile Page
+
+#### Layout
+```
+┌─────────────────────────────────────────┐
+│  Profile (page title)                    │
+├─────────────────────────────────────────┤
+│  Profile Header                          │
+│  ┌──────────┐  Name + Email             │
+│  │  Avatar  │  Member since             │
+│  └──────────┘  Edit button              │
+├─────────────────────────────────────────┤
+│  Stats Row                              │
+│  Total Sets | Quizzes | Streak | Time   │
+├─────────────────────────────────────────┤
+│  Activity Timeline (main content)       │  ← Primary focus per user
+│  - Activity item 1                      │
+│  - Activity item 2                      │
+│  - Activity item 3                      │
+├─────────────────────────────────────────┤
+│  Account Settings (collapsible)         │
+│  Password, theme, delete account        │
+└─────────────────────────────────────────┘
+```
+
+#### Key Changes
+- Activity timeline becomes the **primary content** (per user preference)
+- Stats are clean stat blocks (icon + number + label)
+- Settings section is collapsible/accordion
+- Avatar upload with preview
 
 ---
 
-## 9. Out of Scope
+## 8. Mobile-Specific Features
+
+### 8.1 Swipeable Cards
+- On flashcards page: swipe left/right between flashcard sets
+- On quiz results: swipe between question reviews
+- On activity feed: swipe to dismiss/take action
+
+### 8.2 Pull-to-Refresh
+- All data views (flashcards, quizzes, activity) support pull-to-refresh
+- Custom animated pull indicator (matching brand colors)
+
+### 8.3 Bottom Sheets
+- Create flashcard form → bottom sheet
+- Create quiz form → bottom sheet
+- Job status modal → bottom sheet
+- Flashcard viewer → bottom sheet or full-screen with drag-to-dismiss
+
+### 8.4 Responsive Breakpoints
+
+| Breakpoint | Layout |
+|------------|--------|
+| < 640px | Single column, bottom nav visible, bottom sheets for modals |
+| 640-1024px | 2-column grid where possible, sidebar collapses to icons |
+| 1024px+ | Sidebar visible, 3-4 column grids, full layout |
+
+---
+
+## 9. Design Tokens to Standardize
+
+These should be defined once and used consistently:
+
+| Token | Current | Target |
+|-------|---------|--------|
+| Card border | `border border-neutral-200` (mixed usage) | **No border**, use `shadow-md` |
+| Main card padding | Mixed `p-4` / `p-5` / `p-6` | **Standardized**: p-5 for main, p-4 for compact |
+| Page title size | Inconsistent across pages | **Unified**: `text-2xl md:text-3xl font-heading font-semibold` |
+| Section title size | `text-base` mixed | **Unified**: `text-lg font-heading font-semibold` |
+| Stat value style | Varies by page | **Unified**: `text-2xl font-heading font-semibold` |
+| Stat label style | Varies by page | **Unified**: `text-xs font-medium text-neutral-500` |
+| Section spacing | `space-y-6` | **Increased**: `space-y-8` or `gap-8` |
+| Grid gap | `gap-3` mixed | **Standardized**: `gap-4` |
+| Button radius | Mixed | **Unified**: `rounded-xl` for primary, `rounded-lg` for small |
+
+---
+
+## 10. Component Checklist (All Dashboard Pages)
+
+### Shared Components to Update
+- [ ] **StatBlock** — reusable stat component: icon + number + label + optional trend
+- [ ] **Card** — base card component: white bg + shadow-md + rounded-xl + padding variant
+- [ ] **PageHeader** — consistent page title + optional subtitle/action
+- [ ] **ActivityFeed** — shared timeline/list component
+- [ ] **BottomSheet** — mobile-friendly slide-up panel (replaces modals on mobile)
+- [ ] **PullToRefresh** — mobile pull-to-refresh wrapper
+- [ ] **SwipeableContainer** — horizontal swipeable card container for mobile
+
+### Pages
+- [ ] **Dashboard Home** — reorganized layout (stats → activity → quick actions)
+- [ ] **Flashcards** — multi-step create wizard, responsive grid, flip animation viewer
+- [ ] **Quiz** — multi-step create wizard, one-at-a-time quiz view, expandable results
+- [ ] **Profile** — activity timeline focus, collapsible settings, clean stat blocks
+- [ ] **Layout** — refined sidebar + top navbar + bottom nav + mobile gestures
+
+---
+
+## 11. Implementation Order
+
+| Phase | Scope | Estimated Effort |
+|-------|-------|-----------------|
+| **1. Foundation** | Create shared components (Card, StatBlock, PageHeader, BottomSheet, etc.) + update globals.css tokens | Medium |
+| **2. Dashboard Home** | Restructure layout, stat blocks, activity feed, quick actions, streak card | Medium |
+| **3. Flashcards** | Multi-step wizard, responsive grid, flip viewer, job status bottom sheet | Large |
+| **4. Quiz** | Multi-step wizard, one-at-a-time view, expandable results | Large |
+| **5. Profile** | Activity timeline focus, collapsible settings, clean stat blocks | Medium |
+| **6. Layout + Navigation** | Sidebar restyle, mobile bottom nav polish, swipe + pull-to-refresh, transitions | Medium |
+| **7. Review + Polish** | Animation pass, mobile testing, consistency audit, typecheck | Small |
+
+---
+
+## 12. Acceptance Criteria
+
+- [ ] **Consistency:** All 4 dashboard pages use the same card language, heading hierarchy, spacing, and color balance
+- [ ] **Stats-first home:** Streak and stats are immediately visible above the fold on dashboard home
+- [ ] **Mobile experience:** Bottom sheets replace full-screen modals on mobile; swipeable cards work on flashcards; pull-to-refresh works on data views
+- [ ] **Quiz wizard:** Create flow is a multi-step wizard (upload → settings → generate)
+- [ ] **Flashcard wizard:** Create flow is a multi-step wizard (name → upload → generate)
+- [ ] **Profile timeline:** Activity/history is the primary content on the profile page
+- [ ] **Animations present:** Staggered reveals, hover/tap micro-interactions, page transitions throughout
+- [ ] **No regressions:** All existing functionality preserved (upload, job polling, quiz submission, etc.)
+- [ ] **Typecheck passes:** `npx next build` completes without TypeScript errors
+
+---
+
+## 13. Out of Scope
 
 - Landing page (`app/page.tsx`, `app/landing/*`)
 - Auth pages (`app/auth/*`)
-- Progress bar gradients (explicitly exempted)
-- Mobile nav design (keep as-is)
-- Sidebar nav style (keep as-is)
-- Font changes (handled in previous session)
-- Animation/transition changes
-
----
-
-## 10. Acceptance Criteria
-
-- [ ] **Zero gradients** used in any dashboard component (except progress bars)
-- [ ] **All cards** use `shadow-md` with no border
-- [ ] **Spacing** is consistent: same padding for same-level cards, same grid gaps
-- [ ] **Heading sizes** follow the standardized hierarchy
-- [ ] **Page feels** cleaner, more spacious, and visually unified
-- [ ] **No regressions** — all functionality preserved, no layout breakage
-- [ ] **Typecheck passes** — `npx next build` completes without errors
+- Backend/API changes
+- Database schema changes
+- New features beyond the scope of the restyle (e.g., new quiz types, collaboration features)
+- Dark mode (can be addressed in a future iteration)

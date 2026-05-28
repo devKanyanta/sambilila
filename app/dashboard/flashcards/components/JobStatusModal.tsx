@@ -1,7 +1,10 @@
 'use client'
 
 import { X, Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { FlashcardJob, JobStatusDisplay } from './types'
+import { useEffect, useState } from 'react'
+import BottomSheet from '../../components/BottomSheet'
 
 interface JobStatusModalProps {
   show: boolean
@@ -16,6 +19,15 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
   onClose,
   onViewFlashcards
 }) => {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   if (!show) return null
 
   const formatTimeAgo = (dateString: string): string => {
@@ -98,133 +110,136 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
 
   const statusDisplay = jobDetails ? getJobStatusDisplay(jobDetails) : null
 
+  const content = (
+    <>
+      {jobDetails && statusDisplay ? (
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className={`p-3 rounded-full ${statusDisplay.bgColor}`}
+            >
+              {statusDisplay.icon}
+            </motion.div>
+            <div className="flex-1">
+              <p className="font-medium text-neutral-800">{jobDetails.title}</p>
+              <p className="text-sm text-neutral-500">
+                {jobDetails.subject} &bull; {formatTimeAgo(jobDetails.createdAt)}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${statusDisplay.color}`}>{statusDisplay.title}</span>
+            </div>
+
+            <div className={`text-sm p-3 rounded-xl ${statusDisplay.bgColor} text-neutral-600`}>
+              {statusDisplay.description}
+            </div>
+
+            {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
+              <div className="space-y-2">
+                <div className="h-2 w-full rounded-full overflow-hidden bg-neutral-200">
+                  <motion.div
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${statusDisplay.progress}%` }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="h-full rounded-full bg-primary-500"
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-neutral-400">
+                  <span>Queued</span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+                    Processing
+                  </span>
+                  <span>Done</span>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-2">
+              {jobDetails.status === 'DONE' && jobDetails.flashcardSet && (
+                <div className="space-y-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onViewFlashcards(jobDetails)}
+                    className="w-full py-3 rounded-xl text-white font-medium transition-all bg-primary-500 hover:shadow-md"
+                  >
+                    View Flashcards
+                  </motion.button>
+                  <button onClick={onClose} className="w-full py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors text-sm">
+                    Close
+                  </button>
+                </div>
+              )}
+
+              {jobDetails.status === 'FAILED' && (
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl text-sm bg-secondary-50 text-secondary-700">
+                    <p className="font-medium">Error Details:</p>
+                    <p className="mt-1">{jobDetails.error || 'Unknown error'}</p>
+                  </div>
+                  <button onClick={onClose} className="w-full py-3 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors text-sm">
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
+              {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" style={{ animationDelay: '0s' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" style={{ animationDelay: '0.15s' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  </div>
+                  <span className="text-xs text-neutral-400">Processing your request</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-10">
+          <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-3" />
+          <p className="text-sm text-neutral-500">Connecting to job server...</p>
+        </div>
+      )}
+    </>
+  )
+
+  // Use BottomSheet on mobile, modal on desktop
+  if (isMobile) {
+    return (
+      <BottomSheet show={show} onClose={onClose} title="Generating Flashcards">
+        {content}
+      </BottomSheet>
+    )
+  }
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl transition-all">
-        {/* Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-heading font-semibold text-neutral-800">Generating Flashcards</h3>
-            {jobDetails?.status !== 'PROCESSING' && jobDetails?.status !== 'PENDING' && (
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-neutral-500" />
-              </button>
-            )}
-          </div>
-
-          {/* Job Info */}
-          {jobDetails && statusDisplay && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-full ${jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING' ? 'animate-pulse' : ''} ${statusDisplay.bgColor}`}>
-                  {statusDisplay.icon}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-neutral-800">{jobDetails.title}</p>
-                  <p className="text-sm text-neutral-500">
-                    {jobDetails.subject} &bull; {formatTimeAgo(jobDetails.createdAt)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Status Display */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className={`text-sm font-medium ${statusDisplay.color}`}>{statusDisplay.title}</span>
-                  <span className="text-xs text-neutral-400">Polling every 5s</span>
-                </div>
-
-                <div className={`text-sm p-3 rounded-xl ${statusDisplay.bgColor} text-neutral-600`}>
-                  {statusDisplay.description}
-                </div>
-
-                {/* Progress Bar */}
-                {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full overflow-hidden bg-neutral-200">
-                      <div className="h-full rounded-full transition-all duration-500 bg-primary-500"
-                        style={{ width: `${statusDisplay.progress}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-neutral-400">
-                      <span>Starting...</span>
-                      <span>Processing...</span>
-                      <span>Complete</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="pt-4">
-                  {jobDetails.status === 'DONE' && jobDetails.flashcardSet && (
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => onViewFlashcards(jobDetails)}
-                        className="w-full py-3 rounded-xl text-white font-medium transition-all bg-primary-500 hover:shadow-md active:scale-[0.98]"
-                      >
-                        View Flashcards
-                      </button>
-                      <button
-                        onClick={onClose}
-                        className="w-full py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors"
-                      >
-                        Close
-                      </button>
-                    </div>
-                  )}
-
-                  {jobDetails.status === 'FAILED' && (
-                    <div className="space-y-3">
-                      <div className="p-3 rounded-xl text-sm bg-secondary-50 text-secondary-700 border border-secondary-200">
-                        <p className="font-medium">Error Details:</p>
-                        <p className="mt-1">{jobDetails.error}</p>
-                      </div>
-                      <button
-                        onClick={onClose}
-                        className="w-full py-3 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  )}
-
-                  {(jobDetails.status === 'PENDING' || jobDetails.status === 'PROCESSING') && (
-                    <div className="pt-2">
-                      <p className="text-xs text-center text-neutral-400">
-                        You can continue using the app while we process your request
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!jobDetails && (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-3" />
-              <p className="text-neutral-500">Connecting to job server...</p>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-0">
+          <h3 className="text-lg font-heading font-medium text-neutral-800">Generating Flashcards</h3>
+          {jobDetails?.status !== 'PROCESSING' && jobDetails?.status !== 'PENDING' && (
+            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
+              <X className="w-5 h-5 text-neutral-500" />
+            </button>
           )}
         </div>
-
-        {/* Processing Animation */}
-        {(jobDetails?.status === 'PENDING' || jobDetails?.status === 'PROCESSING') && (
-          <div className="px-6 pb-6">
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-                <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{ animationDelay: '0.15s' }} />
-                <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{ animationDelay: '0.3s' }} />
-              </div>
-              <span className="text-xs text-neutral-400">Processing your request</span>
-            </div>
-          </div>
-        )}
-      </div>
+        {content}
+      </motion.div>
     </div>
   )
 }

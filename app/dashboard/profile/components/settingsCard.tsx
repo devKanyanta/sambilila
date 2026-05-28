@@ -1,13 +1,12 @@
 'use client'
 
 import { PasswordFormData } from '../types/profile'
+import { Lock, Trash2, Bell, Sun, Clock } from 'lucide-react'
+import Card from '@/app/dashboard/components/Card'
+import { useState } from 'react'
 
 interface SettingsCardProps {
-  settings: {
-    emailNotifications: boolean
-    darkMode: boolean
-    dailyReminders: boolean
-  }
+  settings: { emailNotifications: boolean; darkMode: boolean; dailyReminders: boolean }
   changingPassword: boolean
   passwordForm: PasswordFormData
   deletingAccount: boolean
@@ -20,86 +19,70 @@ interface SettingsCardProps {
 }
 
 export default function SettingsCard({
-  settings,
-  changingPassword,
-  passwordForm,
-  deletingAccount,
-  onSettingToggle,
-  onChangePasswordClick,
-  onPasswordFormChange,
-  onSubmitPassword,
-  onCancelPassword,
-  onDeleteAccount
+  settings, changingPassword, passwordForm, deletingAccount,
+  onSettingToggle, onChangePasswordClick, onPasswordFormChange,
+  onSubmitPassword, onCancelPassword, onDeleteAccount
 }: SettingsCardProps) {
   const settingOptions = [
-    {
-      key: 'emailNotifications' as const,
-      label: 'Email Notifications',
-      description: 'Study reminders and progress updates'
-    },
-    {
-      key: 'dailyReminders' as const,
-      label: 'Daily Reminders',
-      description: 'Get reminded to study every day'
-    }
+    { key: 'emailNotifications' as const, label: 'Email Notifications', description: 'Study reminders and progress updates', icon: Bell },
+    { key: 'dailyReminders' as const, label: 'Daily Reminders', description: 'Get reminded to study every day', icon: Clock },
   ]
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <h3 className="text-base font-semibold text-neutral-800 mb-4">Account Settings</h3>
+    <Card className="p-5">
+      <h3 className="text-sm font-medium text-neutral-900 mb-4">Account Settings</h3>
 
-      <div className="space-y-1">
-        {settingOptions.map((option) => (
-          <div key={option.key} className="flex items-center justify-between py-3">
-            <div>
-              <p className="text-sm font-medium text-neutral-800">{option.label}</p>
-              <p className="text-xs text-neutral-500 mt-0.5">{option.description}</p>
+      <div className="divide-y divide-neutral-100">
+        {settingOptions.map((option) => {
+          const Icon = option.icon
+          return (
+            <div key={option.key} className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-neutral-50 flex items-center justify-center">
+                  <Icon size={16} className="text-neutral-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">{option.label}</p>
+                  <p className="text-xs text-neutral-400 mt-0.5">{option.description}</p>
+                </div>
+              </div>
+              <button onClick={() => onSettingToggle(option.key)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings[option.key] ? 'bg-primary-500' : 'bg-neutral-200'
+                }`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                  settings[option.key] ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
             </div>
-            <button
-              onClick={() => onSettingToggle(option.key)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                settings[option.key] ? 'bg-[#193827]' : 'bg-neutral-200'
-              }`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                settings[option.key] ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </button>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {changingPassword ? (
         <form onSubmit={onSubmitPassword} className="mt-4 pt-4 border-t border-neutral-100 space-y-3">
-          <h4 className="text-sm font-semibold text-neutral-700">Change Password</h4>
-          <input
-            type="password" value={passwordForm.currentPassword}
+          <h4 className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+            <Lock size={14} /> Change Password
+          </h4>
+          <input type="password" value={passwordForm.currentPassword}
             onChange={(e) => onPasswordFormChange({ ...passwordForm, currentPassword: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border-2 border-neutral-200 text-sm outline-none focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20 transition-all"
-            placeholder="Current password"
-            required
-          />
-          <input
-            type="password" value={passwordForm.newPassword}
+            className="w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 bg-neutral-50 outline-none text-neutral-900 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
+            placeholder="Current password" required />
+          <input type="password" value={passwordForm.newPassword}
             onChange={(e) => onPasswordFormChange({ ...passwordForm, newPassword: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border-2 border-neutral-200 text-sm outline-none focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20 transition-all"
-            placeholder="New password"
-            required minLength={8}
-          />
-          <input
-            type="password" value={passwordForm.confirmPassword}
+            className="w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 bg-neutral-50 outline-none text-neutral-900 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
+            placeholder="New password" required minLength={8} />
+          <input type="password" value={passwordForm.confirmPassword}
             onChange={(e) => onPasswordFormChange({ ...passwordForm, confirmPassword: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg border-2 border-neutral-200 text-sm outline-none focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20 transition-all"
-            placeholder="Confirm new password"
-            required
-          />
+            className="w-full px-3 py-2 text-sm rounded-xl border border-neutral-200 bg-neutral-50 outline-none text-neutral-900 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all"
+            placeholder="Confirm new password" required />
           <div className="flex gap-2">
-            <button type="submit" className="flex-1 px-3 py-2 rounded-lg text-sm font-medium text-white transition-all"
-              style={{ backgroundColor: '#193827' }}>
-              Update Password
+            <button type="submit"
+              className="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-primary-500 text-white hover:bg-primary-600 transition-all active:scale-95">
+              Update
             </button>
             <button type="button" onClick={onCancelPassword}
-              className="flex-1 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 border-2 border-neutral-200 hover:bg-neutral-50 transition-all">
+              className="flex-1 px-3 py-2 rounded-xl text-sm font-medium text-neutral-600 border border-neutral-200 hover:bg-neutral-50 transition-all active:scale-95">
               Cancel
             </button>
           </div>
@@ -107,15 +90,15 @@ export default function SettingsCard({
       ) : (
         <div className="mt-4 pt-4 border-t border-neutral-100 space-y-2">
           <button onClick={onChangePasswordClick}
-            className="w-full py-2 px-3 rounded-lg text-sm font-medium border-2 border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-all">
-            Change Password
+            className="w-full py-2.5 px-3 rounded-xl text-sm font-medium border border-neutral-200 text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <Lock size={14} /> Change Password
           </button>
           <button onClick={onDeleteAccount} disabled={deletingAccount}
-            className="w-full py-2 px-3 rounded-lg text-sm font-medium border-2 border-red-200 text-red-500 hover:bg-red-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {deletingAccount ? 'Deleting...' : 'Delete Account'}
+            className="w-full py-2.5 px-3 rounded-xl text-sm font-medium border border-red-100 text-red-400 hover:bg-red-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <Trash2 size={14} /> {deletingAccount ? 'Deleting...' : 'Delete Account'}
           </button>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
