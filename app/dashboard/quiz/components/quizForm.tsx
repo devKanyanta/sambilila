@@ -11,6 +11,7 @@ interface QuizFormModalProps {
   inputText: string;
   pdfFile: File | null;
   numberOfQuestions: number;
+  maxQuestions: number;
   difficulty: string;
   questionTypes: string;
   isGenerating: boolean;
@@ -25,7 +26,7 @@ interface QuizFormModalProps {
 }
 
 export default function QuizFormModal({
-  show, onClose, title, inputText, pdfFile, numberOfQuestions, difficulty,
+  show, onClose, title, inputText, pdfFile, numberOfQuestions, maxQuestions, difficulty,
   questionTypes, isGenerating, error, onTitleChange, onInputTextChange,
   onPdfFileChange, onNumberOfQuestionsChange, onDifficultyChange,
   onQuestionTypesChange, onGenerateQuiz
@@ -188,14 +189,14 @@ export default function QuizFormModal({
                 <input
                   type="range"
                   min={QUIZ_SETTINGS.MIN_QUESTIONS}
-                  max={QUIZ_SETTINGS.MAX_QUESTIONS}
+                  max={maxQuestions}
                   value={numberOfQuestions}
                   onChange={(e) => onNumberOfQuestionsChange(parseInt(e.target.value))}
                   className="w-full h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer accent-primary-500"
                 />
                 <div className="flex justify-between text-xs text-neutral-400">
                   <span>{QUIZ_SETTINGS.MIN_QUESTIONS}</span>
-                  <span>{QUIZ_SETTINGS.MAX_QUESTIONS}</span>
+                  <span>{maxQuestions}</span>
                 </div>
               </div>
 

@@ -1,35 +1,55 @@
 // app/api/subscriptions/plans/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { PLANS } from '@/lib/plans'
 
 export async function GET() {
   try {
     const dbPlans = await prisma.billingPlan.findMany({
       where: { active: true },
+      orderBy: { priceUSD: 'asc' },
     })
 
-    const dbPlanBySlug = new Map(dbPlans.map((plan) => [plan.slug, plan]))
+    if (dbPlans.length === 0) {
+      // Fallback: return minimal plan info if database is empty
+      return NextResponse.json({
+        plans: [
+          {
+            name: 'Free',
+            slug: 'free',
+            priceUSD: 0,
+            period: 'month',
+            description: 'Best for students trying out the app',
+            features: [
+              'Create up to 3 quizzes per week',
+              'Create up to 3 flashcards per week',
+              'Max 10 questions per quiz',
+            ],
+            limits: {
+              maxQuizzesPerWeek: 3,
+              maxFlashcardsTotal: 3,
+              maxQuestionsPerQuiz: 10,
+              priorityProcessing: false,
+              progressTracking: false,
+            },
+            highlighted: false,
+          },
+        ],
+      })
+    }
 
-    // Always expose the configured plans so the UI can render options even if
-    // the database was not seeded yet. DB values still win when present.
-    const mergedPlans = Object.values(PLANS).map((configPlan) => {
-      const dbPlan = dbPlanBySlug.get(configPlan.slug)
+    const plans = dbPlans.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      slug: plan.slug,
+      priceUSD: plan.priceUSD,
+      period: plan.period,
+      description: plan.description,
+      features: plan.features as string[],
+      limits: plan.limits,
+      highlighted: plan.highlighted,
+    }))
 
-      return {
-        id: dbPlan?.id || configPlan.slug,
-        name: dbPlan?.name || configPlan.name,
-        slug: configPlan.slug,
-        priceUSD: dbPlan?.priceUSD ?? configPlan.priceUSD,
-        period: dbPlan?.period || configPlan.period,
-        description: configPlan.description,
-        features: (dbPlan?.features as string[] | undefined) || configPlan.features,
-        limits: dbPlan?.limits || configPlan.limits,
-        highlighted: configPlan.highlighted,
-      }
-    })
-
-    return NextResponse.json({ plans: mergedPlans })
+    return NextResponse.json({ plans })
   } catch (error) {
     console.error('Error fetching plans:', error)
     return NextResponse.json({ error: 'Failed to fetch plans' }, { status: 500 })

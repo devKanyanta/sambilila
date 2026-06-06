@@ -1,7 +1,6 @@
 // lib/webhookWorker.ts — Postgres-based webhook queue processor
 
 import { prisma } from '@/lib/db'
-import { PLANS } from './plans'
 import {
   PaymentProvider,
   WebhookEventStatus,

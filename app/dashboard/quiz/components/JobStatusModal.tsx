@@ -8,9 +8,11 @@ interface JobStatusModalProps {
   jobDetails: QuizJob | null
   onClose: () => void
   onViewQuiz: (job: QuizJob) => void
+  onRetry?: (job: QuizJob) => void
+  retrying?: boolean
 }
 
-const JobStatusModal: React.FC<JobStatusModalProps> = ({ show, jobDetails, onClose, onViewQuiz }) => {
+const JobStatusModal: React.FC<JobStatusModalProps> = ({ show, jobDetails, onClose, onViewQuiz, onRetry, retrying }) => {
   if (!show) return null
 
   const formatTimeAgo = (dateString: string): string => {
@@ -106,10 +108,26 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({ show, jobDetails, onClo
                     <p className="font-medium mb-0.5">Error:</p>
                     <p>{jobDetails.error}</p>
                   </div>
-                  <button onClick={onClose}
-                    className="w-full py-2.5 rounded-xl text-sm font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors">
-                    Dismiss
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onRetry?.(jobDetails)}
+                      disabled={retrying}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 hover:shadow-sm transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {retrying ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Retrying...
+                        </span>
+                      ) : (
+                        'Retry'
+                      )}
+                    </button>
+                    <button onClick={onClose}
+                      className="px-4 py-2.5 rounded-xl text-sm font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors">
+                      Dismiss
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

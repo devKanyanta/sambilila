@@ -11,13 +11,17 @@ interface JobStatusModalProps {
   jobDetails: FlashcardJob | null
   onClose: () => void
   onViewFlashcards: (job: FlashcardJob) => void
+  onRetry?: (job: FlashcardJob) => void
+  retrying?: boolean
 }
 
 const JobStatusModal: React.FC<JobStatusModalProps> = ({
   show,
   jobDetails,
   onClose,
-  onViewFlashcards
+  onViewFlashcards,
+  onRetry,
+  retrying
 }) => {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -184,9 +188,27 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({
                     <p className="font-medium">Error Details:</p>
                     <p className="mt-1">{jobDetails.error || 'Unknown error'}</p>
                   </div>
-                  <button onClick={onClose} className="w-full py-3 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors text-sm">
-                    Dismiss
-                  </button>
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onRetry?.(jobDetails)}
+                      disabled={retrying}
+                      className="flex-1 py-3 rounded-xl text-white font-medium transition-all bg-primary-500 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {retrying ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Retrying...
+                        </span>
+                      ) : (
+                        'Retry'
+                      )}
+                    </motion.button>
+                    <button onClick={onClose} className="px-4 py-3 rounded-xl font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-colors text-sm">
+                      Dismiss
+                    </button>
+                  </div>
                 </div>
               )}
 

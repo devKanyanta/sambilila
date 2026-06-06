@@ -46,71 +46,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const planConfig = {
-      weekly: {
-        name: 'Weekly',
-        priceUSD: 0.99,
-        period: 'week',
-        features: [
-          'Create unlimited quizzes',
-          'Create up to 500 flashcards total',
-          'Max 50 questions per quiz',
-          'Access full quiz history',
-        ],
-        limits: {
-          maxQuizzesPerWeek: null,
-          maxFlashcardsTotal: 500,
-          maxQuestionsPerQuiz: 50,
-          priorityProcessing: false,
-          progressTracking: true,
-        },
-      },
-      monthly: {
-        name: 'Monthly',
-        priceUSD: 3.99,
-        period: 'month',
-        features: [
-          'Create unlimited quizzes',
-          'Create unlimited flashcards',
-          'Progress tracking',
-          'Performance stats',
-          'Priority processing',
-        ],
-        limits: {
-          maxQuizzesPerWeek: null,
-          maxFlashcardsTotal: null,
-          maxQuestionsPerQuiz: null,
-          priorityProcessing: true,
-          progressTracking: true,
-        },
-      },
-    }[planSlug as 'weekly' | 'monthly']
-
-    if (!planConfig) {
+    // Get plan from database
+    const plan = await prisma.billingPlan.findUnique({ where: { slug: planSlug } })
+    if (!plan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
 
-    const plan = await prisma.billingPlan.upsert({
-      where: { slug: planSlug },
-      update: {
-        name: planConfig.name,
-        priceUSD: planConfig.priceUSD,
-        period: planConfig.period,
-        features: planConfig.features,
-        limits: planConfig.limits,
-      },
-      create: {
-        name: planConfig.name,
-        slug: planSlug,
-        priceUSD: planConfig.priceUSD,
-        period: planConfig.period,
-        features: planConfig.features,
-        limits: planConfig.limits,
-      },
-    })
-
-    // Convert USD to ZMW (approximately 1 USD = 10 ZMW)
-    // $0.99 → ~10 ZMW, $3.99 → ~40 ZMW
+    // Convert USD to ZMW (approximately 1 USD = 1 ZMW for simplicity)
     const amountInZMW = Math.round(plan.priceUSD * 1)
 
     // Create subscription record (PAST_DUE until paid)

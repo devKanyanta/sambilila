@@ -2,8 +2,17 @@
 
 import { prisma } from '@/lib/db'
 import { getActiveSubscription } from './subscriptions'
-import { PLANS, PlanLimits, type PlanDefinition } from './plans'
+import type { PlanLimits } from './plans'
 import { UsageResource } from './generated/prisma/client'
+
+/** Default limits used when no plan is found in the DB (matches Free plan). */
+const DEFAULT_LIMITS: PlanLimits = {
+  maxQuizzesPerWeek: 3,
+  maxFlashcardsTotal: 3,
+  maxQuestionsPerQuiz: 10,
+  priorityProcessing: false,
+  progressTracking: false,
+}
 
 export class LimitReachedError extends Error {
   public limit: number | null
@@ -26,6 +35,41 @@ export interface UsageCheckResult {
   limit: number | null
   used: number
   plan: string
+}
+
+/** Safely cast JSON limits from the DB to PlanLimits. */
+function toPlanLimits(json: unknown): PlanLimits | null {
+  if (typeof json !== 'object' || json === null) return null
+  const obj = json as Record<string, unknown>
+  return {
+    maxQuizzesPerWeek: typeof obj.maxQuizzesPerWeek === 'number' ? obj.maxQuizzesPerWeek : null,
+    maxFlashcardsTotal: typeof obj.maxFlashcardsTotal === 'number' ? obj.maxFlashcardsTotal : null,
+    maxQuestionsPerQuiz: typeof obj.maxQuestionsPerQuiz === 'number' ? obj.maxQuestionsPerQuiz : null,
+    priorityProcessing: obj.priorityProcessing === true,
+    progressTracking: obj.progressTracking === true,
+  }
+}
+
+/**
+ * Fetch plan limits from the database for a given user.
+ */
+async function getPlanLimitsForUser(userId: string): Promise<{ planSlug: string; limits: PlanLimits }> {
+  const activeSub = await getActiveSubscription(userId)
+  const planSlug = activeSub?.plan.slug || 'free'
+
+  if (activeSub?.plan.limits) {
+    const parsed = toPlanLimits(activeSub.plan.limits)
+    if (parsed) return { planSlug, limits: parsed }
+  }
+
+  // Fallback: look up from DB directly
+  const dbPlan = await prisma.billingPlan.findUnique({ where: { slug: planSlug } })
+  if (dbPlan?.limits) {
+    const parsed = toPlanLimits(dbPlan.limits)
+    if (parsed) return { planSlug, limits: parsed }
+  }
+
+  return { planSlug, limits: DEFAULT_LIMITS }
 }
 
 /**
@@ -54,11 +98,7 @@ export async function checkUsageLimit(
   userId: string,
   resource: 'quiz' | 'flashcard'
 ): Promise<UsageCheckResult> {
-  const activeSub = await getActiveSubscription(userId)
-  const planSlug = activeSub?.plan.slug || 'free'
-  const plan = PLANS[planSlug] || PLANS.free
-
-  const limits = plan.limits
+  const { planSlug, limits } = await getPlanLimitsForUser(userId)
 
   if (resource === 'quiz') {
     // Rolling 7-day window
@@ -157,11 +197,9 @@ export async function getCurrentUsage(userId: string): Promise<{
 }
 
 /**
- * Get the effective limits for a user (based on their active plan).
+ * Get the effective limits for a user (based on their active plan from the DB).
  */
 export async function getCurrentLimits(userId: string): Promise<PlanLimits> {
-  const activeSub = await getActiveSubscription(userId)
-  const planSlug = activeSub?.plan.slug || 'free'
-  const plan = PLANS[planSlug] || PLANS.free
-  return plan.limits
+  const { limits } = await getPlanLimitsForUser(userId)
+  return limits
 }

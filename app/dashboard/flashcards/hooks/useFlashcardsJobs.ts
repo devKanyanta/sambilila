@@ -46,10 +46,8 @@ export function useFlashcardJobs() {
     ))
   }, [])
 
-  const startJobMonitoring = useCallback(async (jobId: string, onJobComplete?: () => void) => {
-    setCurrentJobId(jobId)
-    setShowJobModal(true)
-    
+  /** Shared polling logic extracted so both startJobMonitoring and retryJob can use it */
+  const startPolling = useCallback((jobId: string, onJobComplete?: () => void) => {
     // Clear any existing interval
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current)
@@ -72,16 +70,59 @@ export function useFlashcardJobs() {
     }
 
     // Initial poll
-    await pollAndUpdate()
+    pollAndUpdate()
 
     // Set up interval for polling
     const interval = setInterval(pollAndUpdate, 5000)
     pollingIntervalRef.current = interval
+  }, [pollJobStatus, updateJobInList])
+
+  const startJobMonitoring = useCallback(async (jobId: string, onJobComplete?: () => void) => {
+    setCurrentJobId(jobId)
+    setShowJobModal(true)
+    startPolling(jobId, onJobComplete)
 
     return () => {
-      if (interval) clearInterval(interval)
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
     }
-  }, [pollJobStatus, updateJobInList])
+  }, [startPolling])
+
+  /** Retry a failed job by updating its status to PENDING and restarting polling */
+  const retryJob = useCallback(async (jobId: string, onJobComplete?: () => void) => {
+    try {
+      const token = localStorage.getItem("token")
+      const res = await fetch(`/api/flashcards/retry`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ jobId }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to retry job")
+      }
+
+      const data = await res.json()
+
+      if (data.job) {
+        // Immediately update the job to PENDING so the modal reflects the change
+        setJobDetails(data.job)
+        updateJobInList(data.job)
+      }
+
+      // Restart polling for this job (polling was stopped when it hit FAILED)
+      startPolling(jobId, onJobComplete)
+    } catch (err) {
+      console.error('Error retrying job:', err)
+      throw err
+    }
+  }, [startPolling, updateJobInList])
 
   const closeJobModal = useCallback(() => {
     setShowJobModal(false)
@@ -104,6 +145,7 @@ export function useFlashcardJobs() {
     currentJobId,
     jobDetails,
     startJobMonitoring,
+    retryJob,
     closeJobModal,
     addNewJob,
     updateJobInList

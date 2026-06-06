@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuizState, useQuizAPI } from './hooks/hooks';
 import { useQuizJobs } from './hooks/useQuizJobs';
+import { useSubscription } from '@/app/hooks/useSubscription';
 import QuizFormModal from './components/quizForm';
 import QuizView from './components/quizView';
 import QuizList from './components/quizList';
@@ -26,6 +27,7 @@ export default function QuizGenerator() {
 
   const [title, setTitle] = useState<string>('');
   const [inputText, setInputText] = useState<string>('');
+  const [retrying, setRetrying] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [numberOfQuestions, setNumberOfQuestions] = useState<number>(10);
   const [difficulty, setDifficulty] = useState<string>('medium');
@@ -60,11 +62,15 @@ export default function QuizGenerator() {
     submitQuiz: apiSubmitQuiz,
   } = useQuizAPI();
 
+  const { usage, isLoading: isLoadingSubscription } = useSubscription()
+  const maxQuestions = usage?.limits?.maxQuestionsPerQuiz ?? 20
+
   const {
     activeJobs,
     showJobModal,
     jobDetails,
     startJobMonitoring,
+    retryJob,
     closeJobModal,
     addNewJob,
   } = useQuizJobs();
@@ -215,6 +221,17 @@ export default function QuizGenerator() {
       setQuiz(job.quiz);
       closeJobModal();
       setCurrentView('quiz-view');
+    }
+  };
+
+  const handleRetryJob = async (job: QuizJob) => {
+    setRetrying(true);
+    try {
+      await retryJob(job.id, loadQuizList);
+    } catch {
+      // Error is already logged in the hook
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -407,6 +424,7 @@ export default function QuizGenerator() {
         inputText={inputText}
         pdfFile={pdfFile}
         numberOfQuestions={numberOfQuestions}
+        maxQuestions={maxQuestions}
         difficulty={difficulty}
         questionTypes={questionTypes}
         isGenerating={isGenerating}
@@ -439,6 +457,8 @@ export default function QuizGenerator() {
         jobDetails={jobDetails}
         onClose={closeJobModal}
         onViewQuiz={handleViewQuiz}
+        onRetry={handleRetryJob}
+        retrying={retrying}
       />
     </div>
   );

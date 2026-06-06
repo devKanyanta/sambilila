@@ -44,6 +44,7 @@ export interface UsageInfo {
   limits: {
     maxQuizzesPerWeek: number | null
     maxFlashcardsTotal: number | null
+    maxQuestionsPerQuiz: number | null
   }
 }
 
@@ -108,7 +109,7 @@ export function useSubscription() {
       provider: 'PAYPAL' | 'LENCO',
       phone?: string,
       operator?: string
-    ): Promise<{ approvalUrl?: string; message?: string }> => {
+    ): Promise<{ approvalUrl?: string; message?: string; reference?: string }> => {
       const token = getToken()
       if (!token) throw new Error('Not authenticated')
 

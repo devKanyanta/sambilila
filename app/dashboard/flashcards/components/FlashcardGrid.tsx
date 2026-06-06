@@ -1,7 +1,8 @@
 'use client'
 
-import { BookOpen, RotateCw, ChevronRight, FileText } from 'lucide-react'
+import { BookOpen, RotateCw, ChevronRight, FileText, Share2, Check } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { FlashcardSet } from './types'
 import { containerStagger, fadeSlideUp } from '../../animations'
 import AnimatedSection, { AnimatedItem } from '../../components/AnimatedSection'
@@ -20,6 +21,34 @@ const FlashcardGrid: React.FC<FlashcardGridProps> = ({
   onRefresh,
   loading = false
 }) => {
+  const [sharingId, setSharingId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleShare = async (setId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSharingId(setId)
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const res = await fetch(`/api/flashcards/${setId}/share`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!res.ok) throw new Error('Failed to share flashcard set')
+
+      const data = await res.json()
+      await navigator.clipboard.writeText(data.shareUrl)
+
+      setCopiedId(setId)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Error sharing flashcard set:', err)
+    } finally {
+      setSharingId(null)
+    }
+  }
   const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString)
     const now = new Date()
@@ -128,14 +157,26 @@ const FlashcardGrid: React.FC<FlashcardGridProps> = ({
 
                 {set.description && (
                   <p className="text-sm mb-4 line-clamp-2 text-neutral-500">{set.description}</p>
-                )}
-
-                <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                )}                  <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
                   <span className="text-xs font-medium text-neutral-400 flex items-center gap-1">
                     <FileText size={12} />
                     {set.cards?.length || 0} cards
                   </span>
-                  <span className="text-xs text-neutral-400">{formatTimeAgo(set.createdAt)}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleShare(set.id, e)}
+                      disabled={sharingId === set.id}
+                      className="p-1 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                      title="Share flashcard set"
+                    >
+                      {copiedId === set.id ? (
+                        <Check size={13} className="text-success-500" />
+                      ) : (
+                        <Share2 size={13} className="text-neutral-400 hover:text-primary-500" />
+                      )}
+                    </button>
+                    <span className="text-xs text-neutral-400">{formatTimeAgo(set.createdAt)}</span>
+                  </div>
                 </div>
               </button>
             </motion.div>

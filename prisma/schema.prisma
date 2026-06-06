@@ -49,8 +49,10 @@ model BillingPlan {
   slug      String   @unique
   priceUSD  Float
   period    String
+  description String?
   features  Json
   limits    Json
+  highlighted Boolean @default(false)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -142,6 +144,7 @@ model FlashcardSet {
   subject     String
   description String?
   isPublic    Boolean  @default(false)
+  shareToken  String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -203,7 +206,9 @@ model Quiz {
   title       String
   subject     String
   description String?
-  createdAt   DateTime @default(now())
+  isPublic   Boolean  @default(false)
+  shareToken String?  @unique
+  createdAt  DateTime @default(now())
 
   // Relations
   userId    String
@@ -211,6 +216,7 @@ model Quiz {
   questions QuizQuestion[]
   results   QuizResult[]
   quizJobs  QuizJob[]
+  @@index([shareToken])
 
   @@index([userId])
   @@map("quizzes")

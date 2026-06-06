@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, FileText, Clock, ChevronRight } from 'lucide-react';
+import { Search, FileText, Clock, ChevronRight, Share2, Check } from 'lucide-react';
 import { QuizListItem } from './types';
 import { useState, useEffect } from 'react';
 import Card from '@/app/dashboard/components/Card';
@@ -19,10 +19,37 @@ export default function QuizList({
   quizList, isLoadingQuizzes, onSelectQuiz, onRefreshQuizzes, onCreateNewQuiz,
 }: QuizListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const handleShare = async (quizId: string) => {
+    setSharingId(quizId);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch(`/api/quizzes/${quizId}/share`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('Failed to share quiz');
+
+      const data = await res.json();
+      await navigator.clipboard.writeText(data.shareUrl);
+
+      setCopiedId(quizId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Error sharing quiz:', err);
+    } finally {
+      setSharingId(null);
+    }
+  };
 
   const filteredQuizzes = quizList.filter(quiz =>
     quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -115,16 +142,31 @@ export default function QuizList({
 
               <span className="inline-block text-xs px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-600 mb-3">
                 {quizItem.subject}
-              </span>
-
-              <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
-                <span className="text-xs text-neutral-400 flex items-center gap-1">
-                  <FileText size={12} />{quizItem._count.questions} questions
-                </span>
-                <span className="text-xs text-neutral-400 flex items-center gap-1">
-                  <Clock size={12} />{new Date(quizItem.createdAt).toLocaleDateString()}
-                </span>
-              </div>
+              </span>              <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+                        <span className="text-xs text-neutral-400 flex items-center gap-1">
+                          <FileText size={12} />{quizItem._count.questions} questions
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(quizItem.id);
+                            }}
+                            disabled={sharingId === quizItem.id}
+                            className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                            title="Share quiz"
+                          >
+                            {copiedId === quizItem.id ? (
+                              <Check size={14} className="text-success-500" />
+                            ) : (
+                              <Share2 size={14} className="text-neutral-400 hover:text-primary-500" />
+                            )}
+                          </button>
+                          <span className="text-xs text-neutral-400 flex items-center gap-1">
+                            <Clock size={12} />{new Date(quizItem.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
             </Card>
           ))}
         </div>

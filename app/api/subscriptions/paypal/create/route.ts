@@ -4,7 +4,7 @@ import { getUserIdFromToken } from '@/lib/auth'
 import { createSubscription as createPayPalSubscription } from '@/lib/paypal'
 import { createSubscription as createDbSubscription } from '@/lib/subscriptions'
 import { prisma } from '@/lib/db'
-import { PLANS } from '@/lib/plans'
+import { getPaypalPlanId } from '@/lib/plans'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,45 +19,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan slug' }, { status: 400 })
     }
 
-    // Get the plan config (source of truth for PayPal plan IDs)
-    const planConfig = PLANS[planSlug]
-    if (!planConfig) {
-      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
-    }
-
-    if (!planConfig.paypalPlanId) {
+    // Get PayPal plan ID from config (env-var based)
+    const paypalPlanId = getPaypalPlanId(planSlug)
+    if (!paypalPlanId) {
       return NextResponse.json(
         { error: 'PayPal plan ID not configured. Contact support.' },
         { status: 400 }
       )
     }
 
-    // Ensure the billing plan exists even if the database was not seeded.
-    const dbPlan = await prisma.billingPlan.upsert({
-      where: { slug: planSlug },
-      update: {
-        name: planConfig.name,
-        priceUSD: planConfig.priceUSD,
-        period: planConfig.period,
-        features: planConfig.features,
-        limits: planConfig.limits,
-      },
-      create: {
-        name: planConfig.name,
-        slug: planSlug,
-        priceUSD: planConfig.priceUSD,
-        period: planConfig.period,
-        features: planConfig.features,
-        limits: planConfig.limits,
-      },
-    })
+    // Get plan from database
+    const dbPlan = await prisma.billingPlan.findUnique({ where: { slug: planSlug } })
+    if (!dbPlan) {
+      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    }
 
     const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?success=true`
     const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription?canceled=true`
 
     // Create PayPal subscription
     const { approvalUrl, subscriptionId } = await createPayPalSubscription(
-      planConfig.paypalPlanId,
+      paypalPlanId,
       userId,
       returnUrl,
       cancelUrl

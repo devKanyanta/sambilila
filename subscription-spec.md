@@ -46,7 +46,7 @@ model BillingPlan {
 {
   "maxQuizzesPerWeek": null,        // unlimited
   "maxFlashcardsTotal": 500,
-  "maxQuestionsPerQuiz": 50,
+  "maxQuestionsPerQuiz": 100,
   "priorityProcessing": false,
   "progressTracking": true
 }
@@ -55,7 +55,7 @@ model BillingPlan {
 {
   "maxQuizzesPerWeek": null,
   "maxFlashcardsTotal": null,
-  "maxQuestionsPerQuiz": null,
+  "maxQuestionsPerQuiz": 200,
   "priorityProcessing": true,
   "progressTracking": true
 }
@@ -233,7 +233,7 @@ export const PLANS: Record<string, PlanDefinition> = {
     limits: {
       maxQuizzesPerWeek: null,
       maxFlashcardsTotal: 500,
-      maxQuestionsPerQuiz: 50,
+      maxQuestionsPerQuiz: 100,
       priorityProcessing: false,
       progressTracking: true,
     },
@@ -256,7 +256,7 @@ export const PLANS: Record<string, PlanDefinition> = {
     limits: {
       maxQuizzesPerWeek: null,
       maxFlashcardsTotal: null,
-      maxQuestionsPerQuiz: null,
+      maxQuestionsPerQuiz: 200,
       priorityProcessing: true,
       progressTracking: true,
     },

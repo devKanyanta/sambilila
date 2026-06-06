@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { checkUsageLimit, recordUsage } = await import('@/lib/limits')
+    const { checkUsageLimit, recordUsage, getCurrentLimits } = await import('@/lib/limits')
     const usageCheck = await checkUsageLimit(userId, 'quiz')
     if (!usageCheck.allowed) {
       return NextResponse.json({
@@ -55,6 +55,17 @@ export async function POST(req: NextRequest) {
     const clientFileName = formData.get("fileName") as string | null;
     const contentType = formData.get("contentType") as string | null;
     const numberOfQuestions = parseInt(formData.get('numberOfQuestions') as string) || 10;
+
+    // Validate number of questions against the user's plan limit
+    const limits = await getCurrentLimits(userId)
+    if (limits.maxQuestionsPerQuiz !== null && numberOfQuestions > limits.maxQuestionsPerQuiz) {
+      return NextResponse.json({
+        error: 'question_limit_exceeded',
+        message: `Your plan allows a maximum of ${limits.maxQuestionsPerQuiz} questions per quiz. You requested ${numberOfQuestions}. Upgrade to create quizzes with more questions.`,
+        maxAllowed: limits.maxQuestionsPerQuiz,
+        requested: numberOfQuestions,
+      }, { status: 403 })
+    }
     const difficulty = formData.get('difficulty') as string || 'medium';
     const questionTypes = formData.get('questionTypes') as string || 'MULTIPLE_CHOICE,TRUE_FALSE';
 

@@ -41,6 +41,8 @@ export default function Flashcards() {
   const [isFlipped, setIsFlipped] = useState(false)
   const [showForm, setShowForm] = useState(false)
 
+  const [retrying, setRetrying] = useState(false)
+
   // Custom hooks
   const {
     flashcardSets,
@@ -55,6 +57,7 @@ export default function Flashcards() {
     currentJobId,
     jobDetails,
     startJobMonitoring,
+    retryJob,
     closeJobModal,
     addNewJob,
     updateJobInList
@@ -248,6 +251,17 @@ export default function Flashcards() {
     }
   }, [openSet, closeJobModal])
 
+  const handleRetryJob = useCallback(async (job: FlashcardJob) => {
+    setRetrying(true)
+    try {
+      await retryJob(job.id, loadFlashcardSets)
+    } catch {
+      // Error is already logged in the hook
+    } finally {
+      setRetrying(false)
+    }
+  }, [retryJob, loadFlashcardSets])
+
   if (!mounted) {
     return (
       <div className="space-y-6" role="status" aria-label="Loading flashcards">
@@ -411,6 +425,8 @@ export default function Flashcards() {
         jobDetails={jobDetails}
         onClose={closeJobModal}
         onViewFlashcards={handleViewFlashcardsFromJob}
+        onRetry={handleRetryJob}
+        retrying={retrying}
       />
 
       {/* Flashcard Viewer Modal */}
