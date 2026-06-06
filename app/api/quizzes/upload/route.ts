@@ -38,6 +38,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { checkUsageLimit, recordUsage } = await import('@/lib/limits')
+    const usageCheck = await checkUsageLimit(userId, 'quiz')
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: 'limit_reached',
+        message: `You've reached your weekly quiz limit (${usageCheck.used}/${usageCheck.limit}) on the ${usageCheck.plan} plan. Upgrade to create more quizzes.`,
+        limit: usageCheck.limit,
+        used: usageCheck.used,
+        plan: usageCheck.plan,
+      }, { status: 403 })
+    }
+
     const formData = await req.formData();
     const text = formData.get("text") as string | null;
     const clientFileName = formData.get("fileName") as string | null;
@@ -71,6 +83,13 @@ export async function POST(req: NextRequest) {
         data: baseData
       });
 
+      // (Usage already recorded by checkAndRecordUsage above)
+
+      // Record usage after successful job creation
+      await recordUsage(userId, 'quiz').catch((err: any) => {
+        console.error('Failed to record quiz usage (non-fatal):', err)
+      })
+
       return NextResponse.json({
         success: true,
         jobId: job.id,
@@ -97,6 +116,11 @@ export async function POST(req: NextRequest) {
     const job = await prisma.quizJob.create({
       data: jobData
     });
+
+    // Record usage after successful job creation
+    await recordUsage(userId, 'quiz').catch((err: any) => {
+      console.error('Failed to record quiz usage (non-fatal):', err)
+    })
 
     return NextResponse.json({
       success: true,

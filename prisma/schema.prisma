@@ -29,7 +29,11 @@ model User {
   studySessions StudySession[]
   quizzes       Quiz[]
   flashcardJobs FlashcardJob[]
-  quizJobs      QuizJob[] // Added missing relation
+  quizJobs      QuizJob[]
+
+  // Subscription relations
+  subscriptions Subscription[]
+  usageRecords  UsageRecord[]
 
   @@map("users")
 }
@@ -37,6 +41,99 @@ model User {
 enum UserType {
   STUDENT
   TEACHER
+}
+
+model BillingPlan {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  priceUSD  Float
+  period    String
+  features  Json
+  limits    Json
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("billing_plans")
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  planId             String
+  status             SubscriptionStatus @default(ACTIVE)
+  provider           PaymentProvider
+  providerId         String?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  canceledAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  // Relations
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan BillingPlan @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@index([providerId])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  PAST_DUE
+}
+
+enum PaymentProvider {
+  PAYPAL
+  LENCO
+}
+
+model UsageRecord {
+  id        String        @id @default(cuid())
+  userId    String
+  resource  UsageResource
+  createdAt DateTime      @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, resource, createdAt])
+  @@map("usage_records")
+}
+
+enum UsageResource {
+  QUIZ_CREATION
+  FLASHCARD_CREATION
+}
+
+model WebhookEvent {
+  id          String             @id @default(cuid())
+  provider    PaymentProvider
+  eventType   String
+  payload     Json
+  status      WebhookEventStatus @default(PENDING)
+  attempts    Int                @default(0)
+  maxAttempts Int                @default(5)
+  lastError   String?
+  processedAt DateTime?
+  createdAt   DateTime           @default(now())
+
+  @@index([status, createdAt])
+  @@map("webhook_events")
+}
+
+enum WebhookEventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model FlashcardSet {
@@ -113,7 +210,7 @@ model Quiz {
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions QuizQuestion[]
   results   QuizResult[]
-  quizJobs  QuizJob[] // Added missing relation
+  quizJobs  QuizJob[]
 
   @@index([userId])
   @@map("quizzes")

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Sparkles, BookOpen } from 'lucide-react'
+import { Plus, Sparkles, BookOpen, Layers } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 // Hooks
@@ -314,7 +314,7 @@ export default function Flashcards() {
         <PageHeader
           title="Flashcards"
           subtitle="AI-powered learning tools"
-          emoji="📚"
+          icon={Layers}
           action={
             !showForm ? (
               <motion.button

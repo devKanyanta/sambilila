@@ -6,9 +6,12 @@ import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 
 const navLinks = [
+  { href: '#how-it-works', label: 'How It Works' },
   { href: '#features', label: 'Features' },
+  { href: '#testimonials', label: 'Testimonials' },
   { href: '#pricing', label: 'Pricing' },
   { href: '#faq', label: 'FAQ' },
+  { href: '/contact', label: 'Contact' },
 ]
 
 export function Header() {
@@ -26,9 +29,9 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-[#193827] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="text-white font-heading font-semibold text-lg">L</span>
+              <span className="text-white font-fredoka font-semibold text-lg">L</span>
             </div>
-            <span className="font-heading font-semibold text-xl text-neutral-800 tracking-wide">Lernopia</span>
+            <span className="font-fredoka font-semibold text-xl text-neutral-800 tracking-wide">Lernopia</span>
           </Link>
 
           {/* Desktop Nav */}

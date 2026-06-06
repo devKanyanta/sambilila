@@ -43,6 +43,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { checkUsageLimit, recordUsage } = await import('@/lib/limits')
+    const usageCheck = await checkUsageLimit(userId, 'flashcard')
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: 'limit_reached',
+        message: `You've reached your flashcard limit (${usageCheck.used}/${usageCheck.limit}) on the ${usageCheck.plan} plan. Upgrade to create more flashcards.`,
+        limit: usageCheck.limit,
+        used: usageCheck.used,
+        plan: usageCheck.plan,
+      }, { status: 403 })
+    }
+
     const formData = await req.formData();
     // These fields are sent by the client to request the signed URL
     const text = formData.get("text") as string | null;
@@ -69,6 +81,11 @@ export async function POST(req: NextRequest) {
           status: "PENDING", // Text-only jobs go straight to PENDING
         },
       });
+
+      // Record usage after successful job creation
+      await recordUsage(userId, 'flashcard').catch((err: any) => {
+        console.error('Failed to record flashcard usage (non-fatal):', err)
+      })
 
       return NextResponse.json({
         success: true,
@@ -107,7 +124,10 @@ export async function POST(req: NextRequest) {
         description: (formData.get("description") as string) || "Generated from PDF",
         status: "PENDING_UPLOAD", // CHANGED: Job starts in PENDING_UPLOAD state
       },
-    });
+    });    // Record usage after successful job creation
+    await recordUsage(userId, 'flashcard').catch((err: any) => {
+      console.error('Failed to record flashcard usage (non-fatal):', err)
+    })
 
     return NextResponse.json({
       success: true,

@@ -15,7 +15,7 @@ const features = [
     buttonText: "Try it out",
     buttonHref: "/auth/register",
     // Replace with your actual image/illustration path when ready
-    imageSrc: "/quiz-feature.png", 
+    imageSrc: "/quiz.png", 
   },
   {
     title: (
@@ -28,13 +28,13 @@ const features = [
     buttonText: "Get Started",
     buttonHref: "/auth/register",
     // Replace with your actual image/illustration path when ready
-    imageSrc: "/flashcards-feature.png", 
+    imageSrc: "/flashcard.png", 
   },
 ]
 
 export function HowItWorks() {
   return (
-    <section className="bg-[#ececec] py-20 md:py-28 lg:py-36 px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="bg-[#ececec] py-20 md:py-28 lg:py-36 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1400px] mx-auto flex flex-col gap-24 md:gap-32 lg:gap-40">
         {features.map((feature, index) => (
           <div
@@ -49,20 +49,13 @@ export function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-xl aspect-[4/3] bg-[#d6d6d6] rounded-2xl overflow-hidden shadow-sm shrink-0 relative flex items-center justify-center"
+              className={`w-full max-w-xl aspect-[4/3] ${index === 1 ? 'bg-[#fff] p-10' : ''} rounded-2xl overflow-hidden shadow-sm shrink-0 relative flex items-center justify-center`}
             >
               {/* Fallback mockup styling until you add real images */}
               <img
                 src={feature.imageSrc}
                 alt=""
-                className="object-contain w-full h-full p-8 opacity-0 transition-opacity duration-300"
-                onError={(e) => {
-                  // Keeps the container as a clean gray placeholder if image path doesn't exist yet
-                  e.currentTarget.style.opacity = '0'
-                }}
-                onLoad={(e) => {
-                  e.currentTarget.style.opacity = '1'
-                }}
+                className="object-contain w-full h-full"
               />
             </motion.div>
 
@@ -74,7 +67,7 @@ export function HowItWorks() {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
               className="w-full max-w-xl"
             >
-              <h2 className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-[#2d4a3e] leading-[1.2] tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-[2.6rem] font-fredoka font-bold text-[#2d4a3e] leading-[1.2] tracking-tight">
                 {feature.title}
               </h2>
               

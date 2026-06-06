@@ -2,12 +2,16 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Check } from 'lucide-react'
+import { Check, Sparkles } from 'lucide-react'
+import { useCurrency } from '@/app/hooks/useCurrency'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const plans = [
   {
     name: "Free",
-    price: "$0",
+    slug: "free",
+    priceUSD: 0,
     period: "month",
     description: "Best for students trying out the app",
     features: [
@@ -21,7 +25,8 @@ const plans = [
   },
   {
     name: "Weekly",
-    price: "$0.99",
+    slug: "weekly",
+    priceUSD: 0.99,
     period: "week",
     description: "Best for short term studying during exams",
     features: [
@@ -36,7 +41,8 @@ const plans = [
   },
   {
     name: "Monthly",
-    price: "$3.99",
+    slug: "monthly",
+    priceUSD: 3.99,
     period: "month",
     description: "Best for committed students & exam preparation",
     features: [
@@ -52,7 +58,60 @@ const plans = [
   }
 ]
 
+function PriceDisplay({ priceUSD, period, getPriceInfo, isLoading }: { 
+  priceUSD: number
+  period: string
+  getPriceInfo: ReturnType<typeof useCurrency>['getPriceInfo']
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-baseline mb-5">
+        <div className="h-9 w-24 shimmer rounded-lg" />
+      </div>
+    )
+  }
+
+  if (priceUSD === 0) {
+    return (
+      <div className="flex items-baseline mb-5">
+        <span className="text-4xl font-bold text-neutral-900 tracking-tight">Free</span>
+      </div>
+    )
+  }
+
+  const info = getPriceInfo(priceUSD, period)
+
+  return (
+    <div className="flex items-baseline mb-5">
+      <span className="text-4xl font-bold text-neutral-900 tracking-tight">
+        {info.displayPrice}
+      </span>
+      <span className="text-neutral-500 font-medium text-base ml-0.5">
+        /{period}
+      </span>
+    </div>
+  )
+}
+
 export function Pricing() {
+  const { getPriceInfo, isLoading } = useCurrency()
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    setIsLoggedIn(!!token)
+  }, [])
+
+  const handleCta = (e: React.MouseEvent, planSlug: string) => {
+    if (isLoggedIn) {
+      e.preventDefault()
+      router.push('/dashboard/subscription')
+    }
+    // If not logged in, let the Link go to /auth/register as normal
+  }
+
   return (
     <section id="pricing" className="bg-[#ececec] py-20 md:py-28 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
@@ -63,7 +122,7 @@ export function Pricing() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl sm:text-5xl font-bold text-neutral-900 tracking-tight mb-4"
+            className="text-4xl sm:text-5xl font-fredoka font-bold text-neutral-900 tracking-tight mb-4"
           >
             Pricing
           </motion.h2>
@@ -103,22 +162,15 @@ export function Pricing() {
               {/* Card Body Content */}
               <div className={`p-8 flex-grow flex flex-col ${plan.highlighted ? 'pt-6' : 'pt-8'}`}>
                 {/* Title and Description */}
-                <h3 className="text-3xl font-bold text-neutral-900 mb-2">
+                <h3 className="text-3xl font-fredoka font-bold text-neutral-900 mb-2">
                   {plan.name}
                 </h3>
                 <p className="text-sm text-neutral-500 font-medium leading-snug min-h-[40px] mb-4">
                   {plan.description}
                 </p>
 
-                {/* Pricing Structure */}
-                <div className="flex items-baseline mb-5">
-                  <span className="text-4xl font-bold text-neutral-900 tracking-tight">
-                    {plan.price}
-                  </span>
-                  <span className="text-neutral-500 font-medium text-base ml-0.5">
-                    /{plan.period}
-                  </span>
-                </div>
+                {/* Dynamic Pricing */}
+                <PriceDisplay priceUSD={plan.priceUSD} period={plan.period} getPriceInfo={getPriceInfo} isLoading={isLoading} />
 
                 {/* Subtle Divider Line */}
                 <div className="border-t border-neutral-200/80 w-full mb-5" />
@@ -144,10 +196,15 @@ export function Pricing() {
               {/* Action Button Container */}
               <div className="px-8 pb-8 pt-2">
                 <Link 
-                  href="/auth/register" 
-                  className={`w-full block text-center py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98] ${plan.buttonClass}`}
+                  href={isLoggedIn ? '/dashboard/subscription' : '/auth/register'}
+                  onClick={(e) => handleCta(e, plan.slug)}
+                  className={`w-full block text-center py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 ${plan.buttonClass}`}
                 >
-                  {plan.buttonText}
+                  {isLoggedIn ? (
+                    <>{plan.priceUSD === 0 ? 'Current Plan' : <><Sparkles className="w-4 h-4" /> Upgrade</>}</>
+                  ) : (
+                    plan.buttonText
+                  )}
                 </Link>
               </div>
             </motion.div>

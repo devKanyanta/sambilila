@@ -12,23 +12,6 @@ import { FiArrowUp, FiBookOpen, FiZap, FiBarChart2 } from 'react-icons/fi'
 import Link from 'next/link'
 import { Testimonials } from './landing/Testimonials'
 
-// Mock currency hook
-const useCurrency = () => {
-  return {
-    getPriceInfo: (priceUSD: number, period: string) => {
-      const rate = 25
-      const priceZMW = priceUSD * rate
-      return {
-        displayPrice: priceUSD === 0 ? 'Free' : `ZMW ${Math.round(priceZMW)}`,
-        originalPrice: priceUSD
-      }
-    },
-    currency: 'ZMW',
-    isLoading: false,
-    isZambian: true
-  }
-}
-
 const features = [
   {
     icon: <FiBookOpen className="w-6 h-6" />,
@@ -49,7 +32,6 @@ const features = [
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false)
-  const { isLoading, isZambian } = useCurrency()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,7 +46,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ececec] overflow-x-hidden">
+    <div className="min-h-screen bg-[#ececec] overflow-x-hidden landing-page">
       {/* Header */}
       <Header />
 

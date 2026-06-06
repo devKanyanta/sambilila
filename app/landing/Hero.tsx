@@ -68,7 +68,7 @@ export function Hero() {
             {/* Heading */}
             <motion.h1 
               variants={itemVariants} 
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-[5rem] font-bold text-[#2d4a3e] leading-[1.1] tracking-tight"
+              className="text-5xl sm:text-6xl lg:text-7xl xl:text-[5rem] font-fredoka font-bold text-[#2d4a3e] leading-[1.1] tracking-tight"
             >
               With <span className="text-[#ff5252]">Lernopia</span>,
               <br />
@@ -77,12 +77,12 @@ export function Hero() {
 
             {/* CTA Buttons */}
             <motion.div variants={itemVariants} className="mt-8 flex flex-wrap items-center gap-4">
-              <Link
-                href="/auth/register"
+              <a
+                href="#pricing"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-[2rem] text-lg sm:text-xl font-medium text-white bg-[#ff5252] hover:bg-[#eb4b4b] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 Start Learning
-              </Link>
+              </a>
               <Link
                 href="/auth/register"
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full text-white bg-[#2d4a3e] hover:bg-[#233a30] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg"

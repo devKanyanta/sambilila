@@ -10,6 +10,7 @@ import LoadingState from './components/loadingState'
 import ErrorState from './components/errorState'
 import Notification from './components/ui/notification'
 import AnimatedSection from '@/app/dashboard/components/AnimatedSection'
+import SubscriptionCard from '@/app/dashboard/components/SubscriptionCard'
 
 export default function Profile() {
   const {
@@ -69,6 +70,9 @@ export default function Profile() {
             </AnimatedSection>
             <AnimatedSection delay={0.2}>
               <ActivityCard recentActivity={profile?.recentActivity} />
+            </AnimatedSection>
+            <AnimatedSection delay={0.225}>
+              <SubscriptionCard />
             </AnimatedSection>
             <AnimatedSection delay={0.25}>
               <SettingsCard

@@ -40,7 +40,7 @@ export default function StreakCard({
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#ff5252] flex items-center justify-center shadow-md"
             >
-              <span className="text-[10px] font-semibold text-white">⚡</span>
+              <TrendingUp className="w-3 h-3 text-white" strokeWidth={3} />
             </motion.div>
           )}
         </motion.div>
@@ -54,7 +54,7 @@ export default function StreakCard({
             className="flex items-center gap-2 mb-0.5"
           >
             <h3 className="font-heading font-medium text-lg text-neutral-800">
-              {currentStreak > 0 ? `${currentStreak}-day Streak 🔥` : 'No active streak'}
+              {currentStreak > 0 ? `${currentStreak}-day Streak` : 'No active streak'}
             </h3>
           </motion.div>
           <motion.p

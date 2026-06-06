@@ -1,7 +1,10 @@
 // hooks/useCurrency.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Currency, detectUserCurrency, convertPrice, formatPrice, formatPriceWithPeriod } from '@/lib/currency';
+
+const LOCATION_CACHE_KEY = 'currencyLocationCache';
+const LOCATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 interface UserLocation {
   countryCode: string;
@@ -16,23 +19,79 @@ interface PriceInfo {
   currency: Currency;
 }
 
+interface LocationCache {
+  countryCode: string;
+  expiresAt: number;
+}
+
+function inferCountryCodeFromClient(): string {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (timeZone === 'Africa/Lusaka') {
+    return 'ZM';
+  }
+
+  const locale = navigator.language || '';
+  if (locale.toUpperCase().endsWith('-ZM')) {
+    return 'ZM';
+  }
+
+  return 'US';
+}
+
 export function useCurrency() {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasDetectedRef = useRef(false);
 
   useEffect(() => {
+    if (hasDetectedRef.current) {
+      return;
+    }
+
+    hasDetectedRef.current = true;
     detectLocation();
   }, []);
 
   const detectLocation = async () => {
     try {
-      // First, try to get location from IP
-      const response = await fetch('https://ipapi.co/json/');
+      const cachedRaw = window.localStorage.getItem(LOCATION_CACHE_KEY);
+      if (cachedRaw) {
+        const cached = JSON.parse(cachedRaw) as LocationCache;
+        const isCacheValid = typeof cached?.countryCode === 'string' && typeof cached?.expiresAt === 'number' && cached.expiresAt > Date.now();
+
+        if (isCacheValid) {
+          const normalizedCountryCode = cached.countryCode.toUpperCase();
+          const currency = detectUserCurrency(normalizedCountryCode);
+          setUserLocation({
+            countryCode: normalizedCountryCode,
+            currency
+          });
+          return;
+        }
+
+        window.localStorage.removeItem(LOCATION_CACHE_KEY);
+      }
+
+      // Use a local API route to avoid browser CORS issues with upstream geo IP providers.
+      const response = await fetch('/api/location', { cache: 'no-store' });
       const data = await response.json();
-      
-      const countryCode = data.country_code || 'US';
+
+      const fallbackCountryCode = inferCountryCodeFromClient();
+      const apiCountryCode = typeof data.countryCode === 'string' ? data.countryCode.toUpperCase() : null;
+      const countryCode = data?.source === 'fallback'
+        ? fallbackCountryCode
+        : (apiCountryCode || fallbackCountryCode);
       const currency = detectUserCurrency(countryCode);
-      
+
+      if (data?.source !== 'fallback') {
+        const locationCache: LocationCache = {
+          countryCode,
+          expiresAt: Date.now() + LOCATION_CACHE_TTL_MS,
+        };
+
+        window.localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify(locationCache));
+      }
+
       setUserLocation({
         countryCode,
         currency

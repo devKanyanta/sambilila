@@ -31,7 +31,7 @@ export default function QuizResultsModal({
             <div>
               <h2 className="text-lg font-heading font-medium text-neutral-900">Quiz Results</h2>
               <p className="text-xs text-neutral-400 mt-0.5">
-                {quizResult.passed ? 'Great work! 🎉' : 'Keep practicing! 💪'}
+                {quizResult.passed ? 'Great work!' : 'Keep practicing!'}
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { X, Upload, FileText, Sparkles, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { X, Upload, FileText, Sparkles, ArrowLeft, ArrowRight, Check, List, CheckCheck, PenLine } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { QUIZ_SETTINGS } from './constants';
 
@@ -221,31 +221,40 @@ export default function QuizFormModal({
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-neutral-700">Question Types</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {QUIZ_SETTINGS.QUESTION_TYPES.map((type) => (
-                    <label key={type.value} className="relative">
-                      <input
-                        type="checkbox"
-                        checked={questionTypes.includes(type.value)}
-                        onChange={(e) => {
-                          const types = questionTypes.split(',').filter(t => t);
-                          if (e.target.checked) {
-                            onQuestionTypesChange([...types, type.value].join(','));
-                          } else {
-                            onQuestionTypesChange(types.filter(t => t !== type.value).join(','));
-                          }
-                        }}
-                        className="sr-only"
-                      />
-                      <div className={`p-3 rounded-xl text-center cursor-pointer transition-all border ${
-                        questionTypes.includes(type.value)
-                          ? 'border-primary-200 bg-primary-50 shadow-sm'
-                          : 'border-neutral-200 bg-white hover:border-neutral-300'
-                      }`}>
-                        <div className="text-lg mb-1">{type.icon}</div>
-                        <span className="text-xs text-neutral-700">{type.label}</span>
-                      </div>
-                    </label>
-                  ))}
+                  {QUIZ_SETTINGS.QUESTION_TYPES.map((type) => {
+                    const typeIcons: Record<string, React.ReactNode> = {
+                      'list': <List className="w-5 h-5 mx-auto mb-1" />,
+                      'check': <CheckCheck className="w-5 h-5 mx-auto mb-1" />,
+                      'pen': <PenLine className="w-5 h-5 mx-auto mb-1" />,
+                    }
+                    return (
+                      <label key={type.value} className="relative">
+                        <input
+                          type="checkbox"
+                          checked={questionTypes.includes(type.value)}
+                          onChange={(e) => {
+                            const types = questionTypes.split(',').filter(t => t);
+                            if (e.target.checked) {
+                              onQuestionTypesChange([...types, type.value].join(','));
+                            } else {
+                              onQuestionTypesChange(types.filter(t => t !== type.value).join(','));
+                            }
+                          }}
+                          className="sr-only"
+                        />
+                        <div className={`p-3 rounded-xl text-center cursor-pointer transition-all border ${
+                          questionTypes.includes(type.value)
+                            ? 'border-primary-200 bg-primary-50 shadow-sm'
+                            : 'border-neutral-200 bg-white hover:border-neutral-300'
+                        }`}>
+                          <div className="mb-1 flex justify-center">
+                            {typeIcons[type.icon]}
+                          </div>
+                          <span className="text-xs text-neutral-700">{type.label}</span>
+                        </div>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
             </div>

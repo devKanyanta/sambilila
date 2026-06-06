@@ -3,15 +3,16 @@
 import { motion } from 'framer-motion'
 import { fadeSlideDown } from '../animations'
 import { ReactNode } from 'react'
+import { type LucideIcon } from 'lucide-react'
 
 interface PageHeaderProps {
   title: string
   subtitle?: string
   action?: ReactNode
-  emoji?: string
+  icon?: LucideIcon
 }
 
-export default function PageHeader({ title, subtitle, action, emoji }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, action, icon: Icon }: PageHeaderProps) {
   return (
     <motion.div
       initial="hidden"
@@ -20,14 +21,14 @@ export default function PageHeader({ title, subtitle, action, emoji }: PageHeade
       className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
     >
       <div className="flex items-center gap-3">
-        {emoji && (
+        {Icon && (
           <motion.div
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 15, mass: 0.6 }}
-            className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-lg"
+            className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center"
           >
-            {emoji}
+            <Icon className="w-5 h-5 text-primary-600" />
           </motion.div>
         )}
         <div>

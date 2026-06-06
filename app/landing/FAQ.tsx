@@ -42,7 +42,7 @@ export function FAQ() {
           <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-600 text-sm font-medium mb-5">
             Questions & Answers
           </div>
-          <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-neutral-800 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-fredoka font-semibold text-neutral-800 mb-4">
             Frequently Asked Questions
           </h2>
           <p className="text-base text-neutral-500 max-w-xl mx-auto">

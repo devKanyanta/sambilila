@@ -18,6 +18,7 @@ import {
   Flame,
   Clock,
   ChevronRight,
+  GraduationCap,
 } from 'lucide-react'
 import AnimatedSection, { AnimatedItem } from './components/AnimatedSection'
 import StreakCard from './components/StreakCard'
@@ -313,13 +314,13 @@ export default function Dashboard() {
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 15, mass: 0.6 }}
-          className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center text-xl shadow-sm"
+          className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center shadow-sm"
         >
-          {userProfile?.userType === 'TEACHER' ? '👨‍🏫' : '👨‍🎓'}
+          <GraduationCap className="w-6 h-6 text-primary-600" />
         </motion.div>
         <div>
           <h1 className="text-2xl md:text-3xl font-heading font-semibold text-neutral-800">
-            Welcome back, {userProfile?.name?.split(' ')[0] || 'Student'}!
+            Welcome back, {userProfile?.name?.split(' ')[0] || 'Student'}
           </h1>
           <p className="text-sm text-neutral-500">Ready to continue learning?</p>
         </div>

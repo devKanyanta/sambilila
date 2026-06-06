@@ -13,31 +13,31 @@ const testimonials = [
     text: "Preparing for medical boards felt impossible until I started generating custom quizzes here. The dynamic adjustments catch exactly where my knowledge gaps are before moving forward.",
     name: "Sarah Jenkins",
     avatar: "https://i.pravatar.cc/100?img=47",
-    className: "md:h-[180px] lg:h-[200px]" // Replicates the wide middle-top card layout
+    className: "md:min-h-[180px] lg:min-h-[200px]" // Replicates the wide middle-top card layout
   },
   {
     text: "Absolute game changer for language learning. I imported my entire French vocabulary list and the platform immediately organized it into optimized daily flashcards.",
     name: "Lucas Mercier",
     avatar: "https://i.pravatar.cc/100?img=33",
-    className: "md:h-[280px] lg:h-[320px]" // Replicates the tall right-side card layout
+    className: "md:min-h-[280px] lg:min-h-[320px]" // Replicates the tall right-side card layout
   },
   {
     text: "The split-second generation keeps my study momentum flowing perfectly. No waiting around, just instant high-quality review material.",
     name: "Alex Rivera",
     avatar: "https://i.pravatar.cc/100?img=12",
-    className: "md:h-[300px] lg:h-[340px]" // Replicates the tall bottom-left layout
+    className: "md:min-h-[300px] lg:min-h-[340px]" // Replicates the tall bottom-left layout
   },
   {
     text: "Simple, clean, and direct interface. Exactly what I needed to manage my engineering finals preparation.",
     name: "Chanda Chisamba",
     avatar: "https://i.pravatar.cc/100?img=18",
-    className: "md:h-[160px] lg:h-[180px]" // Replicates the square/medium center-bottom layout
+    className: "md:min-h-[160px] lg:min-h-[180px]" // Replicates the square/medium center-bottom layout
   },
   {
     text: "I went from failing my biochemistry prep quizzes to scoring an A on the midterm. The adaptive retention intervals work like absolute magic over long weekends.",
     name: "Elena Rostova",
     avatar: "https://i.pravatar.cc/100?img=44",
-    className: "md:h-[260px] lg:h-[300px]" // Replicates the tall bottom-right layout
+    className: "md:min-h-[260px] lg:min-h-[300px]" // Replicates the tall bottom-right layout
   }
 ]
 
@@ -52,7 +52,7 @@ export function Testimonials() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl sm:text-5xl font-bold text-neutral-900 tracking-tight mb-3"
+            className="text-4xl sm:text-5xl font-fredoka font-bold text-neutral-900 tracking-tight mb-3"
           >
             Don&apos;t take our word for it
           </motion.h2>

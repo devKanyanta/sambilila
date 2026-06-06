@@ -14,13 +14,16 @@ import {
   X,
   Sparkles,
   ChevronRight,
-  GraduationCap
+  GraduationCap,
+  Crown
 } from 'lucide-react'
+import SubscriptionBar from './components/SubscriptionBar'
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/dashboard/flashcards", icon: BookOpen, label: "Flashcards" },
   { href: "/dashboard/quiz", icon: Brain, label: "Quiz Generator" },
+  { href: "/dashboard/subscription", icon: Crown, label: "Subscription" },
   { href: "/dashboard/profile", icon: User, label: "Profile" },
 ]
 
@@ -28,6 +31,7 @@ const mobileNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/dashboard/flashcards", icon: BookOpen, label: "Cards" },
   { href: "/dashboard/quiz", icon: Brain, label: "Quiz" },
+  { href: "/dashboard/subscription", icon: Crown, label: "Plan" },
   { href: "/dashboard/profile", icon: User, label: "Me" },
 ]
 
@@ -69,10 +73,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <Home className="w-4 h-4" />
                 Home
               </Link>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all hover:shadow-sm active:scale-95">
+              <Link
+                href="/dashboard/subscription"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all hover:shadow-sm active:scale-95"
+              >
                 <Sparkles className="w-4 h-4" />
                 Upgrade
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -164,8 +171,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
+      {/* Subscription Bar */}
+      <div className="lg:ml-64 pt-16">
+        <SubscriptionBar />
+      </div>
+
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 min-h-screen">
+      <main className="lg:ml-64 min-h-screen">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           {children}
         </div>

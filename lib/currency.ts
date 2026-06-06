@@ -42,10 +42,10 @@ export function formatPrice(price: number, currency: Currency): string {
   const config = currencies[currency];
   
   if (currency === 'ZMW') {
-    // Format for Zambian Kwacha
+    // Format for Zambian Kwacha — whole numbers only
     return `ZMW ${price.toLocaleString('en-ZM', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     })}`;
   }
   
