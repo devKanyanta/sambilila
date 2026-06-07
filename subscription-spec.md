@@ -475,6 +475,7 @@ Add a subscription section to the profile page:
 ```env
 PAYPAL_CLIENT_ID=
 PAYPAL_CLIENT_SECRET=
+PAYPAL_ENV=sandbox # sandbox or live
 PAYPAL_WEEKLY_PLAN_ID=
 PAYPAL_MONTHLY_PLAN_ID=
 PAYPAL_WEBHOOK_ID=

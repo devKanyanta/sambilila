@@ -3,7 +3,27 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Check, Crown, Sparkles, Smartphone, Globe, Loader2, ArrowRight, AlertCircle } from 'lucide-react'
-import { useSubscription, PlanInfo } from '@/app/hooks/useSubscription'
+import { useSubscription } from '@/app/hooks/useSubscription'
+
+const MOBILE_OPERATORS = ['MTN', 'Airtel'] as const
+
+function normalizeMobileNumber(value: string) {
+  const digits = value.replace(/\D/g, '')
+
+  if (digits.startsWith('260')) return digits
+  if (digits.startsWith('0') && digits.length >= 10) return `260${digits.slice(1)}`
+
+  return digits
+}
+
+function detectMobileOperator(value: string) {
+  const normalizedPhone = normalizeMobileNumber(value)
+
+  if (/^260(76|96)/.test(normalizedPhone)) return 'MTN'
+  if (/^260(77|97)/.test(normalizedPhone)) return 'Airtel'
+
+  return ''
+}
 
 interface UpgradeModalProps {
   show: boolean
@@ -12,11 +32,10 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ show, onClose, initialPlanSlug }: UpgradeModalProps) {
-  const { plans, subscription, isLoading, upgrade, verifyPayment, refresh } = useSubscription()
+  const { plans, subscription, upgrade, verifyPayment, refresh } = useSubscription()
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlanSlug || 'weekly')
   const [paymentMethod, setPaymentMethod] = useState<'PAYPAL' | 'LENCO' | null>(null)
   const [phone, setPhone] = useState('')
-  const [operator, setOperator] = useState('')
   const [step, setStep] = useState<'select-plan' | 'payment' | 'processing' | 'verifying' | 'success'>('select-plan')
   const [processingError, setProcessingError] = useState<string | null>(null)
   const [paymentReference, setPaymentReference] = useState<string | null>(null)
@@ -25,6 +44,7 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
   const verificationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const currentPlanSlug = subscription?.plan?.slug || 'free'
+  const operator = detectMobileOperator(phone)
 
   // Poll payment status for Lenco
   useEffect(() => {
@@ -65,8 +85,9 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
           }
         }
         // If status is 'pending', keep polling
-      } catch (err: any) {
-        console.warn('Verification poll error:', err.message)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Payment verification failed'
+        console.warn('Verification poll error:', message)
         consecutiveNetworkErrors++
         if (consecutiveNetworkErrors >= maxNetworkErrors) {
           setNetworkError(true)
@@ -105,7 +126,7 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
       const result = await upgrade(
         selectedPlan,
         paymentMethod,
-        paymentMethod === 'LENCO' ? phone : undefined,
+        paymentMethod === 'LENCO' ? normalizeMobileNumber(phone) : undefined,
         paymentMethod === 'LENCO' ? operator : undefined
       )
 
@@ -119,8 +140,9 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
       } else {
         setStep('success')
       }
-    } catch (err: any) {
-      setProcessingError(err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Payment failed'
+      setProcessingError(message)
       setStep('payment')
     }
   }
@@ -282,7 +304,7 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g. 26097XXXXXXX"
+                      placeholder="e.g. 097XXXXXXX or 26097XXXXXXX"
                       className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 bg-white outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
                     />
                     <p className="text-[10px] text-neutral-400 mt-1">Include country code (e.g., 260 for Zambia)</p>
@@ -291,14 +313,21 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Mobile Operator</label>
                     <select
                       value={operator}
-                      onChange={(e) => setOperator(e.target.value)}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 bg-white outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+                      disabled
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 bg-white outline-none text-neutral-700 disabled:opacity-100"
                     >
-                      <option value="">Select operator</option>
-                      <option value="MTN">MTN</option>
-                      <option value="Airtel">Airtel</option>
-                      <option value="Vodafone">Vodafone</option>
+                      <option value="">Enter a supported number</option>
+                      {MOBILE_OPERATORS.map((mobileOperator) => (
+                        <option key={mobileOperator} value={mobileOperator}>
+                          {mobileOperator}
+                        </option>
+                      ))}
                     </select>
+                    {phone && !operator && (
+                      <p className="text-[10px] text-amber-600 mt-1">
+                        Supported Zambian prefixes: MTN 096/076, Airtel 097/077.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

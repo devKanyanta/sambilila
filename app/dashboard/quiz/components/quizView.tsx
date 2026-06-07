@@ -54,8 +54,6 @@ export default function QuizView({
     onAnswer(currentQuestion.id, value);
   };
 
-  const hasFeedback = !!userAnswers[currentQuestion?.id];
-  const isCorrect = currentQuestion && userAnswers[currentQuestion.id] === currentQuestion.correctAnswer;
 
   const slideVariants = {
     enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
@@ -162,43 +160,21 @@ export default function QuizView({
               {currentQuestion.type === 'MULTIPLE_CHOICE' && (
                 currentQuestion.options.map((option, optIndex) => {
                   const isSelected = userAnswers[currentQuestion.id] === option;
-                  const showCorrect = hasFeedback && option === currentQuestion.correctAnswer;
-                  const showWrong = hasFeedback && isSelected && option !== currentQuestion.correctAnswer;
 
                   return (
                     <motion.div
                       key={`${currentQuestion.id}-${optIndex}`}
                       onClick={() => handleOptionSelect(option)}
-                      whileHover={!hasFeedback ? { scale: 1.01 } : undefined}
-                      whileTap={!hasFeedback ? { scale: 0.98 } : undefined}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
                       className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all border ${
-                        showCorrect
-                          ? 'bg-success-50 border-success-300'
-                          : showWrong
-                            ? 'bg-red-50 border-red-300'
-                            : isSelected
-                              ? 'bg-primary-50 border-primary-200'
-                              : 'border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300'
-                      } ${hasFeedback ? 'cursor-default' : ''}`}
+                        isSelected
+                          ? 'bg-primary-50 border-primary-200'
+                          : 'border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300'
+                      }`}
                     >
                       <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
-                        {showCorrect ? (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center"
-                          >
-                            <Check size={12} className="text-white" />
-                          </motion.div>
-                        ) : showWrong ? (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="w-5 h-5 rounded-full bg-red-400 flex items-center justify-center"
-                          >
-                            <Check size={12} className="text-white" />
-                          </motion.div>
-                        ) : isSelected ? (
+                        {isSelected ? (
                           <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
                             <Check size={12} className="text-white" />
                           </div>
@@ -207,8 +183,6 @@ export default function QuizView({
                         )}
                       </div>
                       <span className={`text-sm flex-1 ${
-                        showCorrect ? 'text-success-800 font-medium' :
-                        showWrong ? 'text-red-700 font-medium' :
                         isSelected ? 'text-primary-700' : 'text-neutral-900'
                       }`}>
                         {option}
@@ -225,34 +199,22 @@ export default function QuizView({
                     { value: 'false', label: 'False' }
                   ].map((item) => {
                     const isSelected = userAnswers[currentQuestion.id] === item.value;
-                    const showCorrect = hasFeedback && item.value === currentQuestion.correctAnswer;
-                    const showWrong = hasFeedback && isSelected && item.value !== currentQuestion.correctAnswer;
 
                     return (
                       <motion.div
                         key={`${currentQuestion.id}-${item.value}`}
-                        onClick={() => !hasFeedback && handleTrueFalseSelect(item.value)}
-                        whileHover={!hasFeedback ? { scale: 1.02 } : undefined}
-                        whileTap={!hasFeedback ? { scale: 0.97 } : undefined}
+                        onClick={() => handleTrueFalseSelect(item.value)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         className={`flex items-center justify-center gap-2 p-4 rounded-xl cursor-pointer transition-all border ${
-                          showCorrect
-                            ? 'bg-success-50 border-success-300'
-                            : showWrong
-                              ? 'bg-red-50 border-red-300'
-                              : isSelected && item.value === 'true'
-                                ? 'bg-success-50 border-success-200'
-                                : isSelected && item.value === 'false'
-                                  ? 'bg-red-50 border-red-200'
-                                  : 'border-neutral-200 hover:bg-neutral-50'
-                        } ${hasFeedback ? 'cursor-default' : ''}`}
+                          isSelected
+                            ? 'bg-primary-50 border-primary-200'
+                            : 'border-neutral-200 hover:bg-neutral-50'
+                        }`}
                       >
                         <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
-                          {showCorrect || (isSelected && item.value === 'true') ? (
-                            <div className="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center">
-                              <Check size={12} className="text-white" />
-                            </div>
-                          ) : showWrong || (isSelected && item.value === 'false') ? (
-                            <div className="w-5 h-5 rounded-full bg-red-400 flex items-center justify-center">
+                          {isSelected ? (
+                            <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
                               <Check size={12} className="text-white" />
                             </div>
                           ) : (
@@ -260,11 +222,7 @@ export default function QuizView({
                           )}
                         </div>
                         <span className={`text-sm font-medium ${
-                          showCorrect ? 'text-success-800' :
-                          showWrong ? 'text-red-700' :
-                          isSelected && item.value === 'true' ? 'text-success-700' :
-                          isSelected && item.value === 'false' ? 'text-red-600' :
-                          'text-neutral-700'
+                          isSelected ? 'text-primary-700' : 'text-neutral-700'
                         }`}>
                           {item.label}
                         </span>
@@ -285,60 +243,12 @@ export default function QuizView({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleNextQuestion();
                     }}
-                    disabled={hasFeedback}
                   />
-                  {!hasFeedback && (
-                    <p className="text-xs mt-2 text-neutral-400">Press Enter to save and go to next</p>
-                  )}
+                  <p className="text-xs mt-2 text-neutral-400">Press Enter to save and go to next</p>
                 </div>
               )}
             </div>
 
-            {/* Rich Feedback */}
-            <AnimatePresence>
-              {hasFeedback && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0, y: -10 }}
-                  animate={{ height: 'auto', opacity: 1, y: 0 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className="mt-4 overflow-hidden"
-                >
-                  <div className={`p-3.5 rounded-xl ${
-                    isCorrect
-                      ? 'bg-success-50 border border-success-200'
-                      : 'bg-red-50 border border-red-200'
-                  }`}>
-                    <div className="flex items-start gap-2.5">
-                      {isCorrect ? (
-                        <div className="w-6 h-6 rounded-full bg-success-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check size={14} className="text-success-600" />
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check size={14} className="text-red-400" />
-                        </div>
-                      )}
-                      <div>
-                        {isCorrect ? (
-                          <>
-                            <p className="text-sm font-medium text-success-800">Correct! Well done!</p>
-                            <p className="text-xs text-success-600 mt-0.5">Great job on this question.</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm font-medium text-red-700">Not quite</p>
-                            <p className="text-xs text-red-500 mt-0.5">
-                              The correct answer is: <span className="font-medium">{currentQuestion.correctAnswer}</span>
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </Card>
         </motion.div>
       </AnimatePresence>

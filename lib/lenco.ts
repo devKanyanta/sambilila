@@ -224,11 +224,6 @@ export function validatePhone(phone: string, country: string): boolean {
 export function getOperators(country: string): string[] {
   const operators: Record<string, string[]> = {
     ZM: ['MTN', 'Airtel'],
-    UG: ['MTN', 'Airtel', 'Vodafone'],
-    KE: ['Safaricom', 'Airtel', 'Equity Bank'],
-    GH: ['MTN', 'Vodafone', 'Airtel'],
-    TZ: ['Vodafone', 'Airtel', 'Tigo'],
-    RW: ['MTN', 'Airtel'],
   }
 
   return operators[country.toUpperCase()] || []

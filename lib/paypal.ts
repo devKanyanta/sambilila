@@ -1,7 +1,7 @@
 // lib/paypal.ts — PayPal Subscriptions API integration
 
 const PAYPAL_API_BASE =
-  process.env.NODE_ENV === 'production'
+  process.env.PAYPAL_ENV === 'live' || process.env.NODE_ENV === 'production'
     ? 'https://api-m.paypal.com'
     : 'https://api-m.sandbox.paypal.com'
 

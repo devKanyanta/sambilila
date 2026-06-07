@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
 
     // Validate operator
     const validOperators = getOperators(country)
-    if (!validOperators.includes(operator.toUpperCase())) {
+    const matchedOperator = validOperators.find(
+      (validOperator) => validOperator.toUpperCase() === operator.toUpperCase()
+    )
+
+    if (!matchedOperator) {
       return NextResponse.json({
         error: `Invalid operator for ${country}. Supported: ${validOperators.join(', ')}`,
       }, { status: 400 })
@@ -62,7 +66,7 @@ export async function POST(request: NextRequest) {
     const paymentResult = await initiatePayment(
       amountInZMW,
       phone,
-      operator.toUpperCase(),
+      matchedOperator.toUpperCase(),
       country,
       `SUB_${subscription.id}_${Date.now()}`
     )
