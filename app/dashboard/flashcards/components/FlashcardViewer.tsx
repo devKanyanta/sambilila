@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronLeft, ChevronRight, X, RotateCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, RotateCw, Sparkles } from 'lucide-react'
+import Link from 'next/link'
 import { FlashcardSet } from './types'
 import { useEffect, useState } from 'react'
 
@@ -12,6 +13,7 @@ interface FlashcardViewerProps {
   onNextCard: () => void
   onPrevCard: () => void
   onToggleFlip: () => void
+  showSignupCta?: boolean
 }
 
 const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
@@ -21,7 +23,8 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   onClose,
   onNextCard,
   onPrevCard,
-  onToggleFlip
+  onToggleFlip,
+  showSignupCta = false
 }) => {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -130,6 +133,16 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
               <ChevronRight className="w-5 h-5 text-neutral-600" />
             </button>
           </div>
+
+          {showSignupCta && (
+            <Link
+              href="/auth/register"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
+            >
+              <Sparkles className="w-4 h-4" />
+              Create your own flashcards — Sign up free
+            </Link>
+          )}
         </div>
       </div>
     </div>

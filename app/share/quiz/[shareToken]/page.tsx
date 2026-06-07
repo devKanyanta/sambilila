@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { GraduationCap, Share2, Home, ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react'
+import { GraduationCap, Share2, Home, ArrowLeft, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 import QuizView from '@/app/dashboard/quiz/components/quizView'
-import QuizResultsModal from '@/app/dashboard/quiz/components/quizResults'
+import QuizResults from '@/app/dashboard/quiz/components/quizResults'
 import Card from '@/app/dashboard/components/Card'
 import { Quiz, UserAnswers, QuizResult, DetailedResult } from '@/app/dashboard/quiz/components/types'
 
@@ -133,9 +133,18 @@ export default function SharedQuizPage({
             </div>
             <span className="font-heading font-medium text-sm text-neutral-900">Lernopia</span>
           </Link>
-          <div className="flex items-center gap-2 text-xs text-neutral-400">
-            <Share2 className="w-3 h-3" />
-            Shared Quiz
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-neutral-400">
+              <Share2 className="w-3 h-3" />
+              Shared Quiz
+            </div>
+            <Link
+              href="/auth/register"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-500 text-white text-xs font-medium hover:bg-primary-600 transition-all"
+            >
+              <Sparkles className="w-3 h-3" />
+              Sign up free
+            </Link>
           </div>
         </div>
       </nav>
@@ -165,25 +174,12 @@ export default function SharedQuizPage({
         </div>
 
         {showResults && quizResult && detailedResults.length > 0 ? (
-          <>
-            <QuizResultsModal
-              show={true}
-              onClose={() => setShowResults(false)}
-              quizResult={quizResult}
-              detailedResults={detailedResults}
-              onStartNewQuiz={handleStartNewQuiz}
-              onReviewAgain={() => setShowResults(false)}
-            />
-            <div className="text-center pt-6">
-              <button
-                onClick={handleStartNewQuiz}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-all"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Retake Quiz
-              </button>
-            </div>
-          </>
+          <QuizResults
+            quizResult={quizResult}
+            detailedResults={detailedResults}
+            onStartNewQuiz={handleStartNewQuiz}
+            onReviewAgain={() => setShowResults(false)}
+          />
         ) : (
           <QuizView
             quiz={quiz}
@@ -197,8 +193,33 @@ export default function SharedQuizPage({
         )}
       </main>
 
+      {/* Registration CTA */}
+      <div className="max-w-3xl mx-auto px-4 pb-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-500 to-primary-400 p-8 text-center">
+          <div className="absolute inset-0 bg-white/10" />
+          <div className="relative">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-white/20 flex items-center justify-center mb-4 backdrop-blur-sm">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-xl font-heading font-semibold text-white mb-2">
+              Create Your Own Quizzes
+            </h2>
+            <p className="text-sm text-white/80 mb-6 max-w-sm mx-auto">
+              Turn your notes into interactive quizzes with AI. Test yourself and track your progress.
+            </p>
+            <Link
+              href="/auth/register"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-primary-700 text-sm font-semibold hover:bg-white/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <Sparkles className="w-4 h-4" />
+              Get started free
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="text-center py-8 text-xs text-neutral-400">
+      <footer className="text-center py-6 text-xs text-neutral-400">
         <p>Made with Lernopia — Master any subject with AI</p>
       </footer>
     </div>

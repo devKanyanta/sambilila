@@ -7,7 +7,7 @@ import { useSubscription } from '@/app/hooks/useSubscription';
 import QuizFormModal from './components/quizForm';
 import QuizView from './components/quizView';
 import QuizList from './components/quizList';
-import QuizResultsModal from './components/quizResults';
+import QuizResults from './components/quizResults';
 import JobStatusModal from './components/JobStatusModal';
 import { QuizJob } from './components/types';
 import { Plus, List, Brain, ArrowLeft, Sparkles, BarChart3 } from 'lucide-react';
@@ -17,12 +17,12 @@ import Card from '@/app/dashboard/components/Card';
 import AnimatedSection from '@/app/dashboard/components/AnimatedSection';
 import { ShimmerBlock, ShimmerStatBlock } from '@/app/dashboard/components/Shimmer';
 
-type View = 'dashboard' | 'quiz-list' | 'quiz-view';
+type View = 'dashboard' | 'quiz-list' | 'quiz-view' | 'results';
 
 export default function QuizGenerator() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [showResultsModal, setShowResultsModal] = useState<boolean>(false);
+  // results are now inline, managed by currentView
   const [loadingQuizId, setLoadingQuizId] = useState<string | null>(null);
 
   const [title, setTitle] = useState<string>('');
@@ -194,7 +194,7 @@ export default function QuizGenerator() {
       const result = await apiSubmitQuiz(quiz.id, answers);
       setQuizResult(result.result);
       setDetailedResults(result.detailedResults);
-      setShowResultsModal(true);
+      setCurrentView('results');
       loadQuizList();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit quiz');
@@ -240,9 +240,20 @@ export default function QuizGenerator() {
     setTitle('');
     setInputText('');
     setPdfFile(null);
-    setShowResultsModal(false);
     setCurrentView('dashboard');
     setShowCreateModal(true);
+  };
+
+  const handleReviewAgain = () => {
+    setCurrentView('quiz-view');
+  };
+
+  const handleBackFromQuizView = () => {
+    if (quizResult) {
+      setCurrentView('results');
+    } else {
+      setCurrentView('quiz-list');
+    }
   };
 
   const handleClearAll = () => {
@@ -273,16 +284,16 @@ export default function QuizGenerator() {
         ) : (
           <AnimatedSection>
             <div className="flex items-center gap-4 mb-8">
-              <button onClick={() => setCurrentView('dashboard')}
+              <button onClick={() => currentView === 'results' ? setCurrentView('quiz-list') : setCurrentView('dashboard')}
                 className="w-10 h-10 rounded-xl flex items-center justify-center bg-white border border-neutral-200 text-neutral-400 hover:text-neutral-600 hover:border-neutral-300 transition-all active:scale-95">
                 <ArrowLeft size={18} />
               </button>
               <div>
                 <h1 className="text-lg font-heading font-medium text-neutral-900">
-                  {currentView === 'quiz-list' ? 'All Quizzes' : quiz?.title || 'Quiz'}
+                  {currentView === 'quiz-list' ? 'All Quizzes' : currentView === 'results' ? 'Quiz Results' : quiz?.title || 'Quiz'}
                 </h1>
                 <p className="text-xs text-neutral-400 mt-0.5">
-                  {currentView === 'quiz-list' ? `${quizList.length} quizzes available` : `Question ${Object.keys(userAnswers).length}/${quiz?.questions.length || 0} answered`}
+                  {currentView === 'quiz-list' ? `${quizList.length} quizzes available` : currentView === 'results' ? 'Great effort!' : `Question ${Object.keys(userAnswers).length}/${quiz?.questions.length || 0} answered`}
                 </p>
               </div>
             </div>
@@ -311,7 +322,7 @@ export default function QuizGenerator() {
                 onAnswer={handleAnswer}
                 onSubmit={handleSubmitQuiz}
                 onStartNewQuiz={handleStartNewQuiz}
-                onBack={() => setCurrentView('quiz-list')}
+                onBack={handleBackFromQuizView}
               />
             </AnimatedSection>
           ) : (
@@ -324,6 +335,15 @@ export default function QuizGenerator() {
               </button>
             </Card>
           )
+        ) : currentView === 'results' && quizResult && detailedResults ? (
+          <AnimatedSection delay={0.1}>
+            <QuizResults
+              quizResult={quizResult}
+              detailedResults={detailedResults}
+              onStartNewQuiz={handleStartNewQuiz}
+              onReviewAgain={handleReviewAgain}
+            />
+          </AnimatedSection>
         ) : (
           <>
             {/* Stats */}
@@ -438,19 +458,7 @@ export default function QuizGenerator() {
         onGenerateQuiz={handleGenerateQuiz}
       />
 
-      {quizResult && detailedResults && (
-        <QuizResultsModal
-          show={showResultsModal}
-          onClose={() => setShowResultsModal(false)}
-          quizResult={quizResult}
-          detailedResults={detailedResults}
-          onStartNewQuiz={handleStartNewQuiz}
-          onReviewAgain={() => {
-            setShowResultsModal(false);
-            setCurrentView('quiz-view');
-          }}
-        />
-      )}
+
 
       <JobStatusModal
         show={showJobModal}

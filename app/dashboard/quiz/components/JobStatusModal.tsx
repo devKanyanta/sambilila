@@ -1,6 +1,6 @@
 'use client'
 
-import { X, Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react'
+import { X, Loader2, CheckCircle, AlertTriangle, Clock, Sparkles } from 'lucide-react'
 import { QuizJob, JobStatusDisplay } from './types'
 
 interface JobStatusModalProps {
@@ -51,8 +51,11 @@ const JobStatusModal: React.FC<JobStatusModalProps> = ({ show, jobDetails, onClo
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-heading font-medium text-neutral-900">Generating Quiz</h3>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-primary-50">
+              <Sparkles className="w-4 h-4 text-primary-500" />
+            </div>
+            <h3 className="text-base font-heading font-medium text-neutral-900 flex-1">Generating Quiz</h3>
             {jobDetails?.status !== 'PROCESSING' && jobDetails?.status !== 'PENDING' && (
               <button onClick={onClose} className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors">
                 <X className="w-4 h-4 text-neutral-400" />

@@ -1,10 +1,11 @@
 'use client'
 
-import { Search, FileText, Clock, ChevronRight, Share2, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, FileText, Clock, Share2, Check, BarChart3 } from 'lucide-react';
 import { QuizListItem } from './types';
 import { useState, useEffect } from 'react';
 import Card from '@/app/dashboard/components/Card';
-import { ShimmerBlock, ShimmerCard } from '@/app/dashboard/components/Shimmer';
+import { ShimmerBlock } from '@/app/dashboard/components/Shimmer';
 
 interface QuizListProps {
   quizList: QuizListItem[];
@@ -14,6 +15,19 @@ interface QuizListProps {
   onCreateNewQuiz: () => void;
   loadingQuizId?: string | null;
 }
+
+const listItem = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0 },
+};
+
+const listContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
 
 export default function QuizList({
   quizList, isLoadingQuizzes, onSelectQuiz, onRefreshQuizzes, onCreateNewQuiz,
@@ -59,22 +73,24 @@ export default function QuizList({
   if (isLoadingQuizzes) {
     return (
       <div className="space-y-4" role="status" aria-label="Loading quizzes">
-        {/* Search Bar Shimmer */}
         <ShimmerBlock className="h-[42px] w-full" />
-
-        {/* Count Row Shimmer */}
         <div className="flex items-center justify-between">
           <ShimmerBlock className="h-4 w-24" />
           <ShimmerBlock className="h-4 w-14" />
         </div>
-
-        {/* Cards Grid Shimmer */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <ShimmerCard key={i} />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl border border-neutral-100 p-5">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                  <ShimmerBlock className="h-4 w-36" />
+                  <ShimmerBlock className="h-3 w-20" />
+                </div>
+                <ShimmerBlock className="h-3 w-16" />
+              </div>
+            </div>
           ))}
         </div>
-
         <span className="sr-only">Loading quizzes...</span>
       </div>
     );
@@ -83,7 +99,11 @@ export default function QuizList({
   return (
     <div className="space-y-4">
       {/* Search Bar */}
-      <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative"
+      >
         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
         <input
           type="text" value={searchQuery}
@@ -97,22 +117,31 @@ export default function QuizList({
             Clear
           </button>
         )}
-      </div>
+      </motion.div>
 
       {/* Quizzes Count */}
-      <div className="flex items-center justify-between text-sm">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.05 }}
+        className="flex items-center justify-between text-sm"
+      >
         <span className="text-neutral-400">{filteredQuizzes.length} {filteredQuizzes.length === 1 ? 'quiz' : 'quizzes'}</span>
         <button onClick={onRefreshQuizzes}
           className="text-xs font-medium text-primary-500 hover:text-primary-600 transition-colors">
           Refresh
         </button>
-      </div>
+      </motion.div>
 
       {/* Quizzes List */}
       {filteredQuizzes.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-14 h-14 mx-auto rounded-xl bg-neutral-50 flex items-center justify-center mb-4">
-            <FileText size={24} className="text-neutral-300" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-16"
+        >
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-neutral-50 flex items-center justify-center mb-4">
+            <BarChart3 size={28} className="text-neutral-300" />
           </div>
           <p className="text-sm text-neutral-500 mb-4">
             {searchQuery ? 'No quizzes found' : 'No quizzes created yet'}
@@ -123,53 +152,72 @@ export default function QuizList({
               Create your first quiz &rarr;
             </button>
           )}
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredQuizzes.map((quizItem) => (
-            <Card
-              key={quizItem.id}
-              onClick={() => onSelectQuiz(quizItem.id)}
-              className="p-5 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-sm font-heading font-medium text-neutral-900 pr-2 truncate flex items-center gap-2">
-                  <FileText size={14} className="text-primary-400 flex-shrink-0" />
-                  {quizItem.title}
-                </h3>
-                <ChevronRight className="w-4 h-4 text-primary-300 flex-shrink-0 mt-0.5" />
-              </div>
-
-              <span className="inline-block text-xs px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-600 mb-3">
-                {quizItem.subject}
-              </span>              <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
-                        <span className="text-xs text-neutral-400 flex items-center gap-1">
-                          <FileText size={12} />{quizItem._count.questions} questions
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShare(quizItem.id);
-                            }}
-                            disabled={sharingId === quizItem.id}
-                            className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
-                            title="Share quiz"
-                          >
-                            {copiedId === quizItem.id ? (
-                              <Check size={14} className="text-success-500" />
-                            ) : (
-                              <Share2 size={14} className="text-neutral-400 hover:text-primary-500" />
-                            )}
-                          </button>
-                          <span className="text-xs text-neutral-400 flex items-center gap-1">
-                            <Clock size={12} />{new Date(quizItem.createdAt).toLocaleDateString()}
+        <motion.div
+          variants={listContainer}
+          initial="hidden"
+          animate="show"
+          className="space-y-2"
+        >
+          <AnimatePresence mode="popLayout">
+            {filteredQuizzes.map((quizItem) => (
+              <motion.div
+                key={quizItem.id}
+                variants={listItem}
+                layout
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <Card
+                  onClick={() => onSelectQuiz(quizItem.id)}
+                  className="p-4 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <FileText size={16} className="text-primary-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-medium text-neutral-900 truncate">
+                          {quizItem.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600">
+                            {quizItem.subject}
                           </span>
                         </div>
                       </div>
-            </Card>
-          ))}
-        </div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                      <span className="text-xs text-neutral-400 flex items-center gap-1">
+                        <FileText size={12} />
+                        {quizItem._count.questions}q
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(quizItem.id);
+                        }}
+                        disabled={sharingId === quizItem.id}
+                        className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                        title="Share quiz"
+                      >
+                        {copiedId === quizItem.id ? (
+                          <Check size={14} className="text-success-500" />
+                        ) : (
+                          <Share2 size={14} className="text-neutral-400 group-hover:text-primary-500 transition-colors" />
+                        )}
+                      </button>
+                      <span className="text-xs text-neutral-400 flex items-center gap-1">
+                        <Clock size={12} />{new Date(quizItem.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </div>
   );
