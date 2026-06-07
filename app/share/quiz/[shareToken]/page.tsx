@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { GraduationCap, Share2, Home, ArrowLeft, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
+import Image from 'next/image'
+import { Share2, Home, ArrowLeft, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 import QuizView from '@/app/dashboard/quiz/components/quizView'
@@ -128,8 +129,14 @@ export default function SharedQuizPage({
       <nav className="bg-white border-b border-neutral-100">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-primary-500 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-3.5 h-3.5 text-white" />
+            <div className="w-7 h-7 relative group-hover:scale-105 transition-transform">
+              <Image
+                src="/logo.png"
+                alt="Lernopia"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <span className="font-heading font-medium text-sm text-neutral-900">Lernopia</span>
           </Link>

@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -29,8 +30,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             className="text-center mb-6"
           >
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#193827] flex items-center justify-center">
-                <span className="text-white font-heading font-semibold text-lg">L</span>
+              <div className="w-9 h-9 relative">
+                <Image
+                  src="/logo.png"
+                  alt="Lernopia"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
               <span className="font-heading font-semibold text-xl text-neutral-800">Lernopia</span>
             </Link>

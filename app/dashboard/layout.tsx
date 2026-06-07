@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
@@ -14,7 +15,6 @@ import {
   X,
   Sparkles,
   ChevronRight,
-  GraduationCap,
   Crown
 } from 'lucide-react'
 import SubscriptionBar from './components/SubscriptionBar'
@@ -58,8 +58,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
-                <GraduationCap className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 relative group-hover:scale-105 transition-transform">
+                <Image
+                  src="/logo.png"
+                  alt="Lernopia"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
               <span className="font-heading font-medium text-lg text-neutral-900">Lernopia</span>
             </Link>
@@ -108,8 +114,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {/* Mobile header */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-neutral-100">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center">
-                <GraduationCap className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 relative">
+                <Image
+                  src="/logo.png"
+                  alt="Lernopia"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
               <span className="font-heading font-medium text-lg text-neutral-900">Lernopia</span>
             </Link>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 
 const navLinks = [
@@ -28,8 +29,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-[#193827] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="text-white font-fredoka font-semibold text-lg">L</span>
+            <div className="w-9 h-9 relative group-hover:scale-105 transition-transform">
+              <Image
+                src="/logo.png"
+                alt="Lernopia"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <span className="font-fredoka font-semibold text-xl text-neutral-800 tracking-wide">Lernopia</span>
           </Link>
