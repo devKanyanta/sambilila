@@ -39,10 +39,15 @@ function createPrismaClient(pool: Pool) {
 
 function hasRequiredDelegates(client: PrismaLike | undefined): client is PrismaLike {
   if (!client) return false
+  const prismaClient = client as Record<string, unknown>
+  const subscription = prismaClient.subscription as Record<string, unknown> | undefined
+  const usageRecord = prismaClient.usageRecord as Record<string, unknown> | undefined
+  const billingPlan = prismaClient.billingPlan as Record<string, unknown> | undefined
+
   return Boolean(
-    client.subscription?.findFirst &&
-    client.usageRecord?.count &&
-    client.billingPlan?.findMany
+    typeof subscription?.findFirst === 'function' &&
+    typeof usageRecord?.count === 'function' &&
+    typeof billingPlan?.findMany === 'function'
   )
 }
 
