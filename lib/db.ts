@@ -39,7 +39,7 @@ function createPrismaClient(pool: Pool) {
 
 function hasRequiredDelegates(client: PrismaLike | undefined): client is PrismaLike {
   if (!client) return false
-  const prismaClient = client as Record<string, unknown>
+  const prismaClient = client as unknown as Record<string, unknown>
   const subscription = prismaClient.subscription as Record<string, unknown> | undefined
   const usageRecord = prismaClient.usageRecord as Record<string, unknown> | undefined
   const billingPlan = prismaClient.billingPlan as Record<string, unknown> | undefined
@@ -53,6 +53,7 @@ function hasRequiredDelegates(client: PrismaLike | undefined): client is PrismaL
 
 let prisma: PrismaLike
 let pool: Pool
+let cleanupStarted = false
 
 if (hasRequiredDelegates(globalForPrisma.prisma) && globalForPrisma.prismaPool) {
   prisma = globalForPrisma.prisma
@@ -74,6 +75,9 @@ if (hasRequiredDelegates(globalForPrisma.prisma) && globalForPrisma.prismaPool) 
 export { prisma }
 
 const cleanup = async () => {
+  if (cleanupStarted) return
+  cleanupStarted = true
+
   try {
     console.log('Cleaning up database connections...')
     await prisma.$disconnect()
