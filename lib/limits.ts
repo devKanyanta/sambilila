@@ -117,7 +117,7 @@ export async function checkUsageLimit(
     }
 
     return {
-      allowed: count < limit,
+      allowed: count <= limit,
       limit,
       used: count,
       plan: planSlug,
@@ -137,7 +137,7 @@ export async function checkUsageLimit(
     }
 
     return {
-      allowed: count < limit,
+      allowed: count <= limit,
       limit,
       used: count,
       plan: planSlug,
