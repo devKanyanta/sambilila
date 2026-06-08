@@ -26,7 +26,7 @@ export default function BottomSheet({ show, onClose, children, title, className 
   return (
     <AnimatePresence>
       {show && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -43,7 +43,7 @@ export default function BottomSheet({ show, onClose, children, title, className 
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
-            className={`relative w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col ${className}`}
+            className={`relative w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] sm:pb-0 ${className}`}
           >
             {/* Handle bar for mobile */}
             <div className="sm:hidden flex justify-center pt-2 pb-1">

@@ -39,8 +39,8 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
   const totalCards = selectedSet.cards?.length || 0
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 z-50">
-      <div className="w-full max-w-2xl h-full sm:h-auto flex flex-col">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 z-[60]">
+      <div className="w-full max-w-2xl h-full sm:h-auto flex flex-col pb-[env(safe-area-inset-bottom)] sm:pb-0">
         {/* Header */}
         <div className="border-x border-t border-neutral-100 rounded-t-2xl p-4 flex items-center justify-between bg-white flex-shrink-0">
           <div className="min-w-0 flex-1 mr-4">

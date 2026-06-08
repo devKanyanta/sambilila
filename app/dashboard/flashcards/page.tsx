@@ -375,7 +375,7 @@ export default function Flashcards() {
 
       {/* Create Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[60]">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
