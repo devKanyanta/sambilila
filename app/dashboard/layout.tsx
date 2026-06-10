@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useState } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -15,11 +15,12 @@ import {
   X,
   Sparkles,
   ChevronRight,
-  Crown
+  Crown,
+  Shield
 } from 'lucide-react'
 import SubscriptionBar from './components/SubscriptionBar'
 
-const navItems = [
+const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/dashboard/flashcards", icon: BookOpen, label: "Flashcards" },
   { href: "/dashboard/quiz", icon: Brain, label: "Quiz Generator" },
@@ -27,7 +28,7 @@ const navItems = [
   { href: "/dashboard/profile", icon: User, label: "Profile" },
 ]
 
-const mobileNavItems = [
+const baseMobileNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/dashboard/flashcards", icon: BookOpen, label: "Cards" },
   { href: "/dashboard/quiz", icon: Brain, label: "Quiz" },
@@ -37,7 +38,31 @@ const mobileNavItems = [
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) return
+      try {
+        const res = await fetch('/api/admin/check', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        setIsAdmin(data.isAdmin)
+      } catch {
+        setIsAdmin(false)
+      }
+    }
+    checkAdmin()
+  }, [])
+
+  const adminNavItem = { href: "/dashboard/admin", icon: Shield, label: "Admin" }
+  const adminMobileNavItem = { href: "/dashboard/admin", icon: Shield, label: "Admin" }
+
+  const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems
+  const mobileNavItems = isAdmin ? [...baseMobileNavItems, adminMobileNavItem] : baseMobileNavItems
 
   const isActive = (href: string) => pathname === href
 

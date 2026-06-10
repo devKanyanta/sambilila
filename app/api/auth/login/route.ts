@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if account is suspended
+    if (user.suspended) {
+      return NextResponse.json(
+        { error: 'Account suspended. Contact support for assistance.' },
+        { status: 403 }
+      )
+    }
+
     // Generate token
     const token = generateToken(user.id)
 
