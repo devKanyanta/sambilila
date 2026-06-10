@@ -24,6 +24,7 @@ import AnimatedSection, { AnimatedItem } from './components/AnimatedSection'
 import StreakCard from './components/StreakCard'
 import StatBlock from './components/StatBlock'
 import Card from './components/Card'
+import FirstTimeModal from './components/FirstTimeModal'
 import {
   ShimmerBlock,
   ShimmerHeading,
@@ -102,6 +103,7 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
@@ -152,6 +154,17 @@ export default function Dashboard() {
       setLoading(false)
     }
   }
+
+  // Determine if user is a first-time user (no content created yet)
+  const isFirstTimeUser = !loading && stats && stats.counts.flashcardSets === 0 && stats.counts.quizzes === 0
+
+  // Show welcome modal after a brief delay for first-time users
+  useEffect(() => {
+    if (isFirstTimeUser) {
+      const timer = setTimeout(() => setShowWelcome(true), 600)
+      return () => clearTimeout(timer)
+    }
+  }, [isFirstTimeUser])
 
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -549,6 +562,12 @@ export default function Dashboard() {
           </div>
         </motion.div>
       )}
+
+      {/* ===== First Time Welcome Modal ===== */}
+      <FirstTimeModal
+        show={showWelcome}
+        onClose={() => setShowWelcome(false)}
+      />
 
       {/* ===== 6. Top Subject ===== */}
       {stats?.activityPatterns.mostActiveSubject && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, use } from 'react'
 import { Plus, Sparkles, BookOpen, Layers } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -23,7 +23,8 @@ import { AnimatedItem } from '../components/AnimatedSection'
 import { containerStagger, fadeSlideUp, scaleInBouncy } from '../animations';
 import { ShimmerBlock, ShimmerStatBlock, ShimmerHeading } from '../components/Shimmer'
 
-export default function Flashcards() {
+export default function Flashcards(props: { searchParams?: Promise<{ create?: string }> }) {
+  const searchParams = props.searchParams ? use(props.searchParams) : undefined
   /* =================== STATE =================== */
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -81,6 +82,13 @@ export default function Flashcards() {
     if (!mounted) return
     loadFlashcardSets()
   }, [mounted])
+
+  // Auto-open create form when ?create=true
+  useEffect(() => {
+    if (mounted && searchParams?.create === 'true') {
+      setShowForm(true)
+    }
+  }, [searchParams, mounted])
 
   /* ================= CREATE FLASHCARDS ================= */
   const handleGenerate = useCallback(async () => {

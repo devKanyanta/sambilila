@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useQuizState, useQuizAPI } from './hooks/hooks';
 import { useQuizJobs } from './hooks/useQuizJobs';
 import { useSubscription } from '@/app/hooks/useSubscription';
@@ -19,7 +19,8 @@ import { ShimmerBlock, ShimmerStatBlock } from '@/app/dashboard/components/Shimm
 
 type View = 'dashboard' | 'quiz-list' | 'quiz-view' | 'results';
 
-export default function QuizGenerator() {
+export default function QuizGenerator(props: { searchParams?: Promise<{ create?: string }> }) {
+  const searchParams = props.searchParams ? use(props.searchParams) : undefined
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   // results are now inline, managed by currentView
@@ -82,6 +83,13 @@ export default function QuizGenerator() {
   useEffect(() => {
     loadQuizList();
   }, []);
+
+  // Auto-open create modal when ?create=true
+  useEffect(() => {
+    if (searchParams?.create === 'true') {
+      setShowCreateModal(true)
+    }
+  }, [searchParams])
 
   /* ─── Shimmer Loading State ─── */
   if (isLoadingQuizzes && quizList.length === 0) {

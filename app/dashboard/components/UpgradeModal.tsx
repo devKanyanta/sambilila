@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Check, Crown, Sparkles, Smartphone, Globe, Loader2, ArrowRight, AlertCircle } from 'lucide-react'
 import { useSubscription } from '@/app/hooks/useSubscription'
+import { useCurrency } from '@/app/hooks/useCurrency'
 
 const MOBILE_OPERATORS = ['MTN', 'Airtel'] as const
 
@@ -33,6 +34,7 @@ interface UpgradeModalProps {
 
 export default function UpgradeModal({ show, onClose, initialPlanSlug }: UpgradeModalProps) {
   const { plans, subscription, upgrade, verifyPayment, refresh } = useSubscription()
+  const { getPriceInfo, isLoading: currencyLoading } = useCurrency()
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlanSlug || 'weekly')
   const [paymentMethod, setPaymentMethod] = useState<'PAYPAL' | 'LENCO' | null>(null)
   const [phone, setPhone] = useState('')
@@ -229,7 +231,9 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-heading font-semibold text-neutral-900">{plan.name}</h3>
                     <div className="flex items-baseline gap-0.5">
-                      <span className="text-xl font-bold text-neutral-900">${plan.priceUSD}</span>
+                      <span className="text-xl font-bold text-neutral-900">
+                        {currencyLoading ? `$${plan.priceUSD}` : getPriceInfo(plan.priceUSD, plan.period).displayPrice}
+                      </span>
                       <span className="text-xs text-neutral-400">/{plan.period}</span>
                     </div>
                   </div>
@@ -256,7 +260,10 @@ export default function UpgradeModal({ show, onClose, initialPlanSlug }: Upgrade
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-neutral-900">{selectedPlanData.name} Plan</span>
                   <span className="text-sm font-semibold text-primary-600">
-                    ${selectedPlanData.priceUSD}/{selectedPlanData.period}
+                    {currencyLoading
+                      ? `$${selectedPlanData.priceUSD}/${selectedPlanData.period}`
+                      : getPriceInfo(selectedPlanData.priceUSD, selectedPlanData.period).displayWithPeriod
+                    }
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-neutral-500">
