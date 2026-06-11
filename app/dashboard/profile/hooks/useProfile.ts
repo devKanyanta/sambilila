@@ -294,7 +294,7 @@ export const useProfile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token')
-    router.push('/login')
+    router.push('/auth/login')
   }
 
   const handleSettingToggle = (setting: keyof typeof settings) => {
