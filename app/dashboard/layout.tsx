@@ -16,7 +16,8 @@ import {
   Sparkles,
   ChevronRight,
   Crown,
-  Shield
+  Shield,
+  BarChart3
 } from 'lucide-react'
 import SubscriptionBar from './components/SubscriptionBar'
 
@@ -58,11 +59,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     checkAdmin()
   }, [])
 
-  const adminNavItem = { href: "/dashboard/admin", icon: Shield, label: "Admin" }
-  const adminMobileNavItem = { href: "/dashboard/admin", icon: Shield, label: "Admin" }
+  const adminNavItems = [
+    { href: "/dashboard/admin", icon: Shield, label: "Admin" },
+    { href: "/dashboard/admin/analytics", icon: BarChart3, label: "Analytics" },
+  ]
+  const adminMobileNavItems = [
+    { href: "/dashboard/admin", icon: Shield, label: "Admin" },
+    { href: "/dashboard/admin/analytics", icon: BarChart3, label: "Analytics" },
+  ]
 
-  const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems
-  const mobileNavItems = isAdmin ? [...baseMobileNavItems, adminMobileNavItem] : baseMobileNavItems
+  const navItems = isAdmin ? [...baseNavItems, ...adminNavItems] : baseNavItems
+  const mobileNavItems = isAdmin ? [...baseMobileNavItems, ...adminMobileNavItems] : baseMobileNavItems
 
   const isActive = (href: string) => pathname === href
 

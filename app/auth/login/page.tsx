@@ -44,6 +44,11 @@ export default function Login() {
       const data = await res.json()
       if (!res.ok) { setServerError(data.message || 'Login failed'); return }
       localStorage.setItem('token', data.token)
+      // Track login
+      if (typeof window !== 'undefined' && window.__analytics) {
+        window.__analytics.identify(data.user.id)
+        window.__analytics.track('user_login', {})
+      }
       setTimeout(() => router.push('/dashboard'), 500)
     } catch {
       setServerError('Server error. Try again later.')

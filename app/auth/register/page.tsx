@@ -78,6 +78,11 @@ export default function Register() {
         return
       }
       localStorage.setItem('token', data.token)
+      // Track registration
+      if (typeof window !== 'undefined' && window.__analytics) {
+        window.__analytics.identify(data.user.id)
+        window.__analytics.track('user_registered', {})
+      }
       setTimeout(() => router.push('/dashboard'), 1000)
     } catch {
       setServerError('Server error. Try again later.')

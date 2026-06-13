@@ -33,6 +33,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${fredoka.variable}`}>
       <body className="bg-bg-main min-h-screen">
         {children}
+        {/* Analytics tracking */}
+        <script
+          src="/js/analytics.js"
+          data-endpoint={process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT || '/api/admin/analytics'}
+          async
+        />
       </body>
     </html>
   )

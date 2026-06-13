@@ -192,6 +192,14 @@ export default function Flashcards(props: { searchParams?: Promise<{ create?: st
           progress: 0,
         };
 
+        // Track flashcard creation
+        if (typeof window !== 'undefined' && window.__analytics) {
+          window.__analytics.track('flashcard_created', {
+            set_id: jobData.jobId,
+            subject: subject || 'General',
+            num_cards: 0,
+          })
+        }
         addNewJob(newJob);
         startJobMonitoring(jobData.jobId, loadFlashcardSets);
 
