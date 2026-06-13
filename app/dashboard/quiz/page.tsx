@@ -180,6 +180,14 @@ export default function QuizGenerator(props: { searchParams?: Promise<{ create?:
         createdAt: new Date().toISOString(),
         progress: 0,
       };
+      // Track quiz creation
+      if (typeof window !== 'undefined' && window.__analytics) {
+        window.__analytics.track('quiz_created', {
+          quiz_id: jobData.jobId,
+          subject: title,
+          num_questions: numberOfQuestions,
+        })
+      }
       addNewJob(newJob);
       startJobMonitoring(jobData.jobId, loadQuizList);
       setTitle('');
@@ -200,6 +208,14 @@ export default function QuizGenerator(props: { searchParams?: Promise<{ create?:
     try {
       const answers = Object.entries(userAnswers).map(([questionId, answer]) => ({ questionId, answer }));
       const result = await apiSubmitQuiz(quiz.id, answers);
+      // Track quiz completion
+      if (typeof window !== 'undefined' && window.__analytics) {
+        window.__analytics.track('quiz_completed', {
+          quiz_id: quiz.id,
+          score: result.result.score,
+          total: result.result.totalQuestions,
+        })
+      }
       setQuizResult(result.result);
       setDetailedResults(result.detailedResults);
       setCurrentView('results');
