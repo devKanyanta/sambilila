@@ -3,12 +3,18 @@
 
 import { motion } from 'framer-motion'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import type { Formatter, NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { TrendingUp } from 'lucide-react'
 
 interface UserGrowthChartProps {
   data: Array<{ month: string; count: number }>
   isLoading?: boolean
 }
+
+const formatUserGrowthTooltip: Formatter<ValueType, NameType> = (value) => [
+  Number(value ?? 0).toLocaleString(),
+  'Users',
+]
 
 export default function UserGrowthChart({ data, isLoading }: UserGrowthChartProps) {
   if (isLoading) {
@@ -67,7 +73,7 @@ export default function UserGrowthChart({ data, isLoading }: UserGrowthChartProp
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 fontSize: '12px',
               }}
-              formatter={(value: number | string) => [Number(value).toLocaleString(), 'Users']}
+              formatter={formatUserGrowthTooltip}
               labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
             />
             <Area

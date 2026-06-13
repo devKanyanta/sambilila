@@ -3,6 +3,7 @@
 
 import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import type { Formatter, NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { Layers } from 'lucide-react'
 
 interface PlanDistributionPieProps {
@@ -15,6 +16,14 @@ const LABEL_MAP: Record<string, string> = {
   free: 'Free',
   weekly: 'Weekly',
   monthly: 'Monthly',
+}
+
+const formatTooltipValue: Formatter<ValueType, NameType> = (value, name) => {
+  const formattedValue = Array.isArray(value)
+    ? value.join(' - ')
+    : Number(value ?? 0).toLocaleString()
+
+  return [formattedValue, name ?? '']
 }
 
 export default function PlanDistributionPie({ data, isLoading }: PlanDistributionPieProps) {
@@ -92,7 +101,7 @@ export default function PlanDistributionPie({ data, isLoading }: PlanDistributio
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 fontSize: '12px',
               }}
-              formatter={(value: number, name: string) => [value.toLocaleString(), name]}
+              formatter={formatTooltipValue}
             />
             <Legend
               verticalAlign="bottom"

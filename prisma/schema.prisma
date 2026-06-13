@@ -192,8 +192,8 @@ model FlashcardJob {
   flashcardSetId String?
 
   // Relations
-  flashcardSet FlashcardSet? @relation(fields: [flashcardSetId], references: [id])
-  user         User          @relation(fields: [userId], references: [id])
+  flashcardSet FlashcardSet? @relation(fields: [flashcardSetId], references: [id], onDelete: SetNull)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -282,8 +282,8 @@ model QuizJob {
   quizId String?
 
   // Relations
-  quiz Quiz? @relation(fields: [quizId], references: [id])
-  user User  @relation(fields: [userId], references: [id])
+  quiz Quiz? @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 

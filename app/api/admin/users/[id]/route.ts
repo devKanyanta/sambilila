@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdmin, isAdminEmail } from '@/lib/admin'
+import { deleteUserWithDependents } from '@/lib/users/deleteUser'
 
 // GET /api/admin/users/[id] — Full user detail
 export async function GET(
@@ -255,8 +256,8 @@ export async function DELETE(
       )
     }
 
-    await prisma.user.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      await deleteUserWithDependents(id, tx)
     })
 
     console.log(`[AUDIT] Admin ${auth.email} deleted user ${id} (${userToDelete.email})`)
@@ -267,5 +268,4 @@ export async function DELETE(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
 

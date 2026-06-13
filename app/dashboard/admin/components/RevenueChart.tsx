@@ -3,12 +3,18 @@
 
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import type { Formatter, NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { DollarSign } from 'lucide-react'
 
 interface RevenueChartProps {
   data: Array<{ month: string; revenue: number }>
   isLoading?: boolean
 }
+
+const formatRevenueTooltip: Formatter<ValueType, NameType> = (value) => [
+  `$${Number(value ?? 0).toFixed(2)}`,
+  'Revenue',
+]
 
 export default function RevenueChart({ data, isLoading }: RevenueChartProps) {
   if (isLoading) {
@@ -62,7 +68,7 @@ export default function RevenueChart({ data, isLoading }: RevenueChartProps) {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 fontSize: '12px',
               }}
-              formatter={(value: number | string) => [`$${Number(value).toFixed(2)}`, 'Revenue']}
+              formatter={formatRevenueTooltip}
               labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
             />
             <Bar dataKey="revenue" fill="#ff5252" radius={[4, 4, 0, 0]} maxBarSize={40} />

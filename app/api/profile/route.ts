@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {prisma} from '@/lib/db'
 import { getUserIdFromToken } from '@/lib/auth'
+import { deleteUserWithDependents } from '@/lib/users/deleteUser'
 
 // GET - Get user profile
 export async function GET(request: NextRequest) {
@@ -199,9 +200,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Delete user (cascade will handle related records)
-    await prisma.user.delete({
-      where: { id: userId }
+    await prisma.$transaction(async (tx) => {
+      await deleteUserWithDependents(userId, tx)
     })
 
     return NextResponse.json({
