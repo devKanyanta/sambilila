@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { colors, gradients, theme } from '@/lib/theme'
-import { FiUser, FiMail, FiLock, FiCheck, FiArrowRight } from 'react-icons/fi'
+import { FiUser, FiMail, FiLock, FiArrowRight, FiZap } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 
 interface FormData {
@@ -91,6 +90,13 @@ export default function Register() {
     }
   }
 
+  const inputClasses = (hasError?: string | boolean) =>
+    `w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm transition-all duration-200 outline-none focus:ring-2 ${
+      hasError
+        ? 'border-error-300 bg-error-50 focus:ring-error-200'
+        : 'border-neutral-200 bg-white focus:border-primary-400 focus:ring-primary-100'
+    }`
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -100,11 +106,11 @@ export default function Register() {
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <h2 className="text-2xl md:text-3xl font-heading font-semibold text-neutral-800">
+        <h2 className="text-2xl md:text-3xl font-fredoka font-semibold text-neutral-900">
           Create your account
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
-          Join thousands of students and teachers using Lernopia
+          Sync your progress across devices — or skip this and study as a guest
         </p>
       </motion.div>
 
@@ -113,14 +119,14 @@ export default function Register() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3"
+          className="p-4 rounded-xl bg-error-50 border border-error-200 flex items-center gap-3"
         >
-          <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-8 h-8 rounded-lg bg-error-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-error-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-red-700">{serverError}</p>
+          <p className="text-sm font-medium text-error-700">{serverError}</p>
         </motion.div>
       )}
 
@@ -135,16 +141,12 @@ export default function Register() {
             <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               id="name" name="name" type="text" value={formData.name} onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
-                errors.name
-                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
-                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
-              }`}
+              className={inputClasses(errors.name)}
               placeholder="Enter your full name"
             />
           </div>
           {errors.name && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-error-500">
               {errors.name}
             </motion.p>
           )}
@@ -159,16 +161,12 @@ export default function Register() {
             <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               id="email" name="email" type="email" value={formData.email} onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
-                errors.email
-                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
-                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
-              }`}
+              className={inputClasses(errors.email)}
               placeholder="Enter your email"
             />
           </div>
           {errors.email && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-error-500">
               {errors.email}
             </motion.p>
           )}
@@ -183,16 +181,12 @@ export default function Register() {
             <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               id="password" name="password" type="password" value={formData.password} onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
-                errors.password
-                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
-                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
-              }`}
+              className={inputClasses(errors.password)}
               placeholder="Create a password (min. 6 characters)"
             />
           </div>
           {errors.password && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-error-500">
               {errors.password}
             </motion.p>
           )}
@@ -207,16 +201,12 @@ export default function Register() {
             <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl border-2 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-1 ${
-                errors.confirmPassword
-                  ? 'border-red-300 bg-red-50 focus:ring-red-400'
-                  : 'border-neutral-200 bg-white focus:border-[#193827] focus:ring-[#193827]/20'
-              }`}
+              className={inputClasses(errors.confirmPassword)}
               placeholder="Confirm your password"
             />
           </div>
           {errors.confirmPassword && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-red-500">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-1.5 text-xs text-error-500">
               {errors.confirmPassword}
             </motion.p>
           )}
@@ -226,42 +216,48 @@ export default function Register() {
         <div className="flex items-start gap-3">
           <input
             id="agreeToTerms" name="agreeToTerms" type="checkbox" checked={formData.agreeToTerms} onChange={handleChange}
-            className="mt-0.5 h-4 w-4 rounded border-2 border-neutral-300 text-[#193827] focus:ring-[#193827]/30 transition-colors"
+            className="mt-0.5 h-4 w-4 rounded border-2 border-neutral-300 text-primary-500 focus:ring-primary-100 transition-colors"
           />
           <label htmlFor="agreeToTerms" className="text-xs text-neutral-500">
             I agree to the{' '}
-            <Link href="/terms" className="font-medium text-[#193827] hover:underline">Terms and Conditions</Link>
+            <Link href="/terms" className="font-medium text-primary-600 hover:underline">Terms and Conditions</Link>
             {' '}and{' '}
-            <Link href="/privacy" className="font-medium text-[#193827] hover:underline">Privacy Policy</Link>
+            <Link href="/privacy" className="font-medium text-primary-600 hover:underline">Privacy Policy</Link>
           </label>
         </div>
         {errors.agreeToTerms && (
-          <p className="text-xs text-red-500">You must agree to the terms and conditions</p>
+          <p className="text-xs text-error-500">You must agree to the terms and conditions</p>
         )}
 
         {/* Submit */}
         <motion.button
           type="submit"
           disabled={isLoading}
-          whileHover={!isLoading ? { scale: 1.02 } : {}}
-          whileTap={!isLoading ? { scale: 0.98 } : {}}
-          className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white transition-all duration-200 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: '#ff5252' }}
+          whileTap={{ scale: 0.98 }}
+          className="btn-primary w-full py-2.5 px-4 text-sm rounded-xl"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               <span>Creating account...</span>
-            </div>
+            </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
               Create account
-              <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <FiArrowRight className="w-4 h-4" />
             </span>
           )}
         </motion.button>
       </form>
+
+      {/* Guest option */}
+      <Link
+        href="/dashboard"
+        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-primary-600 bg-primary-50 border border-primary-100 hover:bg-primary-100 transition-all"
+      >
+        <FiZap className="w-4 h-4" />
+        Skip — study free as a guest
+      </Link>
 
       {/* Divider */}
       <div className="flex items-center gap-3">
@@ -273,7 +269,7 @@ export default function Register() {
       {/* Login link */}
       <Link
         href="/auth/login"
-        className="block w-full py-2.5 px-4 rounded-xl text-sm font-medium text-center border-2 border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-all"
+        className="block w-full py-2.5 px-4 rounded-xl text-sm font-medium text-center border border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-all"
       >
         Sign in to your account
       </Link>

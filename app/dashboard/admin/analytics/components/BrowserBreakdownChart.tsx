@@ -62,8 +62,8 @@ export default function BrowserBreakdownChart({ data, isLoading }: BrowserBreakd
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-          <Globe className="w-4 h-4 text-[#2d6b4d]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <Globe className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Browser Breakdown</h3>

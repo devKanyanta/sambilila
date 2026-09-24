@@ -1,50 +1,51 @@
 // lib/theme.ts — Lernopia Brand Theme
-// Based on Lernopia.png Figma design: forest green + bright red accents + warm grey backgrounds
+// Professional red & white system: crimson red as the single brand color,
+// deep ink for dark surfaces, warm neutral greys. No gradients.
 
 export const colors = {
-  // Primary — Forest Green (from logo #193827)
+  // Primary — Brand Crimson Red
   primary: {
-    50: '#e8f0ec',
-    100: '#c4d9cd',
-    200: '#9dbdab',
-    300: '#73a182',
-    400: '#4d8567',
-    500: '#2d6b4d',
-    600: '#1f5238',
-    700: '#193827',  // Logo dark green
-    800: '#122b1d',
-    900: '#0c1f14',
+    50: '#fef2f2',
+    100: '#fde3e3',
+    200: '#fccccc',
+    300: '#f7a6a6',
+    400: '#ef7373',
+    500: '#d92d3a', // DEFAULT — brand red
+    600: '#b91f2c',
+    700: '#991b26',
+    800: '#7f1a21',
+    900: '#6b1a1e',
   },
 
-  // Secondary — Bright Red (from Figma CTAs #FF5252 / #FC0B06)
+  // Secondary — Deep Ink (headers, footers, dark surfaces)
   secondary: {
-    50: '#fff5f5',
-    100: '#ffe3e3',
-    200: '#ffc9c9',
-    300: '#ffa3a3',
-    400: '#ff7a7a',
-    500: '#ff5252',  // DEFAULT - Figma CTA red
-    600: '#fc0b06',  // Figma bright red
-    700: '#d62323',
-    800: '#b11e1e',
-    900: '#8c1a1a',
+    50: '#f4f5f7',
+    100: '#e4e6ea',
+    200: '#c9ccd4',
+    300: '#a3a8b5',
+    400: '#737a8c',
+    500: '#4b5265',
+    600: '#2e3441',
+    700: '#232837',
+    800: '#191d28',
+    900: '#101319',
   },
 
-  // Neutral — Warm Greys (from Figma backgrounds #ECECEC)
+  // Neutral — Warm Greys
   neutral: {
-    50: '#f5f5f5',
-    100: '#ececec',  // Figma bg color
-    200: '#e0e0e0',
-    300: '#cccccc',
-    400: '#a8a8a8',
-    500: '#8a8a8a',
-    600: '#6b6b6b',
-    700: '#4d4d4d',
-    800: '#2c2c2c',  // Figma text dark
-    900: '#1a1a1a',
+    50: '#fafafa',
+    100: '#f4f4f5',
+    200: '#e6e6e8',
+    300: '#d3d4d8',
+    400: '#a2a4ab',
+    500: '#71737c',
+    600: '#52535b',
+    700: '#3a3b41',
+    800: '#232428',
+    900: '#141518',
   },
 
-  // Accent — Warm Gold/Amber
+  // Accent — Warm Gold (sparingly: ratings, highlights)
   accent: {
     50: '#fefce8',
     100: '#fef9c3',
@@ -60,102 +61,102 @@ export const colors = {
 
   // Semantic
   success: {
-    50: '#edf7f0',
-    100: '#d1eed9',
-    200: '#a8dbb8',
-    300: '#74c292',
-    400: '#4da574',
-    500: '#328a5b',
-    600: '#256f49',
-    700: '#1f593b',
-    800: '#1c4832',
-    900: '#193c2a',
+    50: '#ecfdf5',
+    100: '#d1fae5',
+    200: '#a7f3d0',
+    300: '#6ee7b7',
+    400: '#34d399',
+    500: '#10b981',
+    600: '#059669',
+    700: '#047857',
+    800: '#065f46',
+    900: '#064e3b',
   },
 
   warning: {
-    50: '#fefbf3',
-    100: '#fdf4e0',
-    200: '#fae7c2',
-    300: '#f5d498',
-    400: '#efb865',
-    500: '#e59f3e',
-    600: '#d08329',
-    700: '#ad6624',
-    800: '#8c5024',
-    900: '#724321',
+    50: '#fffbeb',
+    100: '#fef3c7',
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#fbbf24',
+    500: '#f59e0b',
+    600: '#d97706',
+    700: '#b45309',
+    800: '#92400e',
+    900: '#78350f',
   },
 
   error: {
     50: '#fef2f2',
-    100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
-    400: '#f87171',
-    500: '#ef4444',
-    600: '#dc2626',
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
+    100: '#fde3e3',
+    200: '#fccccc',
+    300: '#f7a6a6',
+    400: '#ef7373',
+    500: '#d92d3a',
+    600: '#b91f2c',
+    700: '#991b26',
+    800: '#7f1a21',
+    900: '#6b1a1e',
   },
 }
 
-// Gradients
+// Solid color surfaces — replaces the old gradients export (kept for API compat)
 export const gradients = {
-  primary: 'linear-gradient(135deg, #2d6b4d 0%, #4d8567 100%)',
-  primaryLight: 'linear-gradient(135deg, #e8f0ec 0%, #c4d9cd 100%)',
-  coral: 'linear-gradient(135deg, #ff5252 0%, #ff7a7a 100%)',
-  red: 'linear-gradient(135deg, #fc0b06 0%, #ff5252 100%)',
-  warm: 'linear-gradient(135deg, #ff5252 0%, #eab308 100%)',
-  forest: 'linear-gradient(135deg, #193827 0%, #2d6b4d 100%)',
-  subtle: 'linear-gradient(135deg, rgba(45, 107, 77, 0.05) 0%, rgba(255, 82, 82, 0.05) 100%)',
-  neutral: 'linear-gradient(135deg, #ececec 0%, #e0e0e0 100%)',
-  card: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
+  primary: colors.primary[500],
+  primaryLight: colors.primary[50],
+  coral: colors.primary[500],
+  red: colors.primary[500],
+  warm: colors.accent[500],
+  forest: colors.secondary[700],
+  subtle: colors.neutral[100],
+  neutral: colors.neutral[100],
+  card: colors.neutral[50],
 }
 
 // Theme configuration
 export const theme = {
   backgrounds: {
-    main: '#ececec',          // Figma warm grey
+    main: '#ffffff',
     card: '#ffffff',
     sidebar: '#ffffff',
-    navbar: 'rgba(255, 255, 255, 0.95)',
-    overlay: 'rgba(26, 26, 26, 0.5)',
-    dark: colors.neutral[900],
-    subtle: colors.neutral[50],
-    section: '#ececec',       // Figma section bg
-    sectionAlt: '#f5f5f5',    // Alternating section
+    navbar: 'rgba(255, 255, 255, 0.92)',
+    overlay: 'rgba(16, 19, 25, 0.45)',
+    dark: colors.secondary[900],
+    subtle: colors.neutral[100],
+    section: '#ffffff',
+    sectionAlt: colors.neutral[50],
   },
 
   borders: {
-    light: colors.neutral[200],   // #e0e0e0
-    medium: colors.neutral[300],  // #cccccc
-    dark: colors.neutral[500],    // #8a8a8a
-    accent: colors.primary[400],  // #4d8567
-    focus: colors.primary[500],   // #2d6b4d
+    light: colors.neutral[200],
+    medium: colors.neutral[300],
+    dark: colors.neutral[400],
+    accent: colors.primary[500],
+    focus: colors.primary[500],
   },
 
   text: {
-    primary: colors.neutral[800],  // #2c2c2c
-    secondary: colors.neutral[600], // #6b6b6b
-    light: colors.neutral[500],    // #8a8a8a
+    primary: colors.neutral[800],
+    secondary: colors.neutral[600],
+    light: colors.neutral[500],
     inverted: '#ffffff',
-    accent: colors.primary[600],   // #1f5238
-    link: colors.primary[500],     // #2d6b4d
+    accent: colors.primary[600],
+    link: colors.primary[600],
   },
 
   states: {
     hover: {
-      light: colors.neutral[100],     // #ececec
-      primary: colors.primary[50],    // #e8f0ec
-      secondary: colors.secondary[50], // #fff5f5
+      light: colors.neutral[100],
+      primary: colors.primary[50],
+      secondary: colors.secondary[50],
     },
     active: {
-      light: colors.neutral[200],      // #e0e0e0
-      primary: colors.primary[100],    // #c4d9cd
-      secondary: colors.secondary[100], // #ffe3e3
+      light: colors.neutral[200],
+      primary: colors.primary[100],
+      secondary: colors.secondary[100],
     },
     focus: {
-      ring: colors.primary[500],       // #2d6b4d
+      ring: colors.primary[500],
     },
     disabled: {
       bg: colors.neutral[100],
@@ -164,23 +165,23 @@ export const theme = {
   },
 
   shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-    md: '0 2px 8px 0 rgba(0, 0, 0, 0.06)',
-    lg: '0 4px 12px -2px rgba(0, 0, 0, 0.08)',
-    xl: '0 8px 24px -4px rgba(0, 0, 0, 0.08)',
-    '2xl': '0 12px 32px -6px rgba(0, 0, 0, 0.1)',
+    sm: '0 1px 2px 0 rgba(16, 19, 25, 0.04)',
+    md: '0 1px 3px 0 rgba(16, 19, 25, 0.05), 0 4px 12px -2px rgba(16, 19, 25, 0.05)',
+    lg: '0 2px 4px -1px rgba(16, 19, 25, 0.04), 0 10px 24px -6px rgba(16, 19, 25, 0.08)',
+    xl: '0 4px 8px -2px rgba(16, 19, 25, 0.05), 0 18px 40px -8px rgba(16, 19, 25, 0.12)',
+    '2xl': '0 8px 16px -4px rgba(16, 19, 25, 0.06), 0 28px 56px -12px rgba(16, 19, 25, 0.16)',
     colored: {
-      primary: '0 4px 12px -4px rgba(45, 107, 77, 0.2)',
-      secondary: '0 4px 12px -4px rgba(255, 82, 82, 0.25)',
-      accent: '0 4px 12px -4px rgba(234, 179, 8, 0.2)',
+      primary: '0 4px 14px -4px rgba(217, 45, 58, 0.32)',
+      secondary: '0 4px 14px -4px rgba(35, 40, 55, 0.28)',
+      accent: '0 4px 14px -4px rgba(234, 179, 8, 0.2)',
     },
   },
 
   radii: {
-    sm: '0.5rem',     // 8px
-    md: '0.75rem',    // 12px
-    lg: '1rem',       // 16px
-    xl: '1.25rem',    // 20px
+    sm: '0.5rem',
+    md: '0.625rem',
+    lg: '0.75rem',
+    xl: '1rem',
     full: '9999px',
   },
 }

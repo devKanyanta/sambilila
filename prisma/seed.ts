@@ -1,4 +1,5 @@
-import { prisma } from '../lib/db'
+import 'dotenv/config'
+import { prisma, disconnectDb } from '../lib/db'
 
 const PLANS_SEED = [
   {
@@ -101,8 +102,8 @@ async function main() {
 main()
   .catch((e) => {
     console.error('Seed error:', e)
-    process.exit(1)
+    process.exitCode = 1
   })
   .finally(async () => {
-    await prisma.$disconnect()
+    await disconnectDb()
   })

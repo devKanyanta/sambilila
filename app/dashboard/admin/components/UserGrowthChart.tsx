@@ -37,8 +37,8 @@ export default function UserGrowthChart({ data, isLoading }: UserGrowthChartProp
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-          <TrendingUp className="w-4 h-4 text-[#193827]" />
+        <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-[#232837]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">User Growth</h3>
@@ -50,8 +50,8 @@ export default function UserGrowthChart({ data, isLoading }: UserGrowthChartProp
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
             <defs>
               <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#193827" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#193827" stopOpacity={0} />
+                <stop offset="5%" stopColor="#232837" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#232837" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -79,7 +79,7 @@ export default function UserGrowthChart({ data, isLoading }: UserGrowthChartProp
             <Area
               type="monotone"
               dataKey="count"
-              stroke="#193827"
+              stroke="#232837"
               strokeWidth={2}
               fill="url(#userGrowthGradient)"
             />

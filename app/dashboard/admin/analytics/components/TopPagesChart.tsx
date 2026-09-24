@@ -31,8 +31,8 @@ export default function TopPagesChart({ data, isLoading }: TopPagesChartProps) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-[#2d6b4d]" />
+          <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+            <FileText className="w-4 h-4 text-[#d92d3a]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Top Pages</h3>
         </div>
@@ -56,8 +56,8 @@ export default function TopPagesChart({ data, isLoading }: TopPagesChartProps) {
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-          <FileText className="w-4 h-4 text-[#2d6b4d]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <FileText className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Top Pages</h3>
@@ -97,7 +97,7 @@ export default function TopPagesChart({ data, isLoading }: TopPagesChartProps) {
             />
             <Bar
               dataKey="views"
-              fill="#2d6b4d"
+              fill="#d92d3a"
               radius={[0, 4, 4, 0]}
               maxBarSize={16}
             />

@@ -3,35 +3,40 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 const faqs = [
   {
+    question: "Do I need to create an account?",
+    answer: "No. Lernopia works the moment you open it — your progress is saved automatically in your browser session. If you later want to sync across devices, you can claim your session with an email in a few seconds, but that's entirely optional."
+  },
+  {
+    question: "Is it really free? What's the catch?",
+    answer: "It's really free — every feature, no trial timers, no locked content. Lernopia is funded by optional donations from people who want to keep education accessible. That's the whole model."
+  },
+  {
     question: "How does the AI generate learning materials?",
-    answer: "Our AI analyzes your content, identifies key concepts and relationships, and creates optimized learning materials using natural language processing and educational best practices."
+    answer: "Our AI analyzes your content, identifies key concepts and relationships, and creates optimized quizzes and flashcards using natural language processing and educational best practices."
   },
   {
-    question: "Can I cancel my subscription anytime?",
-    answer: "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period."
+    question: "How do donations work?",
+    answer: "You choose any amount (from $1) and pay once via PayPal or mobile money (MTN, Airtel). No recurring charges, ever — it's a one-time gift, not a subscription."
   },
   {
-    question: "Do you offer student discounts?",
-    answer: "Yes! We offer special pricing for students. Contact our support team with your student ID for a discount."
+    question: "What are fair-use limits?",
+    answer: "To keep AI costs sustainable, we apply generous caps: around 25 quizzes per week and 500 flashcards. For normal studying you'll never hit them — they only exist to prevent abuse."
   },
   {
-    question: "What payment methods do you accept in Zambia?",
-    answer: "We accept all major credit cards, mobile money (MTN, Airtel Money), and bank transfers for Zambian users."
+    question: "Can I still create an account?",
+    answer: "Yes! Creating an account (or claiming your guest session) lets you sync your quizzes, flashcards, and streaks across devices. Head to the Profile page any time to claim your session."
   },
-  {
-    question: "Is there a free trial available?",
-    answer: "Yes! You can start with our free Starter plan which includes basic features, or try Pro features with a 14-day free trial."
-  }
 ]
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section id="faq" className="bg-[#f5f5f5] py-16 md:py-20 lg:py-28">
+    <section id="faq" className="bg-white py-16 md:py-24 lg:py-28">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,52 +44,49 @@ export function FAQ() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-600 text-sm font-medium mb-5">
-            Questions & Answers
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-fredoka font-semibold text-neutral-800 mb-4">
-            Frequently Asked Questions
+          <h2 className="text-3xl sm:text-4xl font-fredoka font-bold text-neutral-900 tracking-tight mb-4">
+            Frequently asked questions
           </h2>
           <p className="text-base text-neutral-500 max-w-xl mx-auto">
-            Get answers to common questions about Lernopia
+            Everything you need to know about Lernopia
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           className="space-y-3"
         >
           {faqs.map((faq, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="rounded-xl overflow-hidden border border-neutral-200 bg-white"
+              transition={{ delay: index * 0.06 }}
+              className="rounded-xl overflow-hidden border border-neutral-200 bg-white hover:border-neutral-300 transition-colors"
             >
-              <motion.button
+              <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 className="w-full px-6 py-4 flex justify-between items-center text-left gap-4"
               >
-                <span className="font-medium text-neutral-800 text-sm md:text-base">{faq.question}</span>
+                <span className="font-semibold text-neutral-900 text-sm md:text-base">{faq.question}</span>
                 <motion.div
                   animate={{ rotate: openIndex === index ? 45 : 0 }}
                   transition={{ duration: 0.2 }}
                   className="flex-shrink-0"
                 >
-                  <Plus className="w-5 h-5 text-[#ff5252]" />
+                  <Plus className="w-5 h-5 text-primary-500" />
                 </motion.div>
-              </motion.button>
+              </button>
               {openIndex === index && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="px-6 pb-4"
+                  className="px-6 pb-5"
                 >
                   <p className="text-sm text-neutral-500 leading-relaxed">{faq.answer}</p>
                 </motion.div>
@@ -93,22 +95,21 @@ export function FAQ() {
           ))}
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mt-10"
         >
           <p className="text-sm text-neutral-500 mb-4">
-            Still have questions? Contact our support team
+            Still have questions? We&apos;d love to help
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] hover:shadow-lg transition-all duration-200"
+          <Link
+            href="/contact"
+            className="btn-outline inline-flex px-6 py-3 text-sm rounded-xl"
           >
-            Contact Support
-          </motion.button>
+            Contact support
+          </Link>
         </motion.div>
       </div>
     </section>

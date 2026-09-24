@@ -12,9 +12,9 @@ interface DeviceBreakdownChartProps {
 }
 
 const DEVICE_COLORS: Record<string, string> = {
-  desktop: '#193827',
-  mobile: '#ff5252',
-  tablet: '#eab308',
+  desktop: '#232837',
+  mobile: '#d92d3a',
+  tablet: '#ca8a04',
 }
 
 const DEVICE_ICONS: Record<string, string> = {
@@ -67,8 +67,8 @@ export default function DeviceBreakdownChart({ data, isLoading }: DeviceBreakdow
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-          <Monitor className="w-4 h-4 text-[#193827]" />
+        <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+          <Monitor className="w-4 h-4 text-[#232837]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Device Breakdown</h3>

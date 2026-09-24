@@ -351,7 +351,7 @@ export default function Flashcards(props: { searchParams?: Promise<{ create?: st
                 onClick={() => setShowForm(true)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-[#ff5252] hover:bg-[#fc0b06] transition-all shadow-md"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md"
               >
                 <Plus size={18} />
                 <span>Generate</span>
@@ -374,9 +374,9 @@ export default function Flashcards(props: { searchParams?: Promise<{ create?: st
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-        <StatBlock icon={BookOpen} value={flashcardSets.length} label="Flashcard Sets" color="#193827" iconBg="#1938271a" />
-        <StatBlock icon={BookOpen} value={totalCards} label="Total Cards" color="#2d6b4d" iconBg="#2d6b4d1a" />
-        <StatBlock icon={Sparkles} value={activeJobs.length} label="Active Jobs" color="#ff5252" iconBg="#ff52521a" />
+        <StatBlock icon={BookOpen} value={flashcardSets.length} label="Flashcard Sets" color="#232837" iconBg="#f4f4f5" />
+        <StatBlock icon={BookOpen} value={totalCards} label="Total Cards" color="#d92d3a" iconBg="#fde3e3" />
+        <StatBlock icon={Sparkles} value={activeJobs.length} label="Active Jobs" color="#d92d3a" iconBg="#fde3e3" />
       </div>
 
       {/* Flashcard Sets Grid */}

@@ -37,8 +37,8 @@ export default function RevenueChart({ data, isLoading }: RevenueChartProps) {
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#ff5252]/10 flex items-center justify-center">
-          <DollarSign className="w-4 h-4 text-[#ff5252]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <DollarSign className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Revenue Over Time</h3>
@@ -64,14 +64,14 @@ export default function RevenueChart({ data, isLoading }: RevenueChartProps) {
             <Tooltip
               contentStyle={{
                 borderRadius: '12px',
-                border: '1px solid #e5e5e5',
+                border: '1px solid #e6e6e8',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 fontSize: '12px',
               }}
               formatter={formatRevenueTooltip}
               labelFormatter={(label) => new Date(label + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
             />
-            <Bar dataKey="revenue" fill="#ff5252" radius={[4, 4, 0, 0]} maxBarSize={40} />
+            <Bar dataKey="revenue" fill="#d92d3a" radius={[4, 4, 0, 0]} maxBarSize={40} />
           </BarChart>
         </ResponsiveContainer>
       </div>

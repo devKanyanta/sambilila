@@ -5,13 +5,13 @@ import { getActiveSubscription } from './subscriptions'
 import type { PlanLimits } from './plans'
 import { UsageResource } from './generated/prisma/client'
 
-/** Default limits used when no plan is found in the DB (matches Free plan). */
+/** Default fair-use limits — generous caps to protect AI costs, not to upsell. */
 const DEFAULT_LIMITS: PlanLimits = {
-  maxQuizzesPerWeek: 3,
-  maxFlashcardsTotal: 3,
-  maxQuestionsPerQuiz: 10,
+  maxQuizzesPerWeek: 25,
+  maxFlashcardsTotal: 500,
+  maxQuestionsPerQuiz: 50,
   priorityProcessing: false,
-  progressTracking: false,
+  progressTracking: true,
 }
 
 export class LimitReachedError extends Error {
@@ -21,7 +21,10 @@ export class LimitReachedError extends Error {
   public resource: string
 
   constructor(resource: string, limit: number | null, used: number, plan: string) {
-    super(`You've reached your ${resource} limit on the ${plan} plan. Upgrade to create more.`)
+    super(
+      `You've reached the fair-use limit of ${limit} ${resource === 'quiz' ? 'quizzes per week' : 'flashcards'}. ` +
+      'Your support helps keep Lernopia free for everyone!'
+    )
     this.name = 'LimitReachedError'
     this.limit = limit
     this.used = used
@@ -83,7 +86,12 @@ export async function checkAndRecordUsage(
   const result = await checkUsageLimit(userId, resource)
 
   if (!result.allowed) {
-    throw new LimitReachedError(resource, result.limit, result.used, result.plan)
+    throw new LimitReachedError(
+      resource,
+      result.limit,
+      result.used,
+      result.plan === 'free' ? 'fair-use' : result.plan
+    )
   }
 
   // Record usage

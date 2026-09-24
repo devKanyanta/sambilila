@@ -10,7 +10,7 @@ interface TrafficSourcesChartProps {
   isLoading?: boolean
 }
 
-const COLORS = ['#193827', '#ff5252', '#eab308', '#2d6b4d', '#a8a8a8', '#6b6b6b']
+const COLORS = ['#232837', '#d92d3a', '#ca8a04', '#d92d3a', '#a8a8a8', '#6b6b6b']
 const SOURCE_ICONS: Record<string, string> = {
   direct: '🔗',
   Google: '🔍',
@@ -40,8 +40,8 @@ export default function TrafficSourcesChart({ data, isLoading }: TrafficSourcesC
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#eab308]/10 flex items-center justify-center">
-            <Share2 className="w-4 h-4 text-[#eab308]" />
+          <div className="w-8 h-8 rounded-lg bg-[#ca8a04]/10 flex items-center justify-center">
+            <Share2 className="w-4 h-4 text-[#ca8a04]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Traffic Sources</h3>
         </div>
@@ -67,8 +67,8 @@ export default function TrafficSourcesChart({ data, isLoading }: TrafficSourcesC
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#eab308]/10 flex items-center justify-center">
-          <Share2 className="w-4 h-4 text-[#eab308]" />
+        <div className="w-8 h-8 rounded-lg bg-[#ca8a04]/10 flex items-center justify-center">
+          <Share2 className="w-4 h-4 text-[#ca8a04]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Traffic Sources</h3>

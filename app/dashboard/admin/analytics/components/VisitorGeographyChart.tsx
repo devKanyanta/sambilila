@@ -39,8 +39,8 @@ export default function VisitorGeographyChart({ data, isLoading }: VisitorGeogra
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-            <Globe className="w-4 h-4 text-[#193827]" />
+          <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+            <Globe className="w-4 h-4 text-[#232837]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Visitor Geography</h3>
         </div>
@@ -64,8 +64,8 @@ export default function VisitorGeographyChart({ data, isLoading }: VisitorGeogra
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-          <Globe className="w-4 h-4 text-[#193827]" />
+        <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+          <Globe className="w-4 h-4 text-[#232837]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Visitor Geography</h3>
@@ -105,7 +105,7 @@ export default function VisitorGeographyChart({ data, isLoading }: VisitorGeogra
             />
             <Bar
               dataKey="visitors"
-              fill="#193827"
+              fill="#232837"
               radius={[0, 4, 4, 0]}
               maxBarSize={16}
             />

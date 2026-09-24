@@ -31,8 +31,8 @@ export default function ForgotPassword() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <div className="w-16 h-16 rounded-2xl bg-[#193827]/10 flex items-center justify-center mx-auto mb-5">
-          <FiCheck className="w-7 h-7 text-[#193827]" />
+        <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-5">
+          <FiCheck className="w-7 h-7 text-primary-500" />
         </div>
         <h2 className="text-xl font-heading font-semibold text-neutral-800 mb-2">
           Check your email
@@ -44,8 +44,7 @@ export default function ForgotPassword() {
         <div className="space-y-3">
           <button
             onClick={() => { setIsSubmitted(false); setEmail('') }}
-            className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-md active:scale-[0.98]"
-            style={{ backgroundColor: '#ff5252' }}
+            className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white bg-primary-500 hover:bg-primary-600 transition-all hover:shadow-md active:scale-[0.98]"
           >
             Send another link
           </button>
@@ -96,7 +95,7 @@ export default function ForgotPassword() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-neutral-200 bg-white text-sm outline-none transition-all duration-200 focus:border-[#193827] focus:ring-2 focus:ring-[#193827]/20"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-neutral-200 bg-white text-sm outline-none transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
               placeholder="Enter your email"
               required
             />
@@ -108,10 +107,8 @@ export default function ForgotPassword() {
           disabled={isLoading || !email}
           whileHover={!isLoading ? { scale: 1.02 } : {}}
           whileTap={!isLoading ? { scale: 0.98 } : {}}
-          className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white transition-all duration-200 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: '#ff5252' }}
+          className="btn-primary w-full py-2.5 px-4 text-sm rounded-xl"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

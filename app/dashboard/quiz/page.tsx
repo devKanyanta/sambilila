@@ -377,13 +377,13 @@ export default function QuizGenerator(props: { searchParams?: Promise<{ create?:
                   label="Quizzes Created"
                   value={quizList.length}
                   icon={BarChart3}
-                  color="#2d6b4d"
+                  color="#d92d3a"
                 />
                 <StatBlock
                   label="In Progress"
                   value={quiz ? 1 : 0}
                   icon={Brain}
-                  color="#ff5252"
+                  color="#d92d3a"
                 />
               </div>
             </AnimatedSection>

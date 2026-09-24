@@ -89,7 +89,7 @@ export default function SharedQuizPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#ececec] flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary-500 mx-auto mb-4" />
           <p className="text-sm text-neutral-500">Loading shared quiz...</p>
@@ -100,7 +100,7 @@ export default function SharedQuizPage({
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen bg-[#ececec] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-red-50 flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-red-400" />
@@ -124,7 +124,7 @@ export default function SharedQuizPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#ececec]">
+    <div className="min-h-screen bg-neutral-50">
       {/* Public Navbar */}
       <nav className="bg-white border-b border-neutral-100">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -202,7 +202,7 @@ export default function SharedQuizPage({
 
       {/* Registration CTA */}
       <div className="max-w-3xl mx-auto px-4 pb-8">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-500 to-primary-400 p-8 text-center">
+        <div className="relative overflow-hidden rounded-2xl bg-secondary-800 p-8 text-center">
           <div className="absolute inset-0 bg-white/10" />
           <div className="relative">
             <div className="w-12 h-12 mx-auto rounded-xl bg-white/20 flex items-center justify-center mb-4 backdrop-blur-sm">

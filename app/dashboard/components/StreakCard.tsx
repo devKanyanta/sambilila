@@ -30,15 +30,15 @@ export default function StreakCard({
           transition={{ type: 'spring', stiffness: 350, damping: 15, mass: 0.6 }}
           className="relative flex-shrink-0"
         >
-          <div className="w-14 h-14 rounded-2xl bg-[#ff5252]/10 flex items-center justify-center">
-            <Flame className="w-7 h-7 text-orange-500" strokeWidth={2.5} />
+          <div className="w-14 h-14 rounded-2xl bg-primary-50 border border-primary-100 flex items-center justify-center">
+            <Flame className="w-7 h-7 text-primary-500" strokeWidth={2.5} />
           </div>
           {currentStreak > 0 && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#ff5252] flex items-center justify-center shadow-md"
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center shadow-sm"
             >
               <TrendingUp className="w-3 h-3 text-white" strokeWidth={3} />
             </motion.div>
@@ -82,7 +82,7 @@ export default function StreakCard({
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={progressBar}
-                className="h-full rounded-full bg-gradient-to-r from-orange-400 to-[#ff5252]"
+                className="h-full rounded-full bg-primary-500"
                 style={{ transformOrigin: 'left', width: `${streakPercent}%` }}
               />
             </div>

@@ -6,28 +6,34 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 
-/* ---------------- R2 Client Initialization ---------------- */
+/* ---------------- R2 Client Initialization (lazy) ---------------- */
 
-if (
-  !process.env.R2_BUCKET_NAME ||
-  !process.env.R2_ACCESS_KEY_ID ||
-  !process.env.R2_SECRET_ACCESS_KEY ||
-  !process.env.R2_ENDPOINT_URL
-) {
-  throw new Error("Missing R2 credentials in environment variables.");
+// Lazily create the R2 client at request time instead of module load,
+// so the module can be imported (and pages built) without credentials.
+let _r2Client: S3Client | null = null;
+
+function getR2Client(): S3Client {
+  if (!_r2Client) {
+    if (
+      !process.env.R2_BUCKET_NAME ||
+      !process.env.R2_ACCESS_KEY_ID ||
+      !process.env.R2_SECRET_ACCESS_KEY ||
+      !process.env.R2_ENDPOINT_URL
+    ) {
+      throw new Error("Missing R2 credentials in environment variables.");
+    }
+
+    _r2Client = new S3Client({
+      region: "auto", // Required by R2
+      endpoint: process.env.R2_ENDPOINT_URL,
+      credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      },
+    });
+  }
+  return _r2Client;
 }
-
-// Initialize S3Client, pointing it to the R2 endpoint
-const r2Client = new S3Client({
-  region: "auto", // Required by R2
-  endpoint: process.env.R2_ENDPOINT_URL,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  },
-  // Optional: Add forcePathStyle if needed
-  // forcePathStyle: true,
-});
 
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -106,7 +112,7 @@ export async function POST(req: NextRequest) {
       ContentType: contentType || 'application/pdf',
     });
 
-    const signedUrl = await getSignedUrl(r2Client, putCommand, { 
+    const signedUrl = await getSignedUrl(getR2Client(), putCommand, { 
       expiresIn: 3600 // 1 hour expiry
     });
 

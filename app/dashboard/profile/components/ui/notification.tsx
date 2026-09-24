@@ -27,12 +27,12 @@ export default function Notification({ type, message, onClose }: NotificationPro
       iconColor: 'text-red-500',
     },
     info: {
-      bg: 'bg-[#193827]/5',
-      border: 'border-[#193827]/10',
-      text: 'text-[#193827]',
+      bg: 'bg-primary-50',
+      border: 'border-primary-100',
+      text: 'text-primary-600',
       icon: FiInfo,
-      iconBg: 'bg-[#193827]/10',
-      iconColor: 'text-[#193827]',
+      iconBg: 'bg-primary-100',
+      iconColor: 'text-primary-600',
     }
   }
 

@@ -37,8 +37,8 @@ export default function RealtimeWidget({ activeVisitors, pageViewsToday, isLoadi
           {/* Active Visitors */}
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-[#193827]/10 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-[#193827]" />
+              <div className="w-10 h-10 rounded-xl bg-[#232837]/10 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[#232837]" />
               </div>
               <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -58,8 +58,8 @@ export default function RealtimeWidget({ activeVisitors, pageViewsToday, isLoadi
 
           {/* Today's Views */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
-              <Eye className="w-5 h-5 text-[#ff5252]" />
+            <div className="w-10 h-10 rounded-xl bg-[#d92d3a]/10 flex items-center justify-center">
+              <Eye className="w-5 h-5 text-[#d92d3a]" />
             </div>
             <div>
               <p className="text-2xl font-heading font-semibold text-neutral-800">

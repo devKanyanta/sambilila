@@ -206,8 +206,8 @@ export default function UserDetailModal({
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {detail.recentActivity.quizResults.slice(0, 5).map((result) => (
                     <div key={result.id} className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50">
-                      <div className="w-6 h-6 rounded-md bg-[#ff5252]/10 flex items-center justify-center flex-shrink-0">
-                        <Activity className="w-3 h-3 text-[#ff5252]" />
+                      <div className="w-6 h-6 rounded-md bg-[#d92d3a]/10 flex items-center justify-center flex-shrink-0">
+                        <Activity className="w-3 h-3 text-[#d92d3a]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-medium text-neutral-700 truncate">{result.quiz.title}</p>

@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#ececec] flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Top bar */}
       <div className="px-4 sm:px-6 py-4">
         <Link
@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   priority
                 />
               </div>
-              <span className="font-heading font-semibold text-xl text-neutral-800">Lernopia</span>
+              <span className="font-fredoka font-semibold text-xl text-neutral-900">Lernopia</span>
             </Link>
           </motion.div>
 
@@ -48,7 +48,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8 shadow-sm"
+            className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8 shadow-md"
           >
             {children}
           </motion.div>
@@ -56,9 +56,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           {/* Footer */}
           <p className="text-center text-xs text-neutral-400 mt-6">
             By continuing, you agree to our{' '}
-            <a href="/terms" className="text-neutral-600 hover:text-[#ff5252] transition-colors">Terms</a>
+            <a href="/terms" className="text-neutral-600 hover:text-primary-500 transition-colors">Terms</a>
             {' '}and{' '}
-            <a href="/privacy" className="text-neutral-600 hover:text-[#ff5252] transition-colors">Privacy Policy</a>
+            <a href="/privacy" className="text-neutral-600 hover:text-primary-500 transition-colors">Privacy Policy</a>
           </p>
         </div>
       </div>

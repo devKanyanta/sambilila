@@ -19,7 +19,7 @@ export default function StatBlock({
   icon: Icon,
   value,
   label,
-  color = '#2d6b4d',
+  color = '#d92d3a',
   bgColor = 'bg-white',
   iconBg,
   animate = true,

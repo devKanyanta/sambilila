@@ -11,7 +11,7 @@ interface PlanDistributionPieProps {
   isLoading?: boolean
 }
 
-const COLORS = ['#e5e5e5', '#193827', '#ff5252', '#2d6b4d', '#dc2626']
+const COLORS = ['#e6e6e8', '#232837', '#d92d3a', '#d92d3a', '#b91f2c']
 const LABEL_MAP: Record<string, string> = {
   free: 'Free',
   weekly: 'Weekly',
@@ -70,8 +70,8 @@ export default function PlanDistributionPie({ data, isLoading }: PlanDistributio
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-          <Layers className="w-4 h-4 text-[#2d6b4d]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <Layers className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Plan Distribution</h3>
@@ -97,7 +97,7 @@ export default function PlanDistributionPie({ data, isLoading }: PlanDistributio
             <Tooltip
               contentStyle={{
                 borderRadius: '12px',
-                border: '1px solid #e5e5e5',
+                border: '1px solid #e6e6e8',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 fontSize: '12px',
               }}

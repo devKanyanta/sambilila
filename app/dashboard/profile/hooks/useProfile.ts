@@ -40,15 +40,28 @@ export const useProfile = () => {
     dailyReminders: true
   })
 
-  // Get token from localStorage on mount
+  // Get token from localStorage on mount — bootstraps a guest session
+  // if none exists (no login wall)
   useEffect(() => {
-    const storedToken = localStorage.getItem('token')
-    if (!storedToken) {
-      router.push('/login')
-      return
+    const ensureSession = async () => {
+      const storedToken = localStorage.getItem('token')
+      if (storedToken) {
+        setToken(storedToken)
+        return
+      }
+      try {
+        const res = await fetch('/api/session/guest', { method: 'POST' })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('token', data.token)
+          setToken(data.token)
+        }
+      } catch {
+        // network error — surface via error state on fetch
+      }
     }
-    setToken(storedToken)
-  }, [router])
+    ensureSession()
+  }, [])
 
   // Fetch profile data when token is available
   useEffect(() => {
@@ -64,6 +77,21 @@ export const useProfile = () => {
     }
   }, [token])
 
+  // Replace expired-token redirects with silent guest re-bootstrap
+  const handleExpiredSession = useCallback(async () => {
+    localStorage.removeItem('token')
+    try {
+      const res = await fetch('/api/session/guest', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        localStorage.setItem('token', data.token)
+        setToken(data.token)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   const fetchProfileData = async () => {
     try {
       setLoading(true)
@@ -75,8 +103,7 @@ export const useProfile = () => {
       ])
 
       if (profileRes.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -118,8 +145,7 @@ export const useProfile = () => {
       })
 
       if (res.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -161,8 +187,7 @@ export const useProfile = () => {
       })
 
       if (res.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -197,8 +222,7 @@ export const useProfile = () => {
       })
 
       if (res.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -236,8 +260,7 @@ export const useProfile = () => {
       })
 
       if (res.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -274,8 +297,7 @@ export const useProfile = () => {
       })
 
       if (res.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
+        await handleExpiredSession()
         return
       }
 
@@ -292,9 +314,21 @@ export const useProfile = () => {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Sign out of a claimed account and start a fresh guest session
     localStorage.removeItem('token')
-    router.push('/auth/login')
+    try {
+      const res = await fetch('/api/session/guest', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        localStorage.setItem('token', data.token)
+        router.push('/dashboard')
+        return
+      }
+    } catch {
+      /* fall through */
+    }
+    router.push('/')
   }
 
   const handleSettingToggle = (setting: keyof typeof settings) => {

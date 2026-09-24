@@ -21,6 +21,7 @@ model User {
   avatar    String?
   userType  UserType @default(STUDENT)
   suspended Boolean  @default(false)
+  isGuest   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -35,6 +36,7 @@ model User {
   // Subscription relations
   subscriptions Subscription[]
   usageRecords  UsageRecord[]
+  donations     Donation[]
 
   @@map("users")
 }
@@ -137,6 +139,35 @@ enum WebhookEventStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model Donation {
+  id          String          @id @default(cuid())
+  userId      String
+  amountUSD   Float
+  currency    String          @default("USD")
+  amountLocal Float?
+  provider    PaymentProvider
+  providerId  String?         @unique
+  status      DonationStatus  @default(PENDING)
+  message     String?
+  isAnonymous Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status, createdAt])
+  @@map("donations")
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELED
 }
 
 model FlashcardSet {

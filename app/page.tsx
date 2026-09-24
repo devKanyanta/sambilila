@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Header } from './landing/Header'
 import { Hero } from './landing/Hero'
 import { HowItWorks } from './landing/HowItWorks'
-import { Pricing } from './landing/Pricing'
+import { Support } from './landing/Support'
 import { FAQ } from './landing/FAQ'
 import { Footer } from './landing/Footer'
 import { FiArrowUp, FiBookOpen, FiZap, FiBarChart2 } from 'react-icons/fi'
@@ -46,7 +46,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ececec] overflow-x-hidden landing-page">
+    <div className="min-h-screen bg-white overflow-x-hidden landing-page">
       {/* Header */}
       <Header />
 
@@ -57,23 +57,23 @@ export default function Home() {
       <HowItWorks />
 
       {/* Features Section */}
-      <section id="features" className="bg-[#ececec] py-16 md:py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
+      <section id="features" className="bg-white py-16 md:py-24 lg:py-28 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             className="text-center mb-12"
           >
-            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-600 text-sm font-medium mb-5">
-              <FiZap className="w-4 h-4 mr-2 text-[#ff5252]" />
+            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-600 text-sm font-semibold mb-5">
+              <FiZap className="w-4 h-4 mr-2" />
               AI-Powered Features
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-semibold text-neutral-800 mb-4">
-              Smart Learning Tools
+            <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-fredoka font-bold text-neutral-900 tracking-tight mb-4">
+              Smart learning tools
             </h2>
             <p className="text-base md:text-lg text-neutral-500 max-w-2xl mx-auto">
-              Experience the future of education with our intelligent learning platform
+              Everything you need to study effectively — free, no sign-up required
             </p>
           </motion.div>
 
@@ -88,10 +88,10 @@ export default function Home() {
                 whileHover={{ y: -4 }}
                 className="bg-white rounded-2xl p-6 md:p-8 border border-neutral-200 shadow-sm text-center"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#ff5252]/10 flex items-center justify-center text-[#ff5252] mx-auto mb-4">
+                <div className="w-12 h-12 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-center text-primary-500 mx-auto mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-heading font-semibold text-neutral-800 mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-fredoka font-semibold text-neutral-900 mb-2">{feature.title}</h3>
                 <p className="text-sm text-neutral-500 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
@@ -99,8 +99,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <Pricing />
+      {/* Support (replaces Pricing) */}
+      <Support />
 
       {/* Testimonials Section */}
       <Testimonials />
@@ -109,31 +109,32 @@ export default function Home() {
       <FAQ />
 
       {/* Final CTA */}
-      <section className="bg-[#ececec] py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center">
+      <section className="bg-white py-16 md:py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="bg-secondary-800 rounded-3xl px-6 py-14 sm:px-12 shadow-xl"
           >
-            <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-neutral-800 mb-4">
-              Ready to Start Learning?
+            <h2 className="text-3xl sm:text-4xl font-fredoka font-bold text-white mb-4">
+              Ready to start learning?
             </h2>
-            <p className="text-base text-neutral-500 mb-8 max-w-lg mx-auto">
-              Join Lernopia today and transform the way you learn with AI-powered tools.
+            <p className="text-base text-neutral-300 mb-8 max-w-lg mx-auto">
+              Jump straight in — your first quiz is 60 seconds away.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/auth/register"
-                className="px-8 py-3 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] hover:shadow-lg transition-all duration-200"
+                href="/dashboard"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-semibold text-secondary-900 bg-white hover:bg-neutral-100 transition-all duration-200"
               >
-                Get Started Free
+                Start studying free
               </Link>
               <Link
-                href="/auth/login"
-                className="px-8 py-3 rounded-xl text-sm font-semibold text-neutral-700 bg-white border border-neutral-200 hover:border-neutral-300 transition-all duration-200"
+                href="/donate"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-all duration-200"
               >
-                Sign In
+                Support the project
               </Link>
             </div>
           </motion.div>
@@ -146,12 +147,12 @@ export default function Home() {
       {/* Scroll to top button */}
       <motion.button
         initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ 
+        animate={{
           opacity: showScrollTop ? 1 : 0,
           scale: showScrollTop ? 1 : 0.5
         }}
         onClick={scrollToTop}
-        className="fixed bottom-6 right-4 md:bottom-8 md:right-8 z-50 w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#193827] text-white shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200"
+        className="fixed bottom-6 right-4 md:bottom-8 md:right-8 z-50 w-10 h-10 md:w-12 md:h-12 rounded-xl bg-secondary-800 text-white shadow-lg flex items-center justify-center hover:bg-secondary-700 hover:shadow-xl transition-all duration-200"
         aria-label="Scroll to top"
       >
         <FiArrowUp className="w-4 h-4 md:w-5 md:h-5" />

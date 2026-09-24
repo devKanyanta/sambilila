@@ -72,6 +72,19 @@ if (hasRequiredDelegates(globalForPrisma.prisma) && globalForPrisma.prismaPool) 
   prisma = createPrismaClient(pool)
 }
 
+/**
+ * Fully close the Prisma client and the underlying pg pool.
+ * Needed for short-lived scripts (e.g. prisma/seed.ts) — the idle pool
+ * connections keep the Node event loop alive, so prisma.$disconnect()
+ * alone never lets the process exit.
+ */
+export async function disconnectDb(): Promise<void> {
+  if (cleanupStarted) return
+  cleanupStarted = true
+  await prisma.$disconnect().catch(() => undefined)
+  await pool.end().catch(() => undefined)
+}
+
 export { prisma }
 
 const cleanup = async () => {

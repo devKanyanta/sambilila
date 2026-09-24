@@ -54,7 +54,7 @@ export function useAdminDashboard() {
   const checkAdminStatus = async () => {
     const token = getToken()
     if (!token) {
-      router.push('/login')
+      router.push('/dashboard')
       return
     }
 

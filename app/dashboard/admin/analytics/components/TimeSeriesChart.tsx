@@ -27,8 +27,8 @@ export default function TimeSeriesChart({ data, isLoading }: TimeSeriesChartProp
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-            <BarChart3 className="w-4 h-4 text-[#193827]" />
+          <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-[#232837]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Page Views & Visitors</h3>
         </div>
@@ -57,8 +57,8 @@ export default function TimeSeriesChart({ data, isLoading }: TimeSeriesChartProp
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#193827]/10 flex items-center justify-center">
-          <BarChart3 className="w-4 h-4 text-[#193827]" />
+        <div className="w-8 h-8 rounded-lg bg-[#232837]/10 flex items-center justify-center">
+          <BarChart3 className="w-4 h-4 text-[#232837]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Page Views & Visitors</h3>
@@ -70,12 +70,12 @@ export default function TimeSeriesChart({ data, isLoading }: TimeSeriesChartProp
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#193827" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#193827" stopOpacity={0} />
+                <stop offset="5%" stopColor="#232837" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#232837" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="visitorsGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ff5252" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#ff5252" stopOpacity={0} />
+                <stop offset="5%" stopColor="#d92d3a" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#d92d3a" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -112,7 +112,7 @@ export default function TimeSeriesChart({ data, isLoading }: TimeSeriesChartProp
             <Area
               type="monotone"
               dataKey="page_views"
-              stroke="#193827"
+              stroke="#232837"
               strokeWidth={2}
               fill="url(#viewsGradient)"
               name="page_views"
@@ -120,7 +120,7 @@ export default function TimeSeriesChart({ data, isLoading }: TimeSeriesChartProp
             <Area
               type="monotone"
               dataKey="visitors"
-              stroke="#ff5252"
+              stroke="#d92d3a"
               strokeWidth={2}
               fill="url(#visitorsGradient)"
               name="visitors"

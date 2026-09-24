@@ -105,13 +105,26 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
   const [showWelcome, setShowWelcome] = useState(false)
 
+  // Bootstraps a guest session silently if no token exists — no login wall
   useEffect(() => {
-    const storedToken = localStorage.getItem('token')
-    if (!storedToken) {
-      router.push('/login')
-      return
+    const ensureSession = async () => {
+      const storedToken = localStorage.getItem('token')
+      if (storedToken) {
+        setToken(storedToken)
+        return
+      }
+      try {
+        const res = await fetch('/api/session/guest', { method: 'POST' })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('token', data.token)
+          setToken(data.token)
+        }
+      } catch {
+        // Network error — user can retry via the error state
+      }
     }
-    setToken(storedToken)
+    ensureSession()
   }, [router])
 
   useEffect(() => {
@@ -130,8 +143,18 @@ export default function Dashboard() {
 
       const profileRes = await fetch('/api/profile', { headers: getAuthHeaders() })
       if (profileRes.status === 401) {
+        // Token expired — silently start a fresh guest session instead of a login wall
         localStorage.removeItem('token')
-        router.push('/login')
+        try {
+          const res = await fetch('/api/session/guest', { method: 'POST' })
+          if (res.ok) {
+            const data = await res.json()
+            localStorage.setItem('token', data.token)
+            setToken(data.token)
+          }
+        } catch {
+          /* retried on next render */
+        }
         return
       }
       if (profileRes.ok) {
@@ -144,9 +167,6 @@ export default function Dashboard() {
       if (statsRes.ok) {
         const data = await statsRes.json()
         setStats(data)
-      } else if (statsRes.status === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
@@ -272,7 +292,7 @@ export default function Dashboard() {
           onClick={fetchDashboardData}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] transition-all shadow-md"
+          className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-sm"
         >
           Try Again
         </motion.button>
@@ -289,8 +309,8 @@ export default function Dashboard() {
       description: `${r.score}/${r.totalQuestions} correct`,
       date: r.completedAt,
       icon: Brain,
-      color: '#ff5252',
-      bg: 'bg-[#ff5252]/10',
+      color: '#d92d3a',
+      bg: 'bg-primary-50',
     })) || []),
     ...(recentActivity?.studySessions.slice(0, 3).map((s) => ({
       type: 'study' as const,
@@ -299,8 +319,8 @@ export default function Dashboard() {
       description: `${s.correctAnswers} correct • ${s.duration} min`,
       date: s.startedAt,
       icon: BookOpen,
-      color: '#193827',
-      bg: 'bg-[#193827]/10',
+      color: '#232837',
+      bg: 'bg-neutral-100',
     })) || []),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -356,29 +376,29 @@ export default function Dashboard() {
           icon={FileText}
           value={stats?.counts.flashcardSets || 0}
           label="Flashcard Sets"
-          color="#193827"
-          iconBg="#1938271a"
+          color="#232837"
+          iconBg="#f4f4f5"
         />
         <StatBlock
           icon={Brain}
           value={stats?.counts.quizzes || 0}
           label="Quizzes Created"
-          color="#ff5252"
-          iconBg="#ff52521a"
+          color="#d92d3a"
+          iconBg="#fde3e3"
         />
         <StatBlock
           icon={Clock}
           value={studyTimeDisplay}
           label="Total Study Time"
-          color="#2d6b4d"
-          iconBg="#2d6b4d1a"
+          color="#d92d3a"
+          iconBg="#fde3e3"
         />
         <StatBlock
           icon={Target}
           value={`${stats?.performance.averageScore || 0}%`}
           label="Average Score"
-          color="#ff5252"
-          iconBg="#ff52521a"
+          color="#232837"
+          iconBg="#f4f4f5"
           trend={stats ? { value: 'this month', positive: (stats.performance.averageScore || 0) >= 60 } : undefined}
         />
       </motion.div>
@@ -517,22 +537,22 @@ export default function Dashboard() {
                   label: 'Accuracy',
                   value: `${stats.performance.averageScore}%`,
                   icon: Target,
-                  color: '#193827',
-                  bg: 'bg-[#193827]/5',
+                  color: '#232837',
+                  bg: 'bg-neutral-50',
                 },
                 {
                   label: 'Active Days',
                   value: `${stats.streaks.daysActiveLast30} / 30`,
                   icon: Calendar,
-                  color: '#ff5252',
-                  bg: 'bg-[#ff5252]/5',
+                  color: '#d92d3a',
+                  bg: 'bg-primary-50',
                 },
                 {
                   label: 'Cards/min',
                   value: stats.performance.cardsPerMinute.toFixed(1),
                   icon: Zap,
-                  color: '#2d6b4d',
-                  bg: 'bg-[#2d6b4d]/5',
+                  color: '#d92d3a',
+                  bg: 'bg-primary-50',
                 },
               ].map((item) => {
                 const Icon = item.icon
@@ -598,7 +618,7 @@ export default function Dashboard() {
                     }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                    className="h-full rounded-full bg-gradient-to-r from-secondary-500 to-secondary-400"
+                    className="h-full rounded-full bg-primary-500"
                   />
                 </div>
                 <p className="text-xs text-neutral-500 mt-1">

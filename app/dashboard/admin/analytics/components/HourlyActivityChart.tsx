@@ -37,8 +37,8 @@ export default function HourlyActivityChart({ data, isLoading }: HourlyActivityC
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#ff5252]/10 flex items-center justify-center">
-            <Clock className="w-4 h-4 text-[#ff5252]" />
+          <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+            <Clock className="w-4 h-4 text-[#d92d3a]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Hourly Activity</h3>
         </div>
@@ -56,8 +56,8 @@ export default function HourlyActivityChart({ data, isLoading }: HourlyActivityC
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#ff5252]/10 flex items-center justify-center">
-          <Clock className="w-4 h-4 text-[#ff5252]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <Clock className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Hourly Activity</h3>
@@ -93,7 +93,7 @@ export default function HourlyActivityChart({ data, isLoading }: HourlyActivityC
             />
             <Bar
               dataKey="count"
-              fill="#ff5252"
+              fill="#d92d3a"
               radius={[3, 3, 0, 0]}
               maxBarSize={24}
             />

@@ -52,7 +52,7 @@ export default function UsageBreakdown({ data, isLoading }: UsageBreakdownProps)
             <Tooltip
               contentStyle={{
                 borderRadius: '12px',
-                border: '1px solid #e5e5e5',
+                border: '1px solid #e6e6e8',
                 fontSize: '12px',
               }}
             />
@@ -61,8 +61,8 @@ export default function UsageBreakdown({ data, isLoading }: UsageBreakdownProps)
               verticalAlign="bottom"
               height={20}
             />
-            <Bar dataKey="quizzes" name="Quizzes" fill="#ff5252" radius={[3, 3, 0, 0]} maxBarSize={20} />
-            <Bar dataKey="flashcards" name="Flashcards" fill="#193827" radius={[3, 3, 0, 0]} maxBarSize={20} />
+            <Bar dataKey="quizzes" name="Quizzes" fill="#d92d3a" radius={[3, 3, 0, 0]} maxBarSize={20} />
+            <Bar dataKey="flashcards" name="Flashcards" fill="#232837" radius={[3, 3, 0, 0]} maxBarSize={20} />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -27,8 +27,8 @@ export default function UserAcquisitionChart({ data, isLoading }: UserAcquisitio
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-            <UserPlus className="w-4 h-4 text-[#2d6b4d]" />
+          <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+            <UserPlus className="w-4 h-4 text-[#d92d3a]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">User Acquisition</h3>
         </div>
@@ -59,8 +59,8 @@ export default function UserAcquisitionChart({ data, isLoading }: UserAcquisitio
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#2d6b4d]/10 flex items-center justify-center">
-          <UserPlus className="w-4 h-4 text-[#2d6b4d]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <UserPlus className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">User Acquisition</h3>
@@ -72,8 +72,8 @@ export default function UserAcquisitionChart({ data, isLoading }: UserAcquisitio
           <AreaChart data={cumulativeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="registrationGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2d6b4d" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#2d6b4d" stopOpacity={0} />
+                <stop offset="5%" stopColor="#d92d3a" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#d92d3a" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -103,7 +103,7 @@ export default function UserAcquisitionChart({ data, isLoading }: UserAcquisitio
             <Area
               type="monotone"
               dataKey="cumulative"
-              stroke="#2d6b4d"
+              stroke="#d92d3a"
               strokeWidth={2}
               fill="url(#registrationGradient)"
               name="cumulative"

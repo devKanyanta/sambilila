@@ -137,7 +137,7 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({
           {showSignupCta && (
             <Link
               href="/auth/register"
-              className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
+              className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
             >
               <Sparkles className="w-4 h-4" />
               Create your own flashcards — Sign up free

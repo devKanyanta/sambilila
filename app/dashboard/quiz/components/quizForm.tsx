@@ -278,8 +278,8 @@ export default function QuizFormModal({
                     <label className="text-sm font-medium text-neutral-700">
                       Number of Questions: <motion.span
                         key={numberOfQuestions}
-                        initial={{ scale: 1.3, color: '#2d6b4d' }}
-                        animate={{ scale: 1, color: '#2d6b4d' }}
+                        initial={{ scale: 1.3, color: '#d92d3a' }}
+                        animate={{ scale: 1, color: '#d92d3a' }}
                         className="ml-1 font-semibold"
                       >{numberOfQuestions}</motion.span>
                     </label>

@@ -4,15 +4,13 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Heart } from 'lucide-react'
 
 const navLinks = [
-  { href: '#how-it-works', label: 'How It Works' },
+  { href: '#how-it-works', label: 'How it works' },
   { href: '#features', label: 'Features' },
-  { href: '#testimonials', label: 'Testimonials' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '#testimonials', label: 'Stories' },
   { href: '#faq', label: 'FAQ' },
-  { href: '/contact', label: 'Contact' },
 ]
 
 export function Header() {
@@ -23,10 +21,10 @@ export function Header() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="sticky top-0 z-50 bg-[#ececec]/90 backdrop-blur-xl border-b border-neutral-200"
+      className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-neutral-200/80"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="flex items-center justify-between h-16 lg:h-[4.5rem]">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 relative group-hover:scale-105 transition-transform">
@@ -38,16 +36,18 @@ export function Header() {
                 priority
               />
             </div>
-            <span className="font-fredoka font-semibold text-xl text-neutral-800 tracking-wide">Lernopia</span>
+            <span className="font-fredoka font-semibold text-xl text-neutral-900 tracking-tight">
+              Lernopia
+            </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-neutral-500 hover:text-neutral-800 transition-colors duration-200"
+                className="px-3.5 py-2 rounded-lg text-sm font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors duration-200"
               >
                 {link.label}
               </Link>
@@ -57,23 +57,24 @@ export function Header() {
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/auth/login"
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:text-neutral-800 hover:bg-neutral-200/50 transition-all duration-200"
+              href="/dashboard"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-100 transition-colors duration-200"
             >
-              Log in
+              Start now
             </Link>
             <Link
-              href="/auth/register"
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+              href="/donate"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              Get Started
+              <Heart className="w-4 h-4" />
+              Support us
             </Link>
           </div>
 
           {/* Mobile hamburger */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-neutral-500 hover:text-neutral-800 hover:bg-neutral-200/50 transition-all"
+            className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-all"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -89,33 +90,34 @@ export function Header() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden border-t border-neutral-200 bg-[#ececec] overflow-hidden"
+            className="md:hidden border-t border-neutral-200 bg-white overflow-hidden"
           >
-            <div className="px-4 py-4 space-y-2">
+            <div className="px-4 py-4 space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:text-neutral-800 hover:bg-neutral-200/50 transition-colors"
+                  className="block px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
                 >
                   {link.label}
                 </Link>
               ))}
               <div className="pt-2 space-y-2">
                 <Link
-                  href="/auth/login"
+                  href="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:text-neutral-800 hover:bg-neutral-200/50 transition-colors"
+                  className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 text-center transition-colors"
                 >
-                  Log in
+                  Start now — no account needed
                 </Link>
                 <Link
-                  href="/auth/register"
+                  href="/donate"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#ff5252] text-center"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-colors"
                 >
-                  Get Started
+                  <Heart className="w-4 h-4" />
+                  Support us
                 </Link>
               </div>
             </div>

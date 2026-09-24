@@ -55,8 +55,8 @@ export default function FirstTimeModal({ show, onClose }: FirstTimeModalProps) {
             transition={{ type: 'spring', stiffness: 300, damping: 25, mass: 0.8 }}
             className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
           >
-            {/* Decorative header gradient */}
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary-500/10 via-primary-400/5 to-transparent" />
+            {/* Decorative header wash */}
+            <div className="absolute top-0 left-0 right-0 h-32 bg-primary-50" />
 
             {/* Close button */}
             <button

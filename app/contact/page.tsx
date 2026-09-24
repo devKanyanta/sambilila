@@ -42,7 +42,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ececec] flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Top bar */}
       <div className="px-4 sm:px-6 py-4">
         <Link
@@ -73,7 +73,7 @@ export default function ContactPage() {
                   priority
                 />
               </div>
-              <span className="font-heading font-semibold text-xl text-neutral-800">Lernopia</span>
+              <span className="font-fredoka font-semibold text-xl text-neutral-900">Lernopia</span>
             </Link>
           </motion.div>
 
@@ -110,7 +110,7 @@ export default function ContactPage() {
                 </p>
                 <button
                   onClick={() => setStatus('idle')}
-                  className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] transition-all"
+                  className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-all"
                 >
                   Send Another Message
                 </button>
@@ -119,7 +119,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Name <span className="text-[#ff5252]">*</span>
+                    Name <span className="text-primary-500">*</span>
                   </label>
                   <input
                     id="name"
@@ -127,14 +127,14 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#2d4a3e]/20 focus:border-[#2d4a3e] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all"
                     placeholder="Your name"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Email <span className="text-[#ff5252]">*</span>
+                    Email <span className="text-primary-500">*</span>
                   </label>
                   <input
                     id="email"
@@ -142,7 +142,7 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#2d4a3e]/20 focus:border-[#2d4a3e] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -156,14 +156,14 @@ export default function ContactPage() {
                     type="text"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#2d4a3e]/20 focus:border-[#2d4a3e] transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all"
                     placeholder="How can we help?"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Message <span className="text-[#ff5252]">*</span>
+                    Message <span className="text-primary-500">*</span>
                   </label>
                   <textarea
                     id="message"
@@ -171,7 +171,7 @@ export default function ContactPage() {
                     rows={5}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#2d4a3e]/20 focus:border-[#2d4a3e] transition-all resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-all resize-none"
                     placeholder="Tell us what's on your mind..."
                   />
                 </div>
@@ -190,7 +190,7 @@ export default function ContactPage() {
                 <button
                   type="submit"
                   disabled={status === 'submitting'}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-[#ff5252] hover:bg-[#fc0b06] disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                 >
                   {status === 'submitting' ? (
                     <>

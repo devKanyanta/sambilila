@@ -51,8 +51,8 @@ export default function FeatureUsageChart({ data, isLoading }: FeatureUsageChart
     return (
       <div className="bg-white rounded-xl shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#ff5252]/10 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-[#ff5252]" />
+          <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-[#d92d3a]" />
           </div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Feature Usage</h3>
         </div>
@@ -75,8 +75,8 @@ export default function FeatureUsageChart({ data, isLoading }: FeatureUsageChart
       className="bg-white rounded-xl shadow-sm p-5"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#ff5252]/10 flex items-center justify-center">
-          <Zap className="w-4 h-4 text-[#ff5252]" />
+        <div className="w-8 h-8 rounded-lg bg-[#d92d3a]/10 flex items-center justify-center">
+          <Zap className="w-4 h-4 text-[#d92d3a]" />
         </div>
         <div>
           <h3 className="text-sm font-heading font-medium text-neutral-800">Feature Usage</h3>
@@ -116,7 +116,7 @@ export default function FeatureUsageChart({ data, isLoading }: FeatureUsageChart
             />
             <Bar
               dataKey="count"
-              fill="#ff5252"
+              fill="#d92d3a"
               radius={[0, 4, 4, 0]}
               maxBarSize={16}
             />
