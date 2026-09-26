@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -14,26 +8,22 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  avatar    String?
-  userType  UserType @default(STUDENT)
-  suspended Boolean  @default(false)
-  isGuest   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  flashcardSets FlashcardSet[]
-  quizResults   QuizResult[]
-  studySessions StudySession[]
-  quizzes       Quiz[]
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String
+  avatar        String?
+  userType      UserType       @default(STUDENT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  suspended     Boolean        @default(false)
+  isGuest       Boolean        @default(false)
   flashcardJobs FlashcardJob[]
+  flashcardSets FlashcardSet[]
   quizJobs      QuizJob[]
-
-  // Subscription relations
+  quizResults   QuizResult[]
+  quizzes       Quiz[]
+  studySessions StudySession[]
   subscriptions Subscription[]
   usageRecords  UsageRecord[]
   donations     Donation[]
@@ -41,26 +31,19 @@ model User {
   @@map("users")
 }
 
-enum UserType {
-  STUDENT
-  TEACHER
-}
-
 model BillingPlan {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
-  priceUSD  Float
-  period    String
-  description String?
-  features  Json
-  limits    Json
-  highlighted Boolean @default(false)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
+  id            String         @id @default(cuid())
+  name          String         @unique
+  slug          String         @unique
+  priceUSD      Float
+  period        String
+  features      Json
+  limits        Json
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  description   String?
+  highlighted   Boolean        @default(false)
   subscriptions Subscription[]
 
   @@map("billing_plans")
@@ -78,26 +61,12 @@ model Subscription {
   canceledAt         DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-
-  // Relations
-  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan BillingPlan @relation(fields: [planId], references: [id])
+  plan               BillingPlan        @relation(fields: [planId], references: [id])
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([providerId])
   @@map("subscriptions")
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  EXPIRED
-  CANCELED
-  PAST_DUE
-}
-
-enum PaymentProvider {
-  PAYPAL
-  LENCO
 }
 
 model UsageRecord {
@@ -105,17 +74,10 @@ model UsageRecord {
   userId    String
   resource  UsageResource
   createdAt DateTime      @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, resource, createdAt])
   @@map("usage_records")
-}
-
-enum UsageResource {
-  QUIZ_CREATION
-  FLASHCARD_CREATION
 }
 
 model WebhookEvent {
@@ -134,11 +96,145 @@ model WebhookEvent {
   @@map("webhook_events")
 }
 
-enum WebhookEventStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
+model FlashcardSet {
+  id            String         @id @default(cuid())
+  title         String
+  subject       String
+  description   String?
+  isPublic      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userId        String
+  shareToken    String?        @unique
+  flashcardJobs FlashcardJob[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards         Flashcard[]
+  studySessions StudySession[]
+
+  @@index([userId])
+  @@map("flashcard_sets")
+}
+
+model Flashcard {
+  id             String       @id @default(cuid())
+  front          String
+  back           String
+  order          Int
+  createdAt      DateTime     @default(now())
+  flashcardSetId String
+  flashcardSet   FlashcardSet @relation(fields: [flashcardSetId], references: [id], onDelete: Cascade)
+
+  @@index([flashcardSetId])
+  @@map("flashcards")
+}
+
+model FlashcardJob {
+  id             String        @id @default(cuid())
+  userId         String
+  fileUrl        String?
+  text           String?
+  title          String
+  subject        String
+  description    String?
+  status         JobStatus     @default(PENDING)
+  error          String?
+  flashcardSetId String?
+  createdAt      DateTime      @default(now())
+  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([flashcardSetId])
+  @@map("flashcard_jobs")
+}
+
+model Quiz {
+  id          String         @id @default(cuid())
+  title       String
+  subject     String
+  description String?
+  createdAt   DateTime       @default(now())
+  userId      String
+  isPublic    Boolean        @default(false)
+  shareToken  String?        @unique
+  quizJobs    QuizJob[]
+  questions   QuizQuestion[]
+  results     QuizResult[]
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([shareToken])
+  @@index([userId])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String       @id @default(cuid())
+  type          QuestionType
+  question      String
+  options       String[]
+  correctAnswer String
+  order         Int
+  createdAt     DateTime     @default(now())
+  quizId        String
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@map("quiz_questions")
+}
+
+model QuizResult {
+  id             String   @id @default(cuid())
+  score          Float
+  totalQuestions Int
+  answers        Json
+  completedAt    DateTime @default(now())
+  userId         String
+  quizId         String
+  quiz           Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@map("quiz_results")
+}
+
+model QuizJob {
+  id                String    @id @default(cuid())
+  userId            String
+  fileUrl           String?
+  text              String?
+  title             String
+  difficulty        String
+  numberOfQuestions String
+  questionTypes     String
+  status            JobStatus @default(PENDING)
+  error             String?
+  quizId            String?
+  createdAt         DateTime  @default(now())
+  quiz              Quiz?     @relation(fields: [quizId], references: [id])
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@map("quiz_job")
+}
+
+model StudySession {
+  id             String        @id @default(cuid())
+  duration       Int
+  cardsStudied   Int
+  correctAnswers Int
+  sessionType    SessionType
+  startedAt      DateTime      @default(now())
+  endedAt        DateTime?
+  userId         String
+  flashcardSetId String?
+  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([flashcardSetId])
+  @@map("study_sessions")
 }
 
 model Donation {
@@ -155,7 +251,6 @@ model Donation {
   createdAt   DateTime        @default(now())
   completedAt DateTime?
 
-  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -170,105 +265,33 @@ enum DonationStatus {
   CANCELED
 }
 
-model FlashcardSet {
-  id          String   @id @default(cuid())
-  title       String
-  subject     String
-  description String?
-  isPublic    Boolean  @default(false)
-  shareToken  String?  @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  userId        String
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cards         Flashcard[]
-  studySessions StudySession[]
-  flashcardJobs FlashcardJob[] 
-
-  @@index([userId])
-  @@map("flashcard_sets")
+enum UserType {
+  STUDENT
+  TEACHER
 }
 
-model Flashcard {
-  id        String   @id @default(cuid())
-  front     String
-  back      String
-  order     Int
-  createdAt DateTime @default(now())
-
-  // Relations
-  flashcardSetId String
-  flashcardSet   FlashcardSet @relation(fields: [flashcardSetId], references: [id], onDelete: Cascade)
-
-  @@index([flashcardSetId])
-  @@map("flashcards")
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  PAST_DUE
 }
 
-model FlashcardJob {
-  id      String @id @default(cuid())
-  userId  String
-
-  fileUrl String?
-  text    String?
-
-  title       String
-  subject     String
-  description String?
-
-  status JobStatus @default(PENDING)
-  error  String?
-
-  flashcardSetId String?
-
-  // Relations
-  flashcardSet FlashcardSet? @relation(fields: [flashcardSetId], references: [id], onDelete: SetNull)
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([flashcardSetId])
-  @@map("flashcard_jobs")
+enum PaymentProvider {
+  PAYPAL
+  LENCO
 }
 
-model Quiz {
-  id          String   @id @default(cuid())
-  title       String
-  subject     String
-  description String?
-  isPublic   Boolean  @default(false)
-  shareToken String?  @unique
-  createdAt  DateTime @default(now())
-
-  // Relations
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questions QuizQuestion[]
-  results   QuizResult[]
-  quizJobs  QuizJob[]
-  @@index([shareToken])
-
-  @@index([userId])
-  @@map("quizzes")
+enum UsageResource {
+  QUIZ_CREATION
+  FLASHCARD_CREATION
 }
 
-model QuizQuestion {
-  id            String       @id @default(cuid())
-  type          QuestionType
-  question      String
-  options       String[] // JSON array for multiple choice
-  correctAnswer String // JSON string to handle different types
-  order         Int
-  createdAt     DateTime     @default(now())
-
-  // Relations
-  quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  @@index([quizId])
-  @@map("quiz_questions")
+enum WebhookEventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum QuestionType {
@@ -277,78 +300,12 @@ enum QuestionType {
   SHORT_ANSWER
 }
 
-model QuizResult {
-  id             String   @id @default(cuid())
-  score          Float
-  totalQuestions Int
-  answers        Json // Store user answers
-  completedAt    DateTime @default(now())
-
-  // Relations
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([quizId])
-  @@map("quiz_results")
-}
-
-model QuizJob {
-  id     String @id @default(cuid())
-  userId String
-
-  fileUrl String?
-  text    String?
-
-  title             String
-  difficulty        String
-  numberOfQuestions String
-  questionTypes     String
-
-  status JobStatus @default(PENDING)
-  error  String?
-
-  quizId String?
-
-  // Relations
-  quiz Quiz? @relation(fields: [quizId], references: [id], onDelete: SetNull)
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([quizId])
-  @@map("quiz_job")
-}
-
 enum JobStatus {
   PENDING_UPLOAD
   PENDING
   PROCESSING
   DONE
   FAILED
-}
-
-model StudySession {
-  id             String      @id @default(cuid())
-  duration       Int // in minutes
-  cardsStudied   Int
-  correctAnswers Int
-  sessionType    SessionType
-  startedAt      DateTime    @default(now())
-  endedAt        DateTime?
-
-  // Relations
-  userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  flashcardSetId String?
-  flashcardSet   FlashcardSet? @relation(fields: [flashcardSetId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([flashcardSetId])
-  @@map("study_sessions")
 }
 
 enum SessionType {
