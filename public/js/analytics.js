@@ -229,6 +229,11 @@
   const SESSION_ID_KEY = '__analytics_session_id';
   const SESSION_START_KEY = '__analytics_session_start';
 
+  // Set by getOrCreateSessionId when a fresh session is created. The
+  // session_start event is buffered later in init() because
+  // getOrCreateSessionId runs while `state` is still being initialized.
+  let isNewSession = false;
+
   function getOrCreateSessionId() {
     let sessionId = sessionStorage.getItem(SESSION_ID_KEY);
     const sessionStart = parseInt(sessionStorage.getItem(SESSION_START_KEY)) || 0;
@@ -239,9 +244,7 @@
       sessionId = generateUUID();
       sessionStorage.setItem(SESSION_ID_KEY, sessionId);
       sessionStorage.setItem(SESSION_START_KEY, now.toString());
-
-      // Track session start
-      bufferEvent('session_start', {});
+      isNewSession = true;
     }
 
     return sessionId;
@@ -393,6 +396,11 @@
     if (isBot()) return;
 
     state.initialized = true;
+
+    // Track session start (deferred here — see isNewSession comment above)
+    if (isNewSession) {
+      bufferEvent('session_start', {});
+    }
 
     // Patch SPA navigation
     patchHistoryApi();

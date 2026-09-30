@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Header } from './landing/Header'
 import { Hero } from './landing/Hero'
 import { HowItWorks } from './landing/HowItWorks'
+import { AiTutor } from './landing/AiTutor'
 import { Support } from './landing/Support'
 import { FAQ } from './landing/FAQ'
 import { Footer } from './landing/Footer'
@@ -98,6 +99,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* AI Tutor (Coming Soon) */}
+      <AiTutor />
 
       {/* Support (replaces Pricing) */}
       <Support />

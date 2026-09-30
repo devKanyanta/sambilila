@@ -15,7 +15,8 @@ import {
   X,
   Heart,
   Shield,
-  BarChart3
+  BarChart3,
+  MessageSquareHeart
 } from 'lucide-react'
 import { useSession } from '@/app/hooks/useSession'
 import SupportBar from './components/SupportBar'
@@ -60,10 +61,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const adminNavItems = [
     { href: "/dashboard/admin", icon: Shield, label: "Admin" },
+    { href: "/dashboard/admin/feedback", icon: MessageSquareHeart, label: "Feedback" },
     { href: "/dashboard/admin/analytics", icon: BarChart3, label: "Analytics" },
   ]
   const adminMobileNavItems = [
     { href: "/dashboard/admin", icon: Shield, label: "Admin" },
+    { href: "/dashboard/admin/feedback", icon: MessageSquareHeart, label: "Feedback" },
     { href: "/dashboard/admin/analytics", icon: BarChart3, label: "Analytics" },
   ]
 

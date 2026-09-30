@@ -27,6 +27,7 @@ model User {
   subscriptions Subscription[]
   usageRecords  UsageRecord[]
   donations     Donation[]
+  feedback      Feedback[]
 
   @@map("users")
 }
@@ -258,11 +259,35 @@ model Donation {
   @@map("donations")
 }
 
+model Feedback {
+  id         String         @id @default(cuid())
+  userId     String?
+  name       String
+  email      String?
+  role       String?
+  rating     Int?
+  message    String
+  status     FeedbackStatus @default(PENDING)
+  featured   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  reviewedAt DateTime?
+  user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("feedback")
+}
+
 enum DonationStatus {
   PENDING
   COMPLETED
   FAILED
   CANCELED
+}
+
+enum FeedbackStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum UserType {
