@@ -86,17 +86,11 @@ npm start
 ![Landing](docs/screenshots/landing.png)
 *Landing page*
 
-![Login](docs/screenshots/login.png)
-*Login screen*
-
 ![Dashboard](docs/screenshots/dashboard.png)
 *Dashboard — study workspace*
 
 ![Flashcards](docs/screenshots/flashcards.png)
 *Flashcards — AI-generated study cards*
-
-![Quiz](docs/screenshots/quiz.png)
-*Quiz — AI-generated quiz taking*
 
 ![Quiz Results](docs/screenshots/quiz-results.png)
 *Quiz Results — score and review*
